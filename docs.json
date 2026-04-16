@@ -115,7 +115,7 @@
             "pages": [
               "examples/damiao-all-in-one",
               "examples/web-hmi",
-              "examples/http-quad-control.zh-CN"
+              "zh/examples/http-quad-control"
             ]
           },
           {
@@ -129,7 +129,7 @@
           {
             "group": "Reference",
             "pages": [
-              "shared/channel-compat"
+              "zh/shared/channel-compat"
             ]
           }
         ]
@@ -140,113 +140,113 @@
           {
             "group": "快速开始",
             "pages": [
-              "getting-started/quickstart.zh-CN",
-              "getting-started/courses/overview.zh-CN"
+              "zh/getting-started/quickstart",
+              "zh/getting-started/courses/overview"
             ]
           },
           {
             "group": "课程",
             "pages": [
-              "getting-started/courses/00-enable-and-status",
-              "getting-started/courses/01-scan",
-              "getting-started/courses/02-register-rw",
-              "getting-started/courses/03-mode-switch-method",
-              "getting-started/courses/04-mode-mit",
-              "getting-started/courses/05-mode-pos-vel",
-              "getting-started/courses/06-mode-vel",
-              "getting-started/courses/07-mode-force-pos",
-              "getting-started/courses/08-mode-mixed-switch",
-              "getting-started/courses/09-multi-motor"
+              "zh/getting-started/courses/00-enable-and-status",
+              "zh/getting-started/courses/01-scan",
+              "zh/getting-started/courses/02-register-rw",
+              "zh/getting-started/courses/03-mode-switch-method",
+              "zh/getting-started/courses/04-mode-mit",
+              "zh/getting-started/courses/05-mode-pos-vel",
+              "zh/getting-started/courses/06-mode-vel",
+              "zh/getting-started/courses/07-mode-force-pos",
+              "zh/getting-started/courses/08-mode-mixed-switch",
+              "zh/getting-started/courses/09-multi-motor"
             ]
           },
           {
             "group": "架构",
             "pages": [
-              "architecture/overview.zh-CN",
-              "architecture/abi.zh-CN",
-              "architecture/extending.zh-CN"
+              "zh/architecture/overview",
+              "zh/architecture/abi",
+              "zh/architecture/extending"
             ]
           },
           {
             "group": "Python SDK",
             "pages": [
-              "sdk/python/reference.zh-CN",
-              "sdk/python/examples.zh-CN",
-              "sdk/python/robstride.zh-CN"
+              "zh/sdk/python/reference",
+              "zh/sdk/python/examples",
+              "zh/sdk/python/robstride"
             ]
           },
           {
             "group": "C++ SDK",
             "pages": [
-              "sdk/cpp/reference.zh-CN",
-              "sdk/cpp/examples.zh-CN"
+              "zh/sdk/cpp/reference",
+              "zh/sdk/cpp/examples"
             ]
           },
           {
             "group": "C ABI",
             "pages": [
-              "sdk/c/examples.zh-CN"
+              "zh/sdk/c/examples"
             ]
           },
           {
             "group": "CLI",
             "pages": [
-              "cli/reference.zh-CN",
-              "cli/damiao.zh-CN",
-              "cli/myactuator.zh-CN",
-              "cli/robstride.zh-CN"
+              "zh/cli/reference",
+              "zh/cli/damiao",
+              "zh/cli/myactuator",
+              "zh/cli/robstride"
             ]
           },
           {
             "group": "设备",
             "pages": [
-              "devices/supported-devices.zh-CN",
-              "devices/hightorque-protocol.zh-CN",
-              "devices/operation-manual.zh-CN"
+              "zh/devices/supported-devices",
+              "zh/devices/hightorque-protocol",
+              "zh/devices/operation-manual"
             ]
           },
           {
             "group": "指南",
             "pages": [
-              "guides/can-debugging.zh-CN",
-              "guides/testing.zh-CN",
-              "guides/distribution.zh-CN",
-              "guides/windows.zh-CN"
+              "zh/guides/can-debugging",
+              "zh/guides/testing",
+              "zh/guides/distribution",
+              "zh/guides/windows"
             ]
           },
           {
             "group": "集成",
             "pages": [
-              "integrations/ros2-bridge.zh-CN"
+              "zh/integrations/ros2-bridge"
             ]
           },
           {
             "group": "工具",
             "pages": [
-              "tools/factory-calibration.zh-CN",
-              "tools/reliability.zh-CN"
+              "zh/tools/factory-calibration",
+              "zh/tools/reliability"
             ]
           },
           {
             "group": "示例",
             "pages": [
-              "examples/damiao-all-in-one",
-              "examples/web-hmi.zh-CN",
-              "examples/http-quad-control.zh-CN"
+              "zh/examples/damiao-all-in-one",
+              "zh/examples/web-hmi",
+              "zh/examples/http-quad-control"
             ]
           },
           {
             "group": "贡献",
             "pages": [
-              "contributing/contributing",
-              "contributing/security",
-              "contributing/code-of-conduct"
+              "zh/contributing/contributing",
+              "zh/contributing/security",
+              "zh/contributing/code-of-conduct"
             ]
           },
           {
             "group": "参考",
             "pages": [
-              "shared/channel-compat"
+              "zh/shared/channel-compat"
             ]
           }
         ]
