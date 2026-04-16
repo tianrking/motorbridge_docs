@@ -1,0 +1,277 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "motorbridge",
+  "theme": "mint",
+  "logo": {
+    "light": "/logo-light.svg",
+    "dark": "/logo-dark.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#1E6B52",
+    "light": "#2CA884",
+    "dark": "#1E6B52"
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/tianrking/motorbridge"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "EN",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "getting-started/quickstart"
+            ]
+          },
+          {
+            "group": "Courses",
+            "pages": [
+              "getting-started/courses/00-enable-and-status",
+              "getting-started/courses/01-scan",
+              "getting-started/courses/02-register-rw",
+              "getting-started/courses/03-mode-switch-method",
+              "getting-started/courses/04-mode-mit",
+              "getting-started/courses/05-mode-pos-vel",
+              "getting-started/courses/06-mode-vel",
+              "getting-started/courses/07-mode-force-pos",
+              "getting-started/courses/08-mode-mixed-switch",
+              "getting-started/courses/09-multi-motor"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "architecture/overview",
+              "architecture/abi",
+              "architecture/extending"
+            ]
+          },
+          {
+            "group": "Python SDK",
+            "pages": [
+              "sdk/python/reference",
+              "sdk/python/examples",
+              "sdk/python/robstride.zh-CN"
+            ]
+          },
+          {
+            "group": "C++ SDK",
+            "pages": [
+              "sdk/cpp/reference",
+              "sdk/cpp/examples"
+            ]
+          },
+          {
+            "group": "C ABI",
+            "pages": [
+              "sdk/c/examples"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/reference",
+              "cli/damiao",
+              "cli/myactuator",
+              "cli/robstride"
+            ]
+          },
+          {
+            "group": "Devices",
+            "pages": [
+              "devices/supported-devices",
+              "devices/hightorque-protocol.zh-CN",
+              "devices/operation-manual.zh-CN"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/can-debugging",
+              "guides/testing",
+              "guides/distribution",
+              "guides/windows"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/ros2-bridge"
+            ]
+          },
+          {
+            "group": "Tools",
+            "pages": [
+              "tools/factory-calibration",
+              "tools/reliability"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/damiao-all-in-one",
+              "examples/web-hmi",
+              "examples/http-quad-control.zh-CN"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/contributing",
+              "contributing/security",
+              "contributing/code-of-conduct"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "snippets/channel-compat"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "中文",
+        "groups": [
+          {
+            "group": "快速开始",
+            "pages": [
+              "getting-started/quickstart.zh-CN",
+              "getting-started/courses/overview.zh-CN"
+            ]
+          },
+          {
+            "group": "课程",
+            "pages": [
+              "getting-started/courses/00-enable-and-status",
+              "getting-started/courses/01-scan",
+              "getting-started/courses/02-register-rw",
+              "getting-started/courses/03-mode-switch-method",
+              "getting-started/courses/04-mode-mit",
+              "getting-started/courses/05-mode-pos-vel",
+              "getting-started/courses/06-mode-vel",
+              "getting-started/courses/07-mode-force-pos",
+              "getting-started/courses/08-mode-mixed-switch",
+              "getting-started/courses/09-multi-motor"
+            ]
+          },
+          {
+            "group": "架构",
+            "pages": [
+              "architecture/overview.zh-CN",
+              "architecture/abi.zh-CN",
+              "architecture/extending.zh-CN"
+            ]
+          },
+          {
+            "group": "Python SDK",
+            "pages": [
+              "sdk/python/reference.zh-CN",
+              "sdk/python/examples.zh-CN",
+              "sdk/python/robstride.zh-CN"
+            ]
+          },
+          {
+            "group": "C++ SDK",
+            "pages": [
+              "sdk/cpp/reference.zh-CN",
+              "sdk/cpp/examples.zh-CN"
+            ]
+          },
+          {
+            "group": "C ABI",
+            "pages": [
+              "sdk/c/examples.zh-CN"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/reference.zh-CN",
+              "cli/damiao.zh-CN",
+              "cli/myactuator.zh-CN",
+              "cli/robstride.zh-CN"
+            ]
+          },
+          {
+            "group": "设备",
+            "pages": [
+              "devices/supported-devices.zh-CN",
+              "devices/hightorque-protocol.zh-CN",
+              "devices/operation-manual.zh-CN"
+            ]
+          },
+          {
+            "group": "指南",
+            "pages": [
+              "guides/can-debugging.zh-CN",
+              "guides/testing.zh-CN",
+              "guides/distribution.zh-CN",
+              "guides/windows.zh-CN"
+            ]
+          },
+          {
+            "group": "集成",
+            "pages": [
+              "integrations/ros2-bridge.zh-CN"
+            ]
+          },
+          {
+            "group": "工具",
+            "pages": [
+              "tools/factory-calibration.zh-CN",
+              "tools/reliability.zh-CN"
+            ]
+          },
+          {
+            "group": "示例",
+            "pages": [
+              "examples/damiao-all-in-one",
+              "examples/web-hmi.zh-CN",
+              "examples/http-quad-control.zh-CN"
+            ]
+          },
+          {
+            "group": "贡献",
+            "pages": [
+              "contributing/contributing",
+              "contributing/security",
+              "contributing/code-of-conduct"
+            ]
+          },
+          {
+            "group": "参考",
+            "pages": [
+              "snippets/channel-compat"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/tianrking/motorbridge"
+    }
+  },
+  "search": {
+    "prompt": "Search docs..."
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "claude",
+      "chatgpt",
+      "cursor"
+    ]
+  }
+}

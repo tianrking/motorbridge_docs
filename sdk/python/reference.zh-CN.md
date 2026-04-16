@@ -1,0 +1,922 @@
+# Python SDK 参考
+
+本文档是 `motorbridge` Python SDK 的完整参考手册，涵盖安装、`Controller` 与 `Motor` 类、厂商专用 API、状态结构与错误处理。
+
+> English version: [reference.md](reference.md)
+
+---
+
+## 目录
+
+1. [安装](#1-安装)
+2. [通道格式](#2-通道格式)
+3. [Controller 类](#3-controller-类)
+4. [Motor 类](#4-motor-类)
+5. [状态与数据结构](#5-状态与数据结构)
+6. [Damiao 专用 API](#6-damiao-专用-api)
+7. [RobStride 专用 API](#7-robstride-专用-api)
+8. [错误处理](#8-错误处理)
+9. [统一模式映射](#9-统一模式映射)
+10. [示例程序](#10-示例程序)
+
+---
+
+## 1. 安装
+
+### 1.1 pip 安装（推荐）
+
+```bash
+pip install motorbridge
+```
+
+发布的 wheel 包含 `motor_abi` 共享库和当前平台的 `ws_gateway` 二进制文件。
+
+安装后 gateway 二进制路径通常为：
+`.../site-packages/motorbridge/bin/ws_gateway`（Windows 为 `ws_gateway.exe`）。
+
+Gateway 启动命令（pip 自动加入 PATH）：
+
+```bash
+motorbridge-gateway -- --bind 127.0.0.1:9002 ...
+```
+
+Gateway 安全说明：
+- 本地使用请保持回环绑定（`127.0.0.1`）。
+- 若绑定到非回环地址（`0.0.0.0` 或主机 IP），启动前需设置 `MOTORBRIDGE_WS_TOKEN` 环境变量。
+- 客户端必须在 `x-motorbridge-token` 或 `Authorization: Bearer ...` 中传递该 token。
+
+macOS 运行时说明（仅当出现动态库加载错误时需要）：
+
+```bash
+GW="$(python3 -c "import motorbridge, pathlib; print(pathlib.Path(motorbridge.__file__).resolve().parent/'bin'/'ws_gateway')")"
+PKG_DIR="$(python3 -c "import motorbridge, pathlib; print(pathlib.Path(motorbridge.__file__).resolve().parent)")"
+DYLD_LIBRARY_PATH="$PKG_DIR/lib:${DYLD_LIBRARY_PATH:-}" "$GW" --bind 127.0.0.1:9002 --vendor damiao --channel can0 --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+### 1.2 从源码本地构建
+
+先构建 ABI 共享库：
+
+```bash
+cd motorbridge
+cargo build -p motor_abi --release
+```
+
+然后设置环境变量：
+
+```bash
+export PYTHONPATH=bindings/python/src
+export LD_LIBRARY_PATH=$PWD/target/release:${LD_LIBRARY_PATH}
+```
+
+### 1.3 本地 Wheel 构建
+
+Linux / macOS：
+
+```bash
+pip install --user wheel
+export MOTORBRIDGE_LIB=$PWD/target/release/libmotor_abi.so
+pip wheel --no-build-isolation bindings/python -w bindings/python/dist
+pip install bindings/python/dist/motorbridge-*.whl
+```
+
+Windows：
+
+```cmd
+python -m pip install --user wheel
+set MOTORBRIDGE_LIB=%CD%\target\release\motor_abi.dll
+set MOTORBRIDGE_WS_GATEWAY_BIN=%CD%\target\release\ws_gateway.exe
+python -m pip wheel --no-build-isolation bindings/python -w bindings/python/dist
+python -m pip install bindings/python/dist/motorbridge-*.whl
+```
+
+### 1.4 库搜索路径
+
+SDK 按以下顺序搜索 `motor_abi` 共享库：
+
+1. `MOTORBRIDGE_LIB` 环境变量（如已设置）。
+2. 已安装包内的 `motorbridge/lib/` 目录。
+3. 相对于仓库根目录（`abi.py` 向上 4 级）的 `target/release/`。
+4. 相对于当前工作目录的 `target/release/`。
+5. 通过 `ctypes.util.find_library("motor_abi")` 搜索系统路径。
+
+若所有路径均未找到该库，将抛出 `AbiLoadError`。
+
+---
+
+## 2. 通道格式
+
+> **通道兼容详情：** 参见 [snippets/channel-compat.md](../../snippets/channel-compat.md)
+
+摘要：
+
+- **Linux SocketCAN**：直接使用接口名：`can0`、`can1`、`slcan0`。不要追加 `@bitrate`（例如 `can0@1000000` 在 Linux 上无效）。
+- **USB 串口 CAN 适配器**：先启用 `slcan0`：
+  ```bash
+  sudo slcand -o -c -s8 /dev/ttyUSB0 slcan0 && sudo ip link set slcan0 up
+  ```
+- **CAN-FD**：Python SDK 使用 `Controller.from_socketcanfd(channel)`，CLI 使用 `--transport socketcanfd`。Hexfellow 电机必须使用 CAN-FD。
+- **Damiao 串口桥**：使用 `Controller.from_dm_serial(serial_port, baud)`。仅适用于 Damiao 电机。
+- **Windows（PCAN）**：`can0`/`can1` 映射到 `PCAN_USBBUS1`/`PCAN_USBBUS2`。支持 `@bitrate` 后缀（例如 `can0@1000000`）。
+
+---
+
+## 3. Controller 类
+
+`Controller` 管理 CAN 总线（或串口桥）及其上挂载的电机。
+
+### 3.1 构造方法
+
+#### `Controller(channel: str = "can0")`
+
+使用标准 SocketCAN（Windows 为 PCAN）创建控制器。
+
+```python
+from motorbridge import Controller
+
+ctrl = Controller("can0")
+```
+
+总线打开失败时抛出 `CallError`。
+
+#### `Controller.from_socketcanfd(channel: str = "can0")`
+
+使用 CAN-FD 传输创建控制器。Hexfellow 电机必须使用此构造方法。
+
+```python
+ctrl = Controller.from_socketcanfd("can0")
+```
+
+#### `Controller.from_dm_serial(serial_port: str = "/dev/ttyACM0", baud: int = 921600)`
+
+使用 Damiao 串口桥创建控制器。仅适用于 Damiao 电机。
+
+```python
+ctrl = Controller.from_dm_serial("/dev/ttyACM0", 921600)
+```
+
+### 3.2 生命周期方法
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `close` | `close() -> None` | 释放 Python 侧句柄。在 `shutdown` 后调用。 |
+| `shutdown` | `shutdown() -> None` | 关闭控制器并执行收尾（含设备处理）。推荐正常退出使用。 |
+| `close_bus` | `close_bus() -> None` | 仅关闭总线层。用于特殊手动生命周期管理。不替代 `shutdown`。 |
+| 上下文管理器 | `__enter__() -> Controller`、`__exit__(exc_type, exc, tb) -> None` | 退出时自动调用 `shutdown()` 然后 `close()`。 |
+
+上下文管理器用法：
+
+```python
+with Controller("can0") as ctrl:
+    # ... 操作 ctrl ...
+    pass
+# shutdown() 和 close() 自动调用
+```
+
+### 3.3 广播控制
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `enable_all` | `enable_all() -> None` | 广播使能该控制器已添加的所有电机。调用后建议等待 100--300 ms。 |
+| `disable_all` | `disable_all() -> None` | 广播失能所有电机。程序结束前调用。 |
+| `poll_feedback_once` | `poll_feedback_once() -> None` | 手动消费一次接收队列并更新状态缓存。与 `request_feedback` 连用实现"立即刷新"。 |
+
+### 3.4 添加电机
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `add_damiao_motor` | `add_damiao_motor(motor_id: int, feedback_id: int, model: str) -> Motor` | 添加 Damiao 电机。`model` 示例：`"4310"`、`"4340P"`。 |
+| `add_myactuator_motor` | `add_myactuator_motor(motor_id: int, feedback_id: int, model: str) -> Motor` | 添加 MyActuator 电机。`model` 示例：`"X8"`。 |
+| `add_robstride_motor` | `add_robstride_motor(motor_id: int, feedback_id: int, model: str) -> Motor` | 添加 RobStride 电机。`model` 示例：`"rs-06"`。默认反馈 ID：`0xFD`。 |
+| `add_hexfellow_motor` | `add_hexfellow_motor(motor_id: int, feedback_id: int, model: str) -> Motor` | 添加 Hexfellow 电机。需要 CAN-FD 传输。 |
+| `add_hightorque_motor` | `add_hightorque_motor(motor_id: int, feedback_id: int, model: str) -> Motor` | 添加 HighTorque 电机。 |
+
+所有 `add_*_motor` 方法在电机创建失败时抛出 `CallError`。
+
+### 3.5 Controller 方法参考表
+
+| 方法 | 作用 | 常见联动调用 | 参数范围/建议 |
+|---|---|---|---|
+| `Controller(channel)` | 标准 CAN 创建控制器 | `add_*_motor` | `channel` 例：`can0` |
+| `Controller.from_dm_serial(port, baud)` | Damiao 串口桥创建控制器 | `add_damiao_motor` | `port` 例：`/dev/ttyACM0`；`baud` 常用 `921600` |
+| `Controller.from_socketcanfd(channel)` | CAN-FD 创建控制器 | `add_hexfellow_motor` | `channel` 例：`can0` |
+| `add_damiao_motor(mid, fid, model)` | 绑定 Damiao 电机句柄 | `enable_all` / `ensure_mode` / `send_*` | `motor_id` 常见 `0x01--0x7F`；`feedback_id` 常见 `motor_id+0x10`；`model` 如 `4310`/`4340P` |
+| `enable_all()` | 广播使能 | `ensure_mode` 前调用 | 建议后接 100--300 ms 稳定时间 |
+| `disable_all()` | 广播失能 | 结束流程前调用 | 无硬性范围 |
+| `poll_feedback_once()` | 手动消费一次接收队列 | 常与 `request_feedback` 连用 | 非必需（有后台轮询时） |
+| `shutdown()` | 关闭控制器并执行收尾 | `with` 退出时自动执行 | 推荐正常退出使用 |
+| `close_bus()` | 仅关闭总线层 | 特殊场景手动管理生命周期 | 不会替代完整 shutdown 语义 |
+| `close()` | 释放 Python 侧句柄 | `shutdown` 后调用 | `with` 退出时自动调用 |
+
+---
+
+## 4. Motor 类
+
+`Motor` 类代表连接到控制器的单个电机。所有厂商的电机共享相同的基础 API。
+
+### 4.1 生命周期
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `enable` | `enable() -> None` | 使能电机。调用后建议等待 100--300 ms。 |
+| `disable` | `disable() -> None` | 失能电机。控制结束前调用。 |
+| `close` | `close() -> None` | 释放电机句柄。 |
+
+### 4.2 模式切换
+
+#### `ensure_mode(mode: Mode, timeout_ms: int = 1000) -> None`
+
+切换电机到指定控制模式，并在 `timeout_ms` 内校验切换完成。
+
+参数：
+- `mode`：`Mode.MIT`、`Mode.POS_VEL`、`Mode.VEL`、`Mode.FORCE_POS` 之一。
+- `timeout_ms`：校验超时（毫秒）。
+  - 标准 CAN：建议 150--300 ms。
+  - dm-serial：建议 200--500 ms（常用 300）。
+
+### 4.3 控制命令
+
+所有控制命令假定电机已使能且已通过 `ensure_mode` 切换到正确模式。
+
+#### `send_mit(pos, vel, kp, kd, tau) -> None`
+
+MIT（阻抗）模式控制。五参数混合控制。
+
+| 参数 | 类型 | 单位 | 说明 |
+|---|---|---|---|
+| `pos` | `float` | rad | 目标位置 |
+| `vel` | `float` | rad/s | 目标速度 |
+| `kp` | `float` | 无量纲 | 位置刚度增益（>= 0） |
+| `kd` | `float` | 无量纲 | 速度阻尼增益（>= 0） |
+| `tau` | `float` | Nm | 前馈力矩 |
+
+常用起步参数：`kp=2~10`、`kd=0.05~0.5`、`tau=0.1~1.0`。
+
+#### `send_pos_vel(pos, vlim) -> None`
+
+位置 + 速度上限控制。
+
+| 参数 | 类型 | 单位 | 说明 |
+|---|---|---|---|
+| `pos` | `float` | rad | 目标位置 |
+| `vlim` | `float` | rad/s | 速度上限（> 0，建议从 0.5--2.0 起步） |
+
+#### `send_vel(vel) -> None`
+
+纯速度控制。
+
+| 参数 | 类型 | 单位 | 说明 |
+|---|---|---|---|
+| `vel` | `float` | rad/s | 目标速度（建议从小值起步） |
+
+#### `send_force_pos(pos, vlim, ratio) -> None`
+
+位置 + 力矩限幅控制。
+
+| 参数 | 类型 | 单位 | 说明 |
+|---|---|---|---|
+| `pos` | `float` | rad | 目标位置 |
+| `vlim` | `float` | rad/s | 速度上限（> 0） |
+| `ratio` | `float` | 0--1 | 力矩/电流限幅比例（常用 0.1--0.5）。不是精确恒扭矩控制。 |
+
+### 4.4 反馈与状态
+
+#### `request_feedback() -> None`
+
+主动请求一帧电机反馈。
+
+#### `poll_feedback_once()`（Controller 上）
+
+消费一次接收周期并更新内部状态缓存。与 `request_feedback` 和 `get_state` 连用获取最新读数。
+
+#### `get_state() -> MotorState | None`
+
+返回最近缓存的状态。若尚未收到反馈则返回 `None`。为获得更可靠的读数，建议先调用 `request_feedback()` + `poll_feedback_once()`。
+
+### 4.5 维护操作
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `clear_error` | `clear_error() -> None` | 清除电机故障状态。维护流程中在 `enable`/`ensure_mode` 前调用。 |
+| `set_zero_position` | `set_zero_position() -> None` | 将当前位置设为零点参考。**不会**让电机转回 0 位。核心层内置固定 20 ms 稳定时间；Python API 无 `ms` 参数。**项目规范：调用前必须先 `disable()`。** |
+| `set_can_timeout_ms` | `set_can_timeout_ms(timeout_ms: int) -> None` | 设置电机 CAN 超时参数。`timeout_ms > 0`，常用 100--2000。 |
+| `store_parameters` | `store_parameters() -> None` | 将当前寄存器值持久化到非易失存储。建议在确认寄存器值正确后调用。 |
+
+### 4.6 寄存器访问（通用）
+
+以下方法适用于所有支持寄存器参数访问的电机类型。
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `write_register_f32` | `write_register_f32(rid: int, value: float) -> None` | 向指定寄存器写入 float 值。 |
+| `write_register_u32` | `write_register_u32(rid: int, value: int) -> None` | 向指定寄存器写入无符号 32 位整数值。 |
+| `get_register_f32` | `get_register_f32(rid: int, timeout_ms: int = 1000) -> float` | 读取 float 寄存器。`timeout_ms` 常用 300--1000。 |
+| `get_register_u32` | `get_register_u32(rid: int, timeout_ms: int = 1000) -> int` | 读取无符号 32 位整数寄存器。`timeout_ms` 常用 300--1000。 |
+
+### 4.7 Motor 方法参考表
+
+| 方法 | 作用 | 常见联动调用 | 参数范围/建议 |
+|---|---|---|---|
+| `enable()` | 单电机使能 | `clear_error` 之后、控制前 | 建议后接 100--300 ms |
+| `disable()` | 单电机失能 | 流程结束 | 无硬性范围 |
+| `clear_error()` | 清故障状态 | `enable`/`ensure_mode` 前 | 建议维护流程先调用 |
+| `set_zero_position()` | 将当前位置设为零点 | **必须先 `disable` 再调用** | 不是"回到 0 位"；Python 无 `ms` 参数（核心内置 20 ms） |
+| `ensure_mode(mode, timeout_ms)` | 切换并校验控制模式 | `send_*` 前 | 标准 CAN 150--300；dm-serial 200--500 |
+| `send_mit(pos, vel, kp, kd, tau)` | MIT 阻抗控制 | `ensure_mode(Mode.MIT)` 后 | `pos` rad；`vel` rad/s；`kp`、`kd` >= 0；`tau` Nm |
+| `send_pos_vel(pos, vlim)` | 位置+速度上限 | `ensure_mode(Mode.POS_VEL)` 后 | `pos` rad；`vlim > 0` |
+| `send_vel(vel)` | 速度控制 | `ensure_mode(Mode.VEL)` 后 | `vel` rad/s |
+| `send_force_pos(pos, vlim, ratio)` | 位置+力矩限幅 | `ensure_mode(Mode.FORCE_POS)` 后 | `ratio` 0--1 |
+| `request_feedback()` | 主动请求一帧反馈 | `poll_feedback_once` + `get_state` | 用于获取新鲜状态 |
+| `get_state()` | 读取缓存状态 | `request_feedback` 后更稳 | 可能返回 `None` |
+| `set_can_timeout_ms(ms)` | 设置 CAN 超时参数 | 维护流程 | `ms > 0`，常用 100--2000 |
+| `store_parameters()` | 存参（写入非易失） | 修改寄存器后按需调用 | 建议"确认值正确后"再存 |
+| `write_register_u32(rid, value)` | 写 u32 寄存器 | 可选 `store_parameters` | `rid` 必须可写且 u32 类型 |
+| `write_register_f32(rid, value)` | 写 f32 寄存器 | 可选 `store_parameters` | `rid` 必须可写且 f32 类型 |
+| `get_register_u32(rid, timeout_ms)` | 读 u32 寄存器 | 诊断/模式确认 | `timeout_ms` 常用 300--1000 |
+| `get_register_f32(rid, timeout_ms)` | 读 f32 寄存器 | 诊断/参数核对 | `timeout_ms` 常用 300--1000 |
+| `close()` | 释放电机句柄 | 结束时调用 | --- |
+
+---
+
+## 5. 状态与数据结构
+
+### 5.1 `Mode`（枚举）
+
+```python
+class Mode(IntEnum):
+    MIT = 1
+    POS_VEL = 2
+    VEL = 3
+    FORCE_POS = 4
+```
+
+### 5.2 `MotorState`（数据类）
+
+由 `motor.get_state()` 返回。不可变数据类。
+
+```python
+@dataclass(frozen=True)
+class MotorState:
+    can_id: int          # 电机 CAN ID
+    arbitration_id: int  # 最近反馈帧的仲裁 ID
+    status_code: int     # 电机状态码
+    pos: float           # 位置（rad）
+    vel: float           # 速度（rad/s）
+    torq: float          # 力矩（Nm）
+    t_mos: float         # MOSFET 温度（C）
+    t_rotor: float       # 转子温度（C）
+```
+
+说明：`MotorState` **不包含当前控制模式**。要读取当前模式，请查询对应寄存器（如 Damiao `RID_CTRL_MODE = 10`）。
+
+### 5.3 `RegisterSpec`（数据类）
+
+用于 Damiao 寄存器元数据查询。
+
+```python
+@dataclass(frozen=True)
+class RegisterSpec:
+    rid: int          # 寄存器 ID
+    variable: str     # 变量名
+    description: str  # 人类可读的描述
+    data_type: str    # "f32" 或 "u32"
+    access: str       # 访问模式（如 "RW"）
+    range_str: str    # 有效范围字符串
+```
+
+---
+
+## 6. Damiao 专用 API
+
+### 6.1 Damiao 寄存器常量
+
+可直接从包中导入：
+
+```python
+from motorbridge import (
+    DAMIAO_RW_REGISTERS,
+    DAMIAO_HIGH_IMPACT_RIDS,
+    DAMIAO_PROTECTION_RIDS,
+    get_damiao_register_spec,
+    RID_CTRL_MODE,
+    RID_MST_ID,
+    RID_ESC_ID,
+    RID_TIMEOUT,
+    RID_PMAX,
+    RID_VMAX,
+    RID_TMAX,
+    RID_KP_ASR,
+    RID_KI_ASR,
+    RID_KP_APR,
+    RID_KI_APR,
+    MODE_MIT,
+    MODE_POS_VEL,
+    MODE_VEL,
+    MODE_FORCE_POS,
+)
+```
+
+### 6.2 Damiao 寄存器参考表
+
+| RID | 变量名 | 类型 | 访问 | 范围 | 说明 |
+|---|---|---|---|---|---|
+| 0 | `UV_Value` | f32 | RW | (10.0, 3.4E38] | 欠压保护值 |
+| 1 | `KT_Value` | f32 | RW | [0.0, 3.4E38] | 力矩系数 |
+| 2 | `OT_Value` | f32 | RW | [80.0, 200) | 过温保护值 |
+| 3 | `OC_Value` | f32 | RW | (0.0, 1.0) | 过流保护值 |
+| 4 | `ACC` | f32 | RW | (0.0, 3.4E38) | 加速度 |
+| 5 | `DEC` | f32 | RW | [-3.4E38, 0.0) | 减速度 |
+| 6 | `MAX_SPD` | f32 | RW | (0.0, 3.4E38] | 最大速度 |
+| 7 | `MST_ID` | u32 | RW | [0, 0x7FF] | 反馈 ID |
+| 8 | `ESC_ID` | u32 | RW | [0, 0x7FF] | 接收 ID |
+| 9 | `TIMEOUT` | u32 | RW | [0, 2^32-1] | 超时报警时间 |
+| 10 | `CTRL_MODE` | u32 | RW | [1, 4] | 控制模式 |
+| 21 | `PMAX` | f32 | RW | (0.0, 3.4E38] | 位置映射范围 |
+| 22 | `VMAX` | f32 | RW | (0.0, 3.4E38] | 速度映射范围 |
+| 23 | `TMAX` | f32 | RW | (0.0, 3.4E38] | 力矩映射范围 |
+| 24 | `I_BW` | f32 | RW | [100.0, 10000.0] | 电流环控制带宽 |
+| 25 | `KP_ASR` | f32 | RW | [0.0, 3.4E38] | 速度环 Kp |
+| 26 | `KI_ASR` | f32 | RW | [0.0, 3.4E38] | 速度环 Ki |
+| 27 | `KP_APR` | f32 | RW | [0.0, 3.4E38] | 位置环 Kp |
+| 28 | `KI_APR` | f32 | RW | [0.0, 3.4E38] | 位置环 Ki |
+| 29 | `OV_Value` | f32 | RW | TBD | 过压保护值 |
+| 30 | `GREF` | f32 | RW | (0.0, 1.0] | 齿轮力矩效率 |
+| 31 | `Deta` | f32 | RW | [1.0, 30.0] | 速度环阻尼系数 |
+| 32 | `V_BW` | f32 | RW | (0.0, 500.0) | 速度环滤波带宽 |
+| 33 | `IQ_c1` | f32 | RW | [100.0, 10000.0] | 电流环增强系数 |
+| 34 | `VL_c1` | f32 | RW | (0.0, 10000.0] | 速度环增强系数 |
+| 35 | `can_br` | u32 | RW | [0, 4] | CAN 波特率编码 |
+
+### 6.3 强影响寄存器 RID
+
+这些寄存器对电机行为影响最大：
+
+- `21 PMAX`、`22 VMAX`、`23 TMAX`（范围限制）
+- `25 KP_ASR`、`26 KI_ASR`、`27 KP_APR`、`28 KI_APR`（PID 增益）
+- `4 ACC`、`5 DEC`、`6 MAX_SPD`、`9 TIMEOUT`（运动限制）
+
+### 6.4 保护相关寄存器 RID
+
+- `0 UV_Value`（欠压）
+- `2 OT_Value`（过温）
+- `3 OC_Value`（过流）
+- `29 OV_Value`（过压）
+
+### 6.5 Damiao 参数读写（专用 API）
+
+除了通用的 `get_register_*`/`write_register_*` 方法外，Damiao 电机还有专用参数访问方法：
+
+#### `damiao_get_param_f32(param_id: int, timeout_ms: int = 1000) -> float`
+
+按索引读取 Damiao float 参数。
+
+#### `damiao_get_param_u32(param_id: int, timeout_ms: int = 1000) -> int`
+
+按索引读取 Damiao 无符号 32 位整数参数。
+
+#### `damiao_write_param_f32(param_id: int, value: float) -> None`
+
+按索引写入 Damiao float 参数。
+
+#### `damiao_write_param_u32(param_id: int, value: int) -> None`
+
+按索引写入 Damiao 无符号 32 位整数参数。
+
+### 6.6 推荐调参流程
+
+1. 读取旧值：`get_register_f32(rid)` 或 `get_register_u32(rid)`。
+2. 写入新值：`write_register_f32(rid, value)` 或 `write_register_u32(rid, value)`。
+3. 回读确认。
+4. 持久化：`store_parameters()`。
+
+示例：
+
+```python
+from motorbridge import Controller, RID_PMAX
+
+with Controller("can0") as ctrl:
+    m = ctrl.add_damiao_motor(0x01, 0x11, "4340P")
+    ctrl.enable_all()
+
+    # 读取当前 PMAX
+    old_pmax = m.get_register_f32(RID_PMAX, 500)
+    print(f"旧 PMAX: {old_pmax}")
+
+    # 写入新 PMAX
+    m.write_register_f32(RID_PMAX, 6.28)
+    new_pmax = m.get_register_f32(RID_PMAX, 500)
+    print(f"新 PMAX: {new_pmax}")
+
+    # 持久化
+    m.store_parameters()
+    m.close()
+```
+
+### 6.7 内置寄存器元数据使用
+
+```python
+from motorbridge import (
+    DAMIAO_RW_REGISTERS,
+    DAMIAO_HIGH_IMPACT_RIDS,
+    get_damiao_register_spec,
+    RID_CTRL_MODE,
+)
+
+# 打印所有可调寄存器与范围
+for rid in sorted(DAMIAO_RW_REGISTERS):
+    spec = DAMIAO_RW_REGISTERS[rid]
+    print(f"rid={rid:>2} {spec.variable:<10} type={spec.data_type} range={spec.range_str} desc={spec.description}")
+
+# 查询特定寄存器
+print(get_damiao_register_spec(RID_CTRL_MODE))
+
+# 列出强影响 RID
+print(DAMIAO_HIGH_IMPACT_RIDS)
+```
+
+### 6.8 Damiao 控制模式详解
+
+#### MIT（Mode.MIT）
+
+全参数混合阻抗控制。
+
+方法：`send_mit(pos, vel, kp, kd, tau)`
+
+参数：
+- `pos`：目标位置（rad）
+- `vel`：目标速度（rad/s）
+- `kp`：位置刚度增益（无量纲）
+- `kd`：速度阻尼增益（无量纲）
+- `tau`：前馈力矩（Nm）
+
+常用起步参数：`kp=2~10`、`kd=0.05~0.5`、`tau=0.1~1.0`。
+
+#### POS_VEL（Mode.POS_VEL）
+
+位置 + 速度上限控制。
+
+方法：`send_pos_vel(pos, vlim)`
+
+参数：
+- `pos`：目标位置（rad）
+- `vlim`：速度上限（rad/s）
+
+常用场景：先安全到位，再切其它模式。
+
+#### VEL（Mode.VEL）
+
+纯速度控制。
+
+方法：`send_vel(vel)`
+
+参数：
+- `vel`：目标速度（rad/s）
+
+常用场景：连续旋转、速度响应测试。
+
+#### FORCE_POS（Mode.FORCE_POS）
+
+位置 + 力矩/电流限幅控制。
+
+方法：`send_force_pos(pos, vlim, ratio)`
+
+参数：
+- `pos`：目标位置（rad）
+- `vlim`：速度上限（rad/s）
+- `ratio`：力矩限幅比例（0--1）。不是精确恒扭矩控制。
+
+常用场景：需要到位但不想"死顶"太狠。
+
+### 6.9 Damiao set_zero_position() 详细说明
+
+#### 命令语义
+
+`set_zero_position()` 将当前机械位置设为零点参考。**不会**让电机转回 0 位。底层发送 Damiao 置零命令帧（`FF FF FF FF FF FF FF FE`）。
+
+#### 内部时序
+
+Python API 签名为 `set_zero_position() -> None`，**不提供 `ms` 入参**。核心层内置固定 20 ms 稳定时间。
+
+#### 项目约束（重点）
+
+在本项目中，Damiao 电机的 `set_zero_position()` 前 **必须先 `disable()`**，尤其在 dm-serial 通道上。这可显著降低置零后寄存器读超时的风险。
+
+推荐顺序：
+
+1. `disable()`（或 `disable_all()`）
+2. `set_zero_position()`
+3. `enable()`（或 `enable_all()`）
+4. `ensure_mode(...)`
+5. `send_*()` 控制
+
+#### 触发异常后的软件恢复
+
+1. `disable()` -> `clear_error()` -> `enable()` -> 重试 `ensure_mode()`。
+2. 如果仍失败，先 `scan` 确认当前在线 ID。
+3. 若反馈帧有但寄存器读持续失败，再考虑设备侧重新上电。
+
+### 6.10 Damiao 标准执行流程
+
+1. 创建控制器并绑定电机：`Controller(...)` + `add_damiao_motor(...)`。
+2. 上电使能：`ctrl.enable_all()`。
+3. 切换/确认控制模式：`motor.ensure_mode(...)`。
+4. 按模式发送命令：`send_mit` / `send_pos_vel` / `send_vel` / `send_force_pos`。
+5. 按需读反馈：`request_feedback()` + `poll_feedback_once()` + `get_state()`。
+6. 结束失能：`motor.disable()` 或 `ctrl.disable_all()`。
+
+### 6.11 Damiao CLI 命令
+
+#### 扫描
+
+```bash
+motorbridge-cli scan \
+  --vendor damiao --channel can0 --model 4310 --start-id 0x01 --end-id 0x10
+```
+
+#### MIT 控制
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --mode mit --pos 0 --vel 0 --kp 8 --kd 0.2 --tau 0.3 --loop 100 --dt-ms 10
+```
+
+#### 维护
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --can-timeout-ms 1000 --set-zero 0
+```
+
+---
+
+## 7. RobStride 专用 API
+
+### 7.1 添加 RobStride 电机
+
+```python
+from motorbridge import Controller
+
+with Controller("can0") as ctrl:
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
+```
+
+RobStride 默认反馈 ID 为 `0xFD`（运行时可回退尝试 `0xFF`/`0xFE`）。
+
+### 7.2 robstride_ping
+
+```python
+motor.robstride_ping() -> tuple[int, int]
+```
+
+验证某个 `motor_id + feedback_id` 的连通性。返回 `(device_id, responder_id)`。
+
+```python
+with Controller("can0") as ctrl:
+    m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
+    device_id, responder_id = m.robstride_ping()
+    print(f"device_id={device_id}, responder_id={responder_id}")
+    m.close()
+```
+
+### 7.3 robstride_set_device_id
+
+```python
+motor.robstride_set_device_id(new_device_id: int) -> None
+```
+
+修改设备 ID。之后调用 `store_parameters()` 持久化。
+
+```python
+m.robstride_set_device_id(126)
+m.store_parameters()
+```
+
+### 7.4 RobStride 参数读取
+
+RobStride 提供类型化参数读取方法：
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `robstride_get_param_i8` | `robstride_get_param_i8(param_id: int, timeout_ms: int = 1000) -> int` | 读取有符号 8 位参数 |
+| `robstride_get_param_u8` | `robstride_get_param_u8(param_id: int, timeout_ms: int = 1000) -> int` | 读取无符号 8 位参数 |
+| `robstride_get_param_u16` | `robstride_get_param_u16(param_id: int, timeout_ms: int = 1000) -> int` | 读取无符号 16 位参数 |
+| `robstride_get_param_u32` | `robstride_get_param_u32(param_id: int, timeout_ms: int = 1000) -> int` | 读取无符号 32 位参数 |
+| `robstride_get_param_f32` | `robstride_get_param_f32(param_id: int, timeout_ms: int = 1000) -> float` | 读取 float 参数 |
+
+常用 RobStride 参数：
+- `0x7005` `run_mode`
+- `0x7016` `loc_ref`
+- `0x7017` `limit_spd`
+- `0x700A` `spd_ref`
+- `0x7019` `mechPos`
+- `0x701B` `mechVel`
+
+示例：
+
+```python
+with Controller("can0") as ctrl:
+    m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
+    pos = m.robstride_get_param_f32(0x7019, 200)
+    print(f"mechPos = {pos}")
+    m.close()
+```
+
+### 7.5 RobStride 参数写入
+
+| 方法 | 签名 | 说明 |
+|---|---|---|
+| `robstride_write_param_i8` | `robstride_write_param_i8(param_id: int, value: int) -> None` | 写入有符号 8 位参数 |
+| `robstride_write_param_u8` | `robstride_write_param_u8(param_id: int, value: int) -> None` | 写入无符号 8 位参数 |
+| `robstride_write_param_u16` | `robstride_write_param_u16(param_id: int, value: int) -> None` | 写入无符号 16 位参数 |
+| `robstride_write_param_u32` | `robstride_write_param_u32(param_id: int, value: int) -> None` | 写入无符号 32 位参数 |
+| `robstride_write_param_f32` | `robstride_write_param_f32(param_id: int, value: float) -> None` | 写入 float 参数 |
+
+示例：
+
+```python
+with Controller("can0") as ctrl:
+    m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
+    m.robstride_write_param_f32(0x700A, 0.3)
+    # 回读验证
+    print(m.robstride_get_param_f32(0x700A, 200))
+    m.close()
+```
+
+### 7.6 RobStride 模式映射
+
+| 统一模式 | RobStride 原厂映射 |
+|---|---|
+| `Mode.MIT` | 原厂 MIT 阻抗控制帧（`pos`/`vel`/`kp`/`kd`/`tau` 全有效） |
+| `Mode.POS_VEL` | 映射到原厂位置模式：`run_mode=1`、`loc_ref(0x7016)`、`limit_spd(0x7017)` |
+| `Mode.VEL` | 原厂速度模式：`run_mode=2`、`spd_ref(0x700A)` |
+| `Mode.FORCE_POS` | 不支持 |
+
+注意：RobStride 的力矩/电流控制仅通过参数级别（`robstride_write_param_*`）实现，无专用统一模式。
+
+### 7.7 RobStride 扫描（Python SDK）
+
+```python
+from motorbridge import Controller
+
+found = []
+with Controller("can0") as ctrl:
+    for mid in range(120, 131):
+        try:
+            m = ctrl.add_robstride_motor(mid, 0xFD, "rs-06")
+            try:
+                print(mid, m.robstride_ping())
+                found.append(mid)
+            finally:
+                m.close()
+        except Exception:
+            pass
+print("found:", found)
+```
+
+### 7.8 RobStride 置零序列
+
+```python
+from motorbridge import Controller
+
+with Controller("can0") as ctrl:
+    m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
+    m.disable()
+    m.set_zero_position()
+    m.store_parameters()
+    m.close()
+```
+
+置零后验证：
+
+```bash
+motorbridge-cli robstride-read-param \
+  --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --param-id 0x7019 --type f32 --timeout-ms 200
+```
+
+---
+
+## 8. 错误处理
+
+### 8.1 异常层级
+
+```
+MotorBridgeError (RuntimeError)
+  +-- AbiLoadError
+  +-- CallError
+```
+
+### 8.2 异常类
+
+#### `MotorBridgeError`
+
+`motorbridge` Python SDK 所有错误的基类。继承自 `RuntimeError`。
+
+#### `AbiLoadError`
+
+当 `libmotor_abi` 共享库无法找到或加载时抛出。错误消息列出所有搜索路径。
+
+#### `CallError`
+
+当 ABI 调用返回非零状态码时抛出。错误消息包含操作名称和 ABI 层返回的底层错误文本。
+
+### 8.3 常见错误模式
+
+```python
+from motorbridge import Controller, MotorBridgeError, AbiLoadError, CallError
+
+try:
+    with Controller("can0") as ctrl:
+        motor = ctrl.add_damiao_motor(0x01, 0x11, "4340P")
+        ctrl.enable_all()
+        motor.ensure_mode(Mode.MIT, 1000)
+except AbiLoadError as e:
+    print(f"库加载失败: {e}")
+except CallError as e:
+    print(f"API 调用失败: {e}")
+except MotorBridgeError as e:
+    print(f"MotorBridge 错误: {e}")
+```
+
+### 8.4 Damiao 错误恢复
+
+如果电机进入错误状态：
+
+1. `disable()` -> `clear_error()` -> `enable()` -> 重试 `ensure_mode()`。
+2. 如果仍失败，先扫描确认电机在线且 ID 正确。
+3. 若反馈帧有但寄存器读持续失败，考虑重新上电设备。
+
+---
+
+## 9. 统一模式映射
+
+| 统一模式 | Damiao | RobStride | Hexfellow | MyActuator | HighTorque |
+|---|---|---|---|---|---|
+| `Mode.MIT` | 原厂 MIT | 原厂 MIT | 原厂 MIT（模式 5） | 不支持 | 映射到原厂 pos+vel+tqe |
+| `Mode.POS_VEL` | 原厂 POS_VEL | 映射到原厂位置模式（`run_mode=1` + `limit_spd(0x7017)` + `loc_ref(0x7016)`） | 原厂 POS_VEL（模式 1） | 位置设定值流程 | 映射到原厂 pos+vel+tqe |
+| `Mode.VEL` | 原厂 VEL | 原厂速度 | 不支持 | 原厂速度设定值 | 原厂速度命令 |
+| `Mode.FORCE_POS` | 原厂 FORCE_POS | 不支持 | 不支持 | 不支持 | 映射到原厂 pos+vel+tqe |
+
+---
+
+## 10. 示例程序
+
+`motorbridge` 包附带示例脚本，位于 `bindings/python/examples/`。
+
+### Damiao 示例
+
+| 脚本 | 说明 |
+|---|---|
+| `python_wrapper_demo.py` | MIT 最小闭环演示 |
+| `full_modes_demo.py` | 四模式统一入口 |
+| `scan_ids_demo.py` | Damiao ID 扫描 |
+| `pos_ctrl_demo.py` | 单次位置目标 |
+| `multi_motor_ctrl_demo.py` | 多电机控制（`-id/-pos` 一一对应）+ SDK 每步耗时日志 |
+| `mit_pos_switch_demo.py` | 多电机模式切换测试（MIT -> POS_VEL） |
+| `pos_repl_demo.py` | 交互式位置控制 |
+| `pid_register_tune_demo.py` | 寄存器调参 |
+| `damiao_maintenance_demo.py` | 维护接口（清错、置零、超时、反馈） |
+| `damiao_register_rw_demo.py` | 寄存器 f32/u32 读写 + 存参 |
+| `damiao_dm_serial_demo.py` | Damiao 串口桥传输链路演示 |
+| `dm_serial_mode_switch_200_demo.py` | `dm-serial` 连续切换四模式（每模式可设循环次数，默认 200） |
+| `dm_serial_status_like_cli_demo.py` | `dm-serial` 查询当前模式 + 关键寄存器 + 实时状态（类 CLI 输出） |
+| `dm_serial_leader_monitor_demo.py` | `dm-serial` leader 监控（指定 ID 全状态上报 + 启动时全体使能） |
+
+### RobStride 示例
+
+| 脚本 | 说明 |
+|---|---|
+| `robstride_wrapper_demo.py` | Ping、速度、位置、MIT 演示 |
+
+### 运行示例（本地构建）
+
+```bash
+cd motorbridge
+cargo build -p motor_abi --release
+export PYTHONPATH=bindings/python/src
+export LD_LIBRARY_PATH=$PWD/target/release:${LD_LIBRARY_PATH}
+
+# Damiao MIT 演示
+python3 bindings/python/examples/python_wrapper_demo.py \
+  --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --pos 0 --vel 0 --kp 20 --kd 1 --tau 0 --loop 20 --dt-ms 20
+
+# RobStride ping 演示
+python3 bindings/python/examples/robstride_wrapper_demo.py \
+  --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD --mode ping
+
+# RobStride 速度演示
+python3 bindings/python/examples/robstride_wrapper_demo.py \
+  --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode vel --vel 0.3 --loop 40 --dt-ms 50
+```
+
+---
+
+## 完整 Damiao 调参总表
+
+完整调参与命令示例见：
+- [`motor_cli/DAMIAO_API.md`](../../../motorbridge/motor_cli/DAMIAO_API.md)
+- [`motor_cli/DAMIAO_API.zh-CN.md`](../../../motorbridge/motor_cli/DAMIAO_API.zh-CN.md)

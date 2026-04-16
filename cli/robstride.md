@@ -1,0 +1,322 @@
+# RobStride CLI Sub-Commands
+
+Practical and complete reference for RobStride control, parameter access, and current capability boundaries in `motorbridge` via the `motor_cli` binary.
+
+> Chinese version: [robstride.zh-CN.md](robstride.zh-CN.md)
+
+**Related:** [CLI Reference](reference.md) | [snippets/channel-compat.md](../snippets/channel-compat.md)
+
+## Channel Compatibility
+
+> **Channel compatibility:** See [snippets/channel-compat.md](../snippets/channel-compat.md).
+
+## Supported Modes
+
+| Mode | Description |
+|---|---|
+| `ping` | Online probe / handshake |
+| `scan` | Probe IDs in range |
+| `enable` | Enable motor |
+| `disable` | Disable motor |
+| `mit` | MIT impedance control (`pos/vel/kp/kd/tau`) |
+| `pos-vel` | Position-velocity control (mapped to native Position) |
+| `vel` | Velocity control |
+| `read-param` | Read a parameter by ID |
+| `write-param` | Write a parameter by ID |
+
+Unified "big-four" mapping status:
+
+| Unified capability | RobStride status | Notes |
+|---|---|---|
+| `MIT` | supported | native operation-control frame |
+| `POS_VEL` | supported | mapped to `run_mode=1` + `0x7017/0x7016` |
+| `VEL` | supported | mapped to `run_mode=2` + `0x700A` |
+| `TORQUE/CURRENT` | parameter-level only | no first-class high-level mode yet; use `write-param` (`iq_ref`, limits) |
+
+## 1) Common Device Parameters
+
+| Parameter | Meaning | Typical value |
+|---|---|---|
+| `channel` | CAN interface name | `can0` |
+| `model` | RobStride model string | `rs-00`, `rs-06` |
+| `motor-id` | Device ID | e.g. `127` |
+| `feedback-id` | Host/feedback ID used in command frame | usually `0xFD` |
+| `loop` | Send cycles for periodic control | `20`~`100` |
+| `dt-ms` | Send interval per cycle | `20`~`50` |
+
+## 2) Ping
+
+Online probe and handshake with the motor.
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode ping
+```
+
+## 3) Scan
+
+Probe IDs in a range to discover RobStride motors.
+
+### Arguments
+
+| Argument | Type | Default | Notes |
+|---|---|---|---|
+| `--start-id` | u16 | `1` | Scan start, 1..255 |
+| `--end-id` | u16 | `255` | Scan end, 1..255 |
+| `--manual-vel` | f32 | `0.2` | Blind pulse velocity (scan fallback) |
+| `--manual-ms` | u64 | `200` | Pulse duration per ID (scan fallback) |
+| `--manual-gap-ms` | u64 | `200` | Gap between IDs (scan fallback) |
+
+### Scan Behavior Details
+
+- Fast pass: ping + query-parameter probe per ID.
+- If no ping replies in full range, CLI auto-falls back to blind pulse probing.
+
+### Example
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --mode scan --start-id 1 --end-id 255
+```
+
+## 4) Enable / Disable
+
+```bash
+# Enable
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode enable --loop 1
+
+# Disable
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode disable --loop 1
+```
+
+No extra control arguments are required for `enable`/`disable`.
+
+## 5) MIT Mode
+
+MIT impedance control using the native operation-control frame.
+
+### Arguments
+
+| Argument | Type | Default |
+|---|---|---|
+| `--pos` | f32 | `0` |
+| `--vel` | f32 | `0` |
+| `--kp` | f32 | `8` |
+| `--kd` | f32 | `0.2` |
+| `--tau` | f32 | `0` |
+
+MIT mapping details (unified -> native):
+
+- Effective inputs: `--pos`, `--vel`, `--kp`, `--kd`, `--tau` (all are used).
+- Units:
+  - `--pos`: `rad`
+  - `--vel`: `rad/s`
+  - `--tau`: `Nm`
+  - `--kp`, `--kd`: MIT loop gains
+
+### Example
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode mit --pos 0 --vel 0 --kp 0.5 --kd 0.2 --tau 0 --loop 40 --dt-ms 50
+```
+
+## 6) Position Mode (unified `pos-vel` mapping)
+
+Position control mapped to native RobStride Position path.
+
+### Arguments
+
+| Argument | Type | Default | Notes |
+|---|---|---|---|
+| `--pos` | f32 | `0` | Target position in rad |
+| `--vlim` | f32 | `1.0` | Velocity limit in rad/s |
+| `--kp` / `--loc-kp` | f32 | none (optional) | Position loop Kp |
+
+Notes:
+
+- Unified `pos-vel` maps to native RobStride Position path:
+  - `run_mode=1` (Position)
+  - write `0x7017` (`limit_spd`) from `--vlim`
+  - optional write `0x701E` (`loc_kp`) from `--loc-kp` or `--kp`
+  - write `0x7016` (`loc_ref`) from `--pos`
+- `--vel`, `--kd`, and `--tau` do not belong to native Position mode and are ignored in `--mode pos-vel`. CLI prints a warning if provided.
+
+### Example
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode pos-vel --pos 1.0 --vlim 1.5 --loop 1 --dt-ms 20
+```
+
+## 7) Velocity Mode
+
+Velocity control mapped to native RobStride velocity path.
+
+### Arguments
+
+| Argument | Type | Default |
+|---|---|---|
+| `--vel` | f32 | `0` |
+
+### Example
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode vel --vel 0.3 --loop 40 --dt-ms 50
+```
+
+## 8) Read Parameter (`read-param`)
+
+Read a single parameter by its parameter ID.
+
+### Arguments
+
+| Argument | Type | Default | Notes |
+|---|---|---|---|
+| `--param-id` | u16 | required | Parameter ID to read |
+
+### Example
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode read-param --param-id 0x7019
+```
+
+## 9) Write Parameter (`write-param`)
+
+Write a parameter by its parameter ID.
+
+### Arguments
+
+| Argument | Type | Default | Notes |
+|---|---|---|---|
+| `--param-id` | u16 | required | Parameter ID to write |
+| `--param-value` | typed | required | Value parsed by parameter metadata |
+
+### Example
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode write-param --param-id 0x700A --param-value 0.3
+```
+
+## 10) Update Device ID
+
+Set a new device ID for the motor.
+
+### Arguments
+
+| Argument | Type | Default | Notes |
+|---|---|---|---|
+| `--set-motor-id` | u16 opt | none | New device ID |
+| `--store` | `0/1` | `1` | Save parameters |
+
+### Example
+
+```bash
+# Old ID 127 -> New ID 126, and persist
+motor_cli \
+  --vendor robstride --channel can0 --model rs-06 \
+  --motor-id 127 --feedback-id 0xFD --set-motor-id 126 --store 1
+```
+
+Raw protocol alignment (with official upper software):
+
+- Set-ID frame uses `comm_type=7`.
+- Extended ID format in this command path is:
+  - `0x07 [new_id] [host_id] [old_id]`
+  - example (`old_id=1`, `new_id=11`, `host_id=0xFD`): `0x070BFD01`
+- Data payload uses the latest ping UUID token when available (fallback to zeros if ping token is unavailable).
+
+## 11) Zero Calibration (experimental)
+
+Experimental zero calibration sequence.
+
+```bash
+motor_cli \
+  --vendor robstride --channel can0 --model rs-00 --motor-id 11 --feedback-id 0xFD \
+  --mode zero --zero-exp 1 --store 1
+```
+
+Note: RobStride zero calibration is still inconsistent. The experimental `zero` sequence may complete transport-level send/ack but device-side `zero_sta`/`mechPos` verification can fail. Treat zero calibration as unresolved until firmware-specific sequence is fully matched.
+
+## 12) Two Usage Paths (Unified Wrapper / Native Params)
+
+- **Unified wrapper path** (recommended for app-layer control):
+  - `--mode mit`
+  - `--mode pos-vel` (already mapped to native Position)
+  - `--mode vel`
+- **Native path** (debug/protocol-level verification):
+  - `--mode read-param --param-id ...`
+  - `--mode write-param --param-id ... --param-value ...`
+  - Typical sequence: write `run_mode(0x7005)` first, then write target params (`loc_ref/spd_ref`, etc.)
+
+## 13) Frequently Used Parameter IDs
+
+| Param ID | Name | Type | Meaning |
+|---|---|---|---|
+| `0x7005` | `run_mode` | `i8` | Control mode selector |
+| `0x700A` | `spd_ref` | `f32` | Target velocity |
+| `0x7019` | `mechPos` | `f32` | Mechanical position |
+| `0x701B` | `mechVel` | `f32` | Mechanical velocity |
+| `0x701C` | `VBUS` | `f32` | Bus voltage |
+
+## 14) Python Binding Sample
+
+```python
+from motorbridge import Controller
+
+with Controller("can0") as ctrl:
+    m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
+    print(m.robstride_ping())
+    print(m.robstride_get_param_f32(0x7019, 500))
+    m.robstride_write_param_f32(0x700A, 0.3)
+    m.close()
+```
+
+## 15) Protocol Communication Coverage
+
+`motorbridge` currently exposes or uses these RobStride protocol communication types:
+
+- **In use directly:** `0(GET_DEVICE_ID)`, `1(OPERATION_CONTROL)`, `3(ENABLE)`, `4(DISABLE)`, `6(SET_ZERO_POSITION)`, `7(SET_DEVICE_ID)`, `17(READ_PARAMETER)`, `18(WRITE_PARAMETER)`, `22(SAVE_PARAMETERS)`
+- **Receive/parse path:** `2(OPERATION_STATUS)`, `21(FAULT_REPORT)`
+- **Present in protocol constants but not yet first-class high-level APIs:** `23(SET_BAUDRATE)`, `24(ACTIVE_REPORT)`, `25(SET_PROTOCOL)`
+
+## 16) WS Gateway JSON Examples
+
+```json
+{"op":"set_target","vendor":"robstride","channel":"can0","model":"rs-06","motor_id":127,"feedback_id":253}
+{"op":"robstride_ping","timeout_ms":200}
+{"op":"robstride_read_param","param_id":28697,"type":"f32","timeout_ms":200}
+{"op":"robstride_write_param","param_id":28682,"type":"f32","value":0.3,"verify":true}
+{"op":"vel","vel":0.3,"continuous":true}
+{"op":"mit","pos":0.0,"vel":0.0,"kp":0.5,"kd":0.2,"tau":0.0,"continuous":true}
+{"op":"scan","vendor":"robstride","start_id":1,"end_id":255,"feedback_ids":"0xFD,0xFF,0xFE","timeout_ms":120}
+```
+
+## 17) Known Issues
+
+1. **`pos-vel` parameter effectiveness** can be inconsistent on some firmware:
+   - `--vlim` (`0x7017`) and `--kp`/`loc_kp` (`0x701E`) may read back as written but show weak/no visible effect.
+   - MIT path is currently more reliable.
+2. **RobStride zero calibration** is still inconsistent:
+   - Experimental `zero` sequence may complete transport-level send/ack but device-side `zero_sta`/`mechPos` verification can fail.
+   - Treat zero calibration as unresolved until firmware-specific sequence is fully matched.
+
+## 18) Safety Notes
+
+- Start with small velocity and short loop count.
+- Confirm CAN wiring/termination and interface state before stress tests.
+- Prefer ping/read-param verification before long periodic control.
+- Keep emergency stop path available.

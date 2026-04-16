@@ -1,0 +1,47 @@
+# Channel Compatibility (Canonical Reference)
+
+This is the single source of truth for channel/transport configuration across the project.
+
+## Linux SocketCAN
+
+- Uses interface names directly: `can0`, `can1`, `slcan0`
+- Do NOT append bitrate in channel name (e.g. `can0@1000000` is invalid on Linux)
+- Configure bitrate at interface bring-up time
+
+### slcan bring-up
+
+```bash
+sudo slcand -o -c -s8 /dev/ttyUSB0 slcan0
+sudo ip link set slcan0 up
+```
+
+## Windows (PCAN)
+
+- `can0` maps to `PCAN_USBBUS1`
+- `can1` maps to `PCAN_USBBUS2`
+- Optional bitrate suffix: `can0@1000000`
+- Requires PEAK PCAN driver + PCAN-Basic runtime (`PCANBasic.dll`)
+
+## Damiao Serial Bridge
+
+- Transport: `dm-serial`
+- Default: `/dev/ttyACM0` at `921600` baud
+- Damiao only, cross-platform (Linux/Windows)
+
+## CAN-FD (Hexfellow)
+
+- Use `Controller::from_socketcanfd(channel)` or CLI `--transport socketcanfd`
+- Required for Hexfellow devices
+
+## Quick Reference
+
+| Transport | Channel format | CLI flag |
+|-----------|---------------|----------|
+| SocketCAN | `can0` | `--transport socketcan` |
+| CAN-FD | `can0` | `--transport socketcanfd` |
+| PCAN (Windows) | `can0@1000000` | default |
+| dm-serial | N/A | `--transport dm-serial --serial-port /dev/ttyACM0` |
+
+## Troubleshooting
+
+For full diagnostics, see [guides/can-debugging.md](../guides/can-debugging.md).

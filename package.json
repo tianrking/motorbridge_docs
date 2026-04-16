@@ -1,0 +1,13 @@
+{
+  "name": "motorbridge-docs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx mintlify dev --port 3333",
+    "build": "npx mintlify build",
+    "preview": "npx mintlify preview"
+  },
+  "devDependencies": {
+    "mintlify": "^4"
+  }
+}
