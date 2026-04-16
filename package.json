@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx mintlify dev --port 3333",
-    "build": "npx mintlify build",
+    "build": "npx mintlify export -o export.zip && unzip -o export.zip -d dist",
     "preview": "npx mintlify preview"
   },
   "devDependencies": {
