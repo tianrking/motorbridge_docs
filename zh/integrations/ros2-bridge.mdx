@@ -1,39 +1,43 @@
-# ROS2 Bridge
+---
+title: ROS2 桥接
+---
 
-> **Channel compatibility note**: See [shared/channel-compat.md](../shared/channel-compat.md) for the canonical reference on channel/transport configuration across all platforms.
+# ros2_bridge
 
-ROS2 bridge for `motorbridge` using Python (`rclpy`) + existing `motorbridge` Python SDK bindings.
+> **通道兼容说明**：请参阅 [shared/channel-compat.md](../../shared/channel-compat.md) 获取跨平台通道/传输配置的权威参考。
+
+基于 Python（`rclpy`）+ `motorbridge` Python SDK 的 ROS2 桥接。
 
 ```mermaid
 flowchart LR
-  CMD["/motorbridge/cmd (JSON)"] --> NODE["ros2_bridge node"]
+  CMD["/motorbridge/cmd (JSON)"] --> NODE["ros2_bridge 节点"]
   NODE --> SDK["motorbridge Python SDK"]
-  SDK --> MOTOR["Motor over CAN"]
+  SDK --> MOTOR["CAN 总线电机"]
   MOTOR --> SDK
   SDK --> NODE
   NODE --> STATE["/motorbridge/state"]
   NODE --> EVT["/motorbridge/event"]
 ```
 
-## Features
+## 功能
 
-- Subscribe command topic and execute motor commands
-- Publish motor state periodically
-- Expose operational commands via same command topic:
+- 订阅命令 topic 并执行电机指令
+- 周期发布电机状态
+- 通过同一命令 topic 支持运维操作：
   - `scan`
   - `set_id`
   - `verify`
 
 ## Topics
 
-- Subscribed: `/motorbridge/cmd` (`std_msgs/String`, JSON payload)
-- Published:
-  - `/motorbridge/state` (`std_msgs/String`, JSON payload)
-  - `/motorbridge/event` (`std_msgs/String`, JSON payload)
+- 订阅：`/motorbridge/cmd`（`std_msgs/String`，JSON）
+- 发布：
+  - `/motorbridge/state`（`std_msgs/String`，JSON）
+  - `/motorbridge/event`（`std_msgs/String`，JSON）
 
-## Command JSON
+## 命令 JSON
 
-Control:
+控制命令示例：
 
 ```json
 {"op":"enable"}
@@ -44,7 +48,7 @@ Control:
 {"op":"force_pos","pos":0.8,"vlim":2.0,"ratio":0.3,"continuous":true}
 ```
 
-Calibration:
+标定命令示例：
 
 ```json
 {"op":"scan","start_id":1,"end_id":16,"feedback_base":16,"timeout_ms":100}
@@ -52,14 +56,14 @@ Calibration:
 {"op":"verify","motor_id":5,"feedback_id":21,"timeout_ms":1000}
 ```
 
-## Run
+## 运行
 
-Prerequisites:
+前置：
 
-- ROS2 installed (`rclpy`, `std_msgs`)
-- `motorbridge` Python package importable
+- 已安装 ROS2（`rclpy`、`std_msgs`）
+- 可导入 `motorbridge` Python 包
 
-From repo root:
+在仓库根目录执行：
 
 ```bash
 PYTHONPATH=bindings/python/src:$PYTHONPATH \
@@ -67,7 +71,7 @@ python3 integrations/ros2_bridge/python/motorbridge_ros2_bridge.py \
   --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
 ```
 
-## Publish command examples
+## 命令发布示例
 
 ```bash
 ros2 topic pub --once /motorbridge/cmd std_msgs/msg/String '{data: "{\"op\":\"enable\"}"}'
@@ -75,7 +79,7 @@ ros2 topic pub --once /motorbridge/cmd std_msgs/msg/String '{data: "{\"op\":\"ve
 ros2 topic pub --once /motorbridge/cmd std_msgs/msg/String '{data: "{\"op\":\"scan\",\"start_id\":1,\"end_id\":16}"}'
 ```
 
-## Notes
+## 说明
 
-- `continuous=true` means command is resent at each timer tick (`--dt-ms`).
-- `enable/disable/scan/set_id/verify` are one-shot operations.
+- `continuous=true` 表示每个定时周期（`--dt-ms`）都会持续发送该控制命令。
+- `enable/disable/scan/set_id/verify` 为一次性操作。

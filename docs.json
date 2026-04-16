@@ -55,7 +55,7 @@
             "pages": [
               "sdk/python/reference",
               "sdk/python/examples",
-              "sdk/python/robstride.zh-CN"
+              "sdk/python/robstride"
             ]
           },
           {
@@ -84,8 +84,8 @@
             "group": "Devices",
             "pages": [
               "devices/supported-devices",
-              "devices/hightorque-protocol.zh-CN",
-              "devices/operation-manual.zh-CN"
+              "devices/hightorque-protocol",
+              "devices/operation-manual"
             ]
           },
           {

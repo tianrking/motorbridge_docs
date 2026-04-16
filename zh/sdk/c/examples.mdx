@@ -1,0 +1,72 @@
+---
+title: C ABI 示例
+---
+
+# C ABI 示例
+
+For channel compatibility notes (PCAN, slcan, CAN-FD, Damiao serial bridge), see [Channel Compatibility](../../../shared/channel-compat.md).
+
+这里是直接调用 `motor_abi` 的 C 示例。
+
+> English version: [examples.md](examples.md)
+
+## 文件
+
+- `c_abi_demo.c`: Damiao + RobStride 的统一示例
+- `hexfellow_canfd_demo.c`: Hexfellow CAN-FD 示例（仅 `mit` / `pos-vel`）
+
+覆盖范围:
+
+- Damiao: `enable`、`disable`、`mit`、`pos-vel`、`vel`、`force-pos`
+- RobStride: `ping`、`enable`、`disable`、`mit`、`pos-vel`、`vel`、`read-param`、`write-param`
+  - 说明：力矩/电流仅参数级可用（通过 `write-param` 写 `iq_ref`/限幅参数），不是统一高层模式
+- Hexfellow（仅 CAN-FD）: `mit`、`pos-vel`
+
+## 构建
+
+```bash
+cargo build -p motor_abi --release
+cc examples/c/c_abi_demo.c -I motor_abi/include -L target/release -lmotor_abi -o c_abi_demo
+cc examples/c/hexfellow_canfd_demo.c -I motor_abi/include -L target/release -lmotor_abi -o hexfellow_canfd_demo
+LD_LIBRARY_PATH=target/release ./c_abi_demo --help
+```
+
+## 示例
+
+Damiao MIT:
+
+```bash
+LD_LIBRARY_PATH=target/release ./c_abi_demo \
+  --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --mode mit --pos 0 --vel 0 --kp 20 --kd 1 --tau 0 --loop 50 --dt-ms 20
+```
+
+RobStride ping:
+
+```bash
+LD_LIBRARY_PATH=target/release ./c_abi_demo \
+  --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
+```
+
+RobStride 读取位置参数:
+
+```bash
+LD_LIBRARY_PATH=target/release ./c_abi_demo \
+  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --mode read-param --param-id 0x7019 --param-type f32
+```
+
+RobStride 低增益 MIT:
+
+```bash
+LD_LIBRARY_PATH=target/release ./c_abi_demo \
+  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --mode mit --pos 0 --vel 0 --kp 0.5 --kd 0.2 --tau 0 --loop 20 --dt-ms 50
+```
+
+Hexfellow（仅 CAN-FD）:
+
+```bash
+LD_LIBRARY_PATH=target/release ./hexfellow_canfd_demo \
+  --channel can0 --motor-id 0x01 --feedback-id 0x00 --mode mit --loop 20 --dt-ms 50
+```
