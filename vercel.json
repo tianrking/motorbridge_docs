@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npx mintlify export -o export.zip && unzip -o export.zip -d dist",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": null
+}

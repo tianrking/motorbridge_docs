@@ -129,7 +129,7 @@
           {
             "group": "Reference",
             "pages": [
-              "snippets/channel-compat"
+              "shared/channel-compat"
             ]
           }
         ]
@@ -246,7 +246,7 @@
           {
             "group": "参考",
             "pages": [
-              "snippets/channel-compat"
+              "shared/channel-compat"
             ]
           }
         ]
