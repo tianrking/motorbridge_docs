@@ -39,7 +39,7 @@ FID=0xFD
 
 ### 0.3 默认值与原厂协议关系（总览）
 
-- 统一默认反馈 ID：`0xFD`（运行时可回退尝试 `0xFF/0xFE`）。
+- 统一默认反馈 ID：`0xFD`；`feedback_id` / `host_id` 是上位机侧 ID，不是电机 `device_id`。
 - 统一模式与原厂语义映射：
   - `mit` -> 原厂 MIT/阻抗控制帧（`pos/vel/kp/kd/tau` 全有效）。
   - `pos-vel` -> 原厂位置流程：`run_mode=1`，`loc_ref(0x7016)`，`limit_spd(0x7017)`。
@@ -60,8 +60,9 @@ FID=0xFD
   - CLI：命令行参数入口（`--mode ...`）。
   - SDK：先 `Controller("can0")`，再 `add_robstride_motor(motor_id, feedback_id, model)`。
 - 例外覆盖面：
-  - Python CLI 目前无 RobStride 专用 set-id 子命令；
-  - set-id 建议用 Core CLI 或 SDK API。
+  - Python CLI 已支持 RobStride `id-set`，但只修改 `device_id`；
+  - `feedback_id` / `host_id` 是上位机侧 ID，不是电机 ID。
+  - ID 范围会显式校验：`device_id/motor_id/new_motor_id` 为 `1..255`，`feedback_id/host_id` 为 `0..255`，避免底层 `u8`/`ctypes` 静默截断。
 
 ## 1）扫描（scan）
 
@@ -70,9 +71,11 @@ FID=0xFD
 
 参数有效性：
 - 有效：`start-id/end-id/feedback-ids/param-timeout-ms`。
+- `feedback-ids` 是 host_id 列表，范围 `0..255`，不是电机 ID。
+- Python CLI 扫描会通过指定 host_id 的 ABI helper 精确探测每个 `feedback-ids`；非法 host_id 会直接报错，不会静默回退。
 
 默认值：
-- 推荐 `feedback-ids=0xFD`（或完整回退列表）。
+- 默认完整列表：`feedback-ids=0xFD,0xFF,0xFE,0x00,0xAA`。
 
 原厂协议对应：
 - 先走 ping 探测；必要时走参数读取探测。
@@ -411,7 +414,7 @@ with Controller("can0") as ctrl:
 
 参数有效性：
 - Core CLI：`--set-motor-id`、`--store`。
-- Python CLI：当前无 RobStride 专用改 ID 子命令。
+- Python CLI：`id-set --vendor robstride --new-motor-id ... --store ... --verify ...`。
 - Python SDK：`robstride_set_device_id()` + `store_parameters()`。
 
 默认值：
@@ -440,7 +443,7 @@ from motorbridge import Controller
 
 with Controller("can0") as ctrl:
     m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
-    m.robstride_set_device_id(126)
+m.robstride_set_device_id(126)
     m.store_parameters()
     m.close()
 ```

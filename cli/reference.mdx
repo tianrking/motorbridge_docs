@@ -71,7 +71,7 @@ Current status:
 | Set feedback ID | Yes (`--set-feedback-id`) | No (host id is configured by `--feedback-id`) |
 
 Notes:
-- RobStride default `--feedback-id` is `0xFD` and probes `0xFF/0xFE` as fallback.
+- RobStride default `--feedback-id` is `0xFD`; scan defaults to host-id candidates `0xFD,0xFF,0xFE,0x00,0xAA`.
 - RobStride `pos-vel` ignores `--vel/--kd/--tau` by design (warning only, no hard error).
 
 ## 1. Argument Parsing Rules
@@ -225,10 +225,11 @@ For detailed register tuning and mode parameters, see [damiao.md](damiao.md).
 |---|---|---|---|---|
 | `--start-id` | u16 | `1` | scan | Scan start, 1..255 |
 | `--end-id` | u16 | `255` | scan | Scan end, 1..255 |
+| `--feedback-ids` | csv u16 | `0xFD,0xFF,0xFE,0x00,0xAA` | scan | RobStride host_id candidates, 0..255; not motor IDs |
 | `--manual-vel` | f32 | `0.2` | scan fallback | Blind pulse velocity |
 | `--manual-ms` | u64 | `200` | scan fallback | Pulse duration per ID |
 | `--manual-gap-ms` | u64 | `200` | scan fallback | Gap between IDs |
-| `--set-motor-id` | u16 opt | none | id-set flow | Set device ID |
+| `--set-motor-id` | u16 opt | none | id-set flow | Set device ID, 1..255 |
 | `--store` | `0/1` | `1` | id-set flow | Save parameters |
 | `--param-id` | u16 | required for param modes | read/write param | Parameter ID |
 | `--param-value` | typed | required for write | write-param | Parsed by parameter metadata |

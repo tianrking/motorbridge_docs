@@ -666,7 +666,7 @@ with Controller("can0") as ctrl:
     motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
 ```
 
-RobStride 默认反馈 ID 为 `0xFD`（运行时可回退尝试 `0xFF`/`0xFE`）。
+RobStride 默认反馈 ID 为 `0xFD`。`feedback_id` / `host_id` 是上位机侧地址，不是电机 `device_id`。
 
 ### 7.2 robstride_ping
 
@@ -760,6 +760,8 @@ with Controller("can0") as ctrl:
 注意：RobStride 的力矩/电流控制仅通过参数级别（`robstride_write_param_*`）实现，无专用统一模式。
 
 ### 7.7 RobStride 扫描（Python SDK）
+
+RobStride `motor_id` / `device_id` 会校验为 `1..255`；`feedback_id` / `host_id` 会校验为 `0..255`。CLI 扫描会通过指定 host_id 的 ABI helper 精确探测每个 `--feedback-ids`；非法 host_id 会直接报错，不会静默回退。
 
 ```python
 from motorbridge import Controller

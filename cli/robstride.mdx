@@ -219,7 +219,7 @@ Set a new device ID for the motor.
 
 | Argument | Type | Default | Notes |
 |---|---|---|---|
-| `--set-motor-id` | u16 opt | none | New device ID |
+| `--set-motor-id` | u16 opt | none | New device ID, 1..255 |
 | `--store` | `0/1` | `1` | Save parameters |
 
 ### Example
@@ -234,6 +234,8 @@ motor_cli \
 Raw protocol alignment (with official upper software):
 
 - Set-ID frame uses `comm_type=7`.
+- This changes the RobStride `device_id` only; it does not change `feedback_id` / `host_id`.
+- `--set-motor-id` / Python CLI `--new-motor-id` is validated as `1..255`; out-of-range values are rejected instead of being truncated.
 - Extended ID format in this command path is:
   - `0x07 [new_id] [host_id] [old_id]`
   - example (`old_id=1`, `new_id=11`, `host_id=0xFD`): `0x070BFD01`

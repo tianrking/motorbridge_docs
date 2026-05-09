@@ -664,7 +664,7 @@ with Controller("can0") as ctrl:
     motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
 ```
 
-Default feedback ID for RobStride is `0xFD` (runtime can fallback probe `0xFF`/`0xFE`).
+Default feedback ID for RobStride is `0xFD`. `feedback_id` / `host_id` is host-side addressing, not the motor `device_id`.
 
 ### 7.2 robstride_ping
 
@@ -758,6 +758,8 @@ with Controller("can0") as ctrl:
 Note: Torque/current control for RobStride is parameter-level only (`robstride_write_param_*`), not a dedicated unified mode.
 
 ### 7.7 RobStride Scan (Python SDK)
+
+RobStride `motor_id` / `device_id` is validated as `1..255`; `feedback_id` / `host_id` is validated as `0..255`. CLI scan probes each listed `--feedback-ids` host_id exactly through host-id-specific ABI helpers, so invalid host IDs are rejected instead of silently falling back.
 
 ```python
 from motorbridge import Controller

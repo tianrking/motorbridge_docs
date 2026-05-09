@@ -33,6 +33,15 @@ title: 测试指南
 cargo test --workspace --all-targets
 ```
 
+## 发布测试记录
+
+每次准备发版时，都应该在代码仓库新增一份可重复执行的 release test note。它需要覆盖 core crate、
+Rust `motor_cli`、C ABI、Python binding/CLI、硬件在环命令，以及改 ID、写零点等危险命令边界。
+
+- 当前版本：`motorbridge` 仓库中的 `release_test_notes/0.2.6.md`。
+- 对 RobStride，发布测试记录必须明确验证 `motor_id/device_id` 与 `feedback_id/host_id` 不是同一个概念，
+  并验证 scan 会精确使用用户传入的 host ID 候选项。
+
 ## 本地建议质量门禁
 
 ```bash

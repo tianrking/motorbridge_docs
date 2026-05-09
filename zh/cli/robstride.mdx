@@ -223,7 +223,7 @@ motor_cli \
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `--set-motor-id` | u16 可选 | 无 | 新设备 ID |
+| `--set-motor-id` | u16 可选 | 无 | 新设备 ID，范围 1..255 |
 | `--store` | `0/1` | `1` | 保存参数 |
 
 ### 示例
@@ -238,6 +238,8 @@ motor_cli \
 与上位机抓包对齐的报文说明：
 
 - 改 ID 使用 `comm_type=7`。
+- 该操作只修改 RobStride `device_id`，不会修改 `feedback_id` / `host_id`。
+- `--set-motor-id` / Python CLI `--new-motor-id` 会校验为 `1..255`；超范围值会直接报错，不会被截断。
 - 该路径下扩展 ID 组成为：
   - `0x07 [new_id] [host_id] [old_id]`
   - 例如（`old_id=1`、`new_id=11`、`host_id=0xFD`）：`0x070BFD01`

@@ -28,6 +28,16 @@ This project currently focuses on deterministic unit tests for protocol and pars
 cargo test --workspace --all-targets
 ```
 
+## Release Test Notes
+
+Every release should add a repeatable test note in the code repository. It should cover core crates,
+Rust `motor_cli`, C ABI, Python binding/CLI, hardware-in-the-loop commands, and dangerous command
+boundaries such as ID changes or zero-offset writes.
+
+- Current version: `release_test_notes/0.2.6.md` in the `motorbridge` repository.
+- For RobStride, the release note must explicitly verify that `motor_id/device_id` is separate from
+  `feedback_id/host_id`, and that scan probes the requested host IDs exactly.
+
 ## Recommended Local Quality Gate
 
 ```bash
