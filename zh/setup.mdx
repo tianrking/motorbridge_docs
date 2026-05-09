@@ -185,11 +185,13 @@ python3 -m pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6a1
 ### 从源码安装（Git）
 
 ```bash
-git clone https://github.com/your-org/dm_candrive.git
-cd dm_candrive/rust_dm/bindings/python
+git clone https://github.com/tianrking/motorbridge
+cd motorbridge
+cargo build -p motor_abi --release
+cd bindings/python
 
 # 以可编辑模式安装
-pip install -e ./src
+pip install -e .
 ```
 
 ### 设置库路径（仅源码构建）
@@ -198,14 +200,14 @@ pip install -e ./src
 
 ```bash
 # 设置 Python 路径到源码目录
-export PYTHONPATH=/path/to/dm_candrive/rust_dm/bindings/python/src
+export PYTHONPATH=/path/to/motorbridge/bindings/python/src
 
 # 设置 ABI 共享对象的库路径
-export LD_LIBRARY_PATH=/path/to/dm_candrive/target/release:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/path/to/motorbridge/target/release:${LD_LIBRARY_PATH}
 ```
 
 <Warning>
-源码构建需要 Rust 工具链并先编译 `libmotor_abi.so` 库。
+源码构建需要 Rust 工具链，并先用 `cargo build -p motor_abi --release` 编译 `libmotor_abi.so`。
 </Warning>
 
 ## 虚拟环境（推荐）

@@ -348,6 +348,44 @@ Ping RobStride 电机以获取设备和响应者 ID。
 
 ---
 
+### `robstride_ping_host_id(host_id, timeout_ms=500)`
+
+使用明确的主机侧 ID ping RobStride 电机。这是 v0.2.6 中用于扫描的精确路径，适合逐个探测多个 `feedback_id` / `host_id` 候选值。
+
+**参数：** `host_id: int`, `timeout_ms: int = 500`
+
+**返回：** `tuple[int, int]`，即 `(device_id, responder_id)`
+
+**抛出：** `host_id` 不在 `0..255` 时抛出 `ValueError`；通信失败或超时时抛出 `CallError`
+
+**示例：**
+
+```python
+device_id, responder_id = motor.robstride_ping_host_id(0xFD, timeout_ms=80)
+print(f"Device: {device_id}, Responder: {responder_id}")
+```
+
+---
+
+### `robstride_get_param_f32_host_id(param_id, host_id, timeout_ms=1000)`
+
+用指定主机侧 ID 读取 RobStride 的 `f32` 参数。主要用于扫描和调试流程，避免多个 host_id 候选之间隐式回退造成混淆。
+
+**参数：** `param_id: int`, `host_id: int`, `timeout_ms: int = 1000`
+
+**返回：** `float`
+
+**抛出：** `host_id` 不在 `0..255` 时抛出 `ValueError`；通信失败或超时时抛出 `CallError`
+
+**示例：**
+
+```python
+value = motor.robstride_get_param_f32_host_id(0x7019, 0xFD, timeout_ms=120)
+print(value)
+```
+
+---
+
 ### `robstride_set_device_id(new_device_id)`
 
 为 RobStride 电机设置新的设备 ID。

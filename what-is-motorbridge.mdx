@@ -4,7 +4,7 @@ title: What is MotorBridge?
 
 # What is MotorBridge?
 
-<Badge variant="primary">v0.1.9</Badge> <Badge variant="secondary">Rust Core</Badge> <Badge variant="outline">Python Binding</Badge>
+<Badge variant="primary">v0.2.6</Badge> <Badge variant="secondary">Rust Core</Badge> <Badge variant="outline">Python Binding</Badge>
 
 MotorBridge is a **unified motor control stack** with pluggable vendor drivers and a C ABI for cross-language integration.
 
@@ -89,7 +89,7 @@ Without MotorBridge, you need to:
 ## Project Structure
 
 ```
-rust_dm/
+motorbridge/
 ├── motor_core/           # Core abstractions (CanBus, MotorDevice)
 ├── motor_abi/            # C ABI / FFI layer (cdylib + staticlib)
 ├── motor_vendors/        # Vendor-specific protocol implementations

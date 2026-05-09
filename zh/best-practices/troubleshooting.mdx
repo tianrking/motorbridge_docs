@@ -319,11 +319,11 @@ while True:
 #### 原因 2：过度轮询
 
 ```python
-# 不好（v0.1.7+）
+# 不好（v0.2.6）
 while True:
     ctrl.poll_feedback_once()  # 不需要
 
-# 好（v0.1.7+）
+# 好（v0.2.6）
 while True:
     motor.request_feedback()
     state = motor.get_state()

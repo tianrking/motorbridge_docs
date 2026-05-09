@@ -181,11 +181,13 @@ Pre-release versions may be unstable. Do not use in production.
 ### From Source (Git)
 
 ```bash
-git clone https://github.com/your-org/dm_candrive.git
-cd dm_candrive/rust_dm/bindings/python
+git clone https://github.com/tianrking/motorbridge
+cd motorbridge
+cargo build -p motor_abi --release
+cd bindings/python
 
 # Install in editable mode
-pip install -e ./src
+pip install -e .
 ```
 
 ### Set Library Path (Source Builds Only)
@@ -194,14 +196,14 @@ If building from source without a packaged wheel:
 
 ```bash
 # Set Python path to source directory
-export PYTHONPATH=/path/to/dm_candrive/rust_dm/bindings/python/src
+export PYTHONPATH=/path/to/motorbridge/bindings/python/src
 
 # Set library path for ABI shared object
-export LD_LIBRARY_PATH=/path/to/dm_candrive/target/release:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/path/to/motorbridge/target/release:${LD_LIBRARY_PATH}
 ```
 
 <Warning>
-Source builds require the Rust toolchain and compiling the `libmotor_abi.so` library first.
+Source builds require the Rust toolchain and compiling the `libmotor_abi.so` library first with `cargo build -p motor_abi --release`.
 </Warning>
 
 ## Virtual Environment (Recommended)

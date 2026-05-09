@@ -14,7 +14,7 @@
   },
   "topbarCtaButton": {
     "type": "github",
-    "url": "https://github.com/your-org/dm_candrive"
+    "url": "https://github.com/tianrking/motorbridge"
   },
   "navigation": {
     "tabs": [
@@ -128,7 +128,7 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/your-org/dm_candrive"
+      "github": "https://github.com/tianrking/motorbridge"
     }
   },
   "search": {

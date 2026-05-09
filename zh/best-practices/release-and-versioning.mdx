@@ -29,6 +29,14 @@ motorbridge SDK 支持以下 Python 版本：
 
 SDK 遵循 [语义化版本](https://semver.org/)：
 
+当前源码对齐：
+
+| 组件 | 源文件 | 当前版本 |
+|------|--------|----------|
+| Git 发布标签 | `motorbridge` 仓库 | `v0.2.6` |
+| Python 包 | `bindings/python/pyproject.toml` | `0.2.6` |
+| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.2.3` |
+
 ```
 主版本.次版本.补丁版本[-预发布标识]
 
@@ -47,9 +55,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 类别 | 示例 | 稳定性 |
 |------|------|--------|
-| 稳定版 | `0.1.7` | 生产就绪 |
-| 预发布 | `0.2.0a1` | 仅测试 |
-| 开发版 | `0.2.0.dev1` | 内部使用 |
+| 稳定版 | `0.2.6` | 生产就绪 |
+| 预发布 | `0.2.6a1` | 仅测试 |
+| 开发版 | `0.2.6.dev1` | 内部使用 |
 
 ---
 
@@ -62,7 +70,7 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 pip install motorbridge
 
 # 特定版本
-pip install motorbridge==0.1.7
+pip install motorbridge==0.2.6
 
 # 升级
 pip install --upgrade motorbridge
@@ -72,7 +80,7 @@ pip install --upgrade motorbridge
 
 ```bash
 # 从 TestPyPI 安装
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.0a1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6a1
 ```
 
 <Warning>
@@ -83,10 +91,10 @@ pip install -i https://test.pypi.org/simple/ motorbridge==0.2.0a1
 
 ```bash
 # 从 Git 安装
-pip install git+https://github.com/your-org/dm_candrive.git@v0.1.7
+pip install git+https://github.com/tianrking/motorbridge@v0.2.6
 
 # 安装特定分支
-pip install git+https://github.com/your-org/dm_candrive.git@main
+pip install git+https://github.com/tianrking/motorbridge@main
 ```
 
 ---
@@ -121,12 +129,12 @@ print(f"motorbridge 版本: {importlib.metadata.version('motorbridge')}")
 保持在稳定版本，只升级修复 Bug：
 
 ```bash
-# 当前: 0.1.5
-# 升级到最新补丁: 0.1.7
+# 当前: 任意旧 0.x 版本
+# 升级到最新稳定版: 0.2.6
 pip install --upgrade motorbridge
 
 # 或特定补丁
-pip install motorbridge==0.1.7
+pip install motorbridge==0.2.6
 ```
 
 ### 早期采用者
@@ -135,13 +143,13 @@ pip install motorbridge==0.1.7
 
 ```bash
 # 开发环境
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.0b1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6b1
 
 # 测试代码
 python3 -m pytest tests/
 
 # 生产环境保持稳定
-pip install motorbridge==0.1.7
+pip install motorbridge==0.2.6
 ```
 
 ### 固定版本
@@ -150,14 +158,14 @@ pip install motorbridge==0.1.7
 
 ```requirements.txt
 # requirements.txt
-motorbridge==0.1.7
+motorbridge==0.2.6
 ```
 
 或使用版本约束：
 
 ```requirements.txt
 # 允许补丁更新，阻止次版本/主版本变更
-motorbridge>=0.1.7,<0.2.0
+motorbridge>=0.2.6,<0.3.0
 ```
 
 ---
@@ -180,22 +188,24 @@ motorbridge>=0.1.7,<0.2.0
 
 ## 变更日志
 
-### v0.1.7
+### v0.2.6
 
-- 默认启用后台反馈轮询
-- `poll_feedback_once()` 现为可选
-- 多电机同步 Bug 修复
+- 新增 RobStride host_id 精确 ABI：`motor_handle_robstride_ping_host_id` 和 `motor_handle_robstride_get_param_f32_host_id`
+- 新增 Python 包装方法：`robstride_ping_host_id(...)` 和 `robstride_get_param_f32_host_id(...)`
+- 统一校验 RobStride `motor_id` / `device_id` 为 `1..255`，`feedback_id` / `host_id` 为 `0..255`
+- Rust 与 Python 的 RobStride 扫描现在会精确探测每个 `--feedback-ids` host_id
+- Canonical Mintlify 文档迁移到同级 `motorbridge-docs` 仓库
 
-### v0.1.6
+### v0.2.5
 
-- 添加 RobStride 参数读写
-- 改进错误处理
-- 修复 CAN-FD 问题
+- Python CLI 新增 `id-set --vendor robstride`，支持 RobStride device_id 更新
+- Rust/Python RobStride 扫描默认 host_id 候选统一为 `0xFD,0xFF,0xFE,0x00,0xAA`
 
-### v0.1.5
+### v0.2.3
 
-- 初始公开发布
-- 支持达妙、RobStride、MyActuator、HighTorque、Hexfellow
+- 重构 ABI FFI 层，减少 controller/motor 分发重复代码
+- 合并厂商参数 FFI 入口
+- 对齐 core、厂商控制器、Python binding 和 websocket gateway 的运行时/控制路径稳健性修复
 
 ---
 
@@ -228,8 +238,8 @@ def old_function():
 ### 1. 更新版本号
 
 ```bash
-# 更新 __init__.py 中的版本
-__version__ = "0.2.0"
+# 更新 bindings/python/pyproject.toml 中的 [project].version
+version = "0.2.6"
 ```
 
 ### 2. 更新变更日志
@@ -240,8 +250,8 @@ __version__ = "0.2.0"
 ### 3. 打标签
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.6
+git push origin v0.2.6
 ```
 
 ### 4. 构建包
@@ -261,7 +271,7 @@ twine upload -r testpypi dist/*
 ### 6. 验证安装
 
 ```bash
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.0
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6
 python3 -m pytest tests/
 ```
 
@@ -285,7 +295,7 @@ twine upload dist/*
 
 ```bash
 # 错误：尝试重新上传同一版本
-twine upload dist/motorbridge-0.1.7.tar.gz
+twine upload dist/motorbridge-0.2.6.tar.gz
 # 错误: 文件已存在
 
 # 解决方案：增加版本号
@@ -332,7 +342,7 @@ jobs:
 |---------|-------------|----------|------|
 | 0.1.5 | 3.10 | SocketCAN | 初始发布 |
 | 0.1.6 | 3.10 | SocketCAN | 添加 RobStride 参数 |
-| 0.1.7 | 3.10 | SocketCAN | 后台轮询默认启用 |
+| 0.2.6 | 3.10 | SocketCAN | 后台轮询默认启用 |
 
 ---
 
@@ -340,4 +350,4 @@ jobs:
 
 - [安装指南](setup) - 安装和验证
 - [故障排除](best-practices/troubleshooting) - 常见问题
-- [变更日志](https://github.com/your-org/dm_candrive/releases) - 发布历史
+- [变更日志](https://github.com/tianrking/motorbridge/releases) - 发布历史

@@ -195,7 +195,7 @@ ctrl.disable_all()  # Emergency stop all motors
 
 ### `poll_feedback_once()`
 
-Manually poll for feedback frames from all motors. In v0.1.7+, this is optional as background polling is enabled by default.
+Manually poll for feedback frames from all motors. This remains useful for deterministic one-shot reads, scans, and Damiao feedback refreshes inside command loops.
 
 **Parameters:** None
 

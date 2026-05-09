@@ -33,7 +33,10 @@ motorbridge-cli [OPTIONS] COMMAND [ARGS]
 | Option | Description |
 |--------|-------------|
 | `--help` | Show help message and exit |
-| `--version` | Show version and exit |
+
+<Note>
+`motorbridge-cli` does not currently expose a `--version` flag. Use `python3 -c "import importlib.metadata; print(importlib.metadata.version('motorbridge'))"` to check the installed Python package version.
+</Note>
 
 ## Commands Overview
 

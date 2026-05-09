@@ -505,6 +505,44 @@ print(f"Device: {device_id}, Responder: {responder_id}")
 
 ---
 
+### `robstride_ping_host_id(host_id, timeout_ms=500)`
+
+Ping a RobStride motor using an explicit host-side ID. This is the v0.2.6 scan-safe path used when probing multiple possible `feedback_id` / `host_id` values.
+
+**Parameters:** `host_id: int`, `timeout_ms: int = 500`
+
+**Returns:** `tuple[int, int]` — `(device_id, responder_id)`
+
+**Raises:** `ValueError` if `host_id` is outside `0..255`; `CallError` on timeout or protocol failure
+
+**Example:**
+
+```python
+device_id, responder_id = motor.robstride_ping_host_id(0xFD, timeout_ms=80)
+print(f"Device: {device_id}, Responder: {responder_id}")
+```
+
+---
+
+### `robstride_get_param_f32_host_id(param_id, host_id, timeout_ms=1000)`
+
+Read a RobStride `f32` parameter while forcing the host-side ID used for the request. This is primarily for exact scan/commissioning flows where several host IDs are probed.
+
+**Parameters:** `param_id: int`, `host_id: int`, `timeout_ms: int = 1000`
+
+**Returns:** `float`
+
+**Raises:** `ValueError` if `host_id` is outside `0..255`; `CallError` on failure or timeout
+
+**Example:**
+
+```python
+value = motor.robstride_get_param_f32_host_id(0x7019, 0xFD, timeout_ms=120)
+print(value)
+```
+
+---
+
 ### `robstride_set_device_id(new_device_id)`
 
 Set new device ID for RobStride motor.
