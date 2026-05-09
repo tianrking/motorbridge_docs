@@ -1,0 +1,867 @@
+---
+title: "MotorBridge 0.2.6 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.2.6.md`</Note>
+
+# MotorBridge 0.2.6 Release Test Note
+
+Date: 2026-05-09
+Scope: Rust core/vendor crates, Rust `motor_cli`, C ABI/Python binding, Python CLI. Hardware command coverage is limited to RobStride and Damiao.
+
+This note is meant to be copied forward for every release. It must stay runnable for three install styles: source checkout, release binary, and wheel/PyPI install.
+
+## 0. Safety Legend
+
+- `[SAFE]`: does not move the motor and should not persist device settings.
+- `[MOTION]`: may enable or move the motor. Lift the robot, remove load, and keep E-stop ready.
+- `[PERSIST]`: writes persistent parameters such as motor ID, zero offset, EEPROM/register config.
+- `[DESTRUCTIVE]`: can make the motor harder to find until the new ID/config is known.
+
+For release qualification, all `[SAFE]` checks should pass. Run `[MOTION]` and `[PERSIST]` only on a bench motor prepared for testing.
+
+## Channel Compatibility
+
+The examples below use Linux SocketCAN `can0` because that is the default bench setup for this release note. If the adapter appears as `slcan0`, replace `can0` with `slcan0` in the commands. For CAN bring-up and troubleshooting, see [`docs/en/can_debugging.md`](../docs/en/can_debugging.md) or [`docs/zh/can_debugging.md`](../docs/zh/can_debugging.md).
+
+## 1. Entry Paths
+
+Choose the entry path that matches what is being tested.
+
+### 1.1 Source checkout
+
+Run from the cloned or extracted `motorbridge` repository root:
+
+```bash
+export MOTORBRIDGE_SRC="${MOTORBRIDGE_SRC:-$PWD}"
+cd "$MOTORBRIDGE_SRC"
+cargo build -p motor_cli --release
+export MB_RUST_CLI='./target/release/motor_cli'
+# For development/debug runs without a separate binary path, this also works:
+# export MB_RUST_CLI='cargo run -p motor_cli --release --'
+export MOTORBRIDGE_WHEEL='./bindings/python/dist/motorbridge-0.2.6-cp312-cp312-linux_x86_64.whl'
+```
+
+### 1.2 Release binary
+
+Run from the directory containing the downloaded release binary, or use a binary already on `PATH`:
+
+```bash
+export MB_RUST_CLI='./motor_cli'
+# export MB_RUST_CLI='motor_cli'
+```
+
+### 1.3 Python wheel or PyPI package
+
+Use a local wheel file, or install the published package after release:
+
+```bash
+export MOTORBRIDGE_WHEEL='./motorbridge-0.2.6-cp312-cp312-linux_x86_64.whl'
+# After PyPI publish, use: pip install motorbridge==0.2.6
+```
+
+Create a local test environment in the current working directory:
+
+```bash
+python3 -m venv .venv-motorbridge-0.2.6-test
+source .venv-motorbridge-0.2.6-test/bin/activate
+pip install --force-reinstall "$MOTORBRIDGE_WHEEL"
+# Or after PyPI publish:
+# pip install --force-reinstall motorbridge==0.2.6
+```
+
+If you are intentionally testing an already installed `motorbridge-cli`, skip the venv and record the package source:
+
+```bash
+which motorbridge-cli
+python3 -m pip show motorbridge
+```
+
+## 2. RobStride Bench Setup
+
+The RobStride commands below are copy-ready with defaults: channel `can0`, model `rs-00`, motor/device ID `2`, host/feedback ID `0xFD`, scan host IDs `0xFD,0xFF,0xFE,0x00,0xAA`.
+
+If your adapter or model is different, change the literal `can0` or `rs-00` in the command before running it.
+
+```bash
+printf 'RobStride: channel=%s model=%s motor_id=%s host_id=%s scan_hosts=%s\n' \
+  can0 rs-00 2 0xFD 0xFD,0xFF,0xFE,0x00,0xAA
+ip -details link show can0
+```
+
+Expected:
+
+- `can0` is UP and uses the expected bitrate.
+- RobStride logs distinguish `device_id/motor_id` from `feedback_id/host_id`.
+
+## 3. Damiao Bench Setup
+
+The Damiao commands below are copy-ready with defaults: channel `can0`, model `4340P`, motor/ESC ID `0x01`, feedback/MST ID `0x11`, scan range `1..16`, feedback base `0x10`.
+
+If your adapter or model is different, change the literal `can0` or `4340P` in the command before running it.
+
+```bash
+# Optional Damiao serial bridge.
+export DM_SERIAL_PORT=/dev/ttyACM0
+export DM_SERIAL_BAUD=921600
+
+printf 'Damiao: channel=%s model=%s motor_id=%s feedback_id=%s scan=%s..%s feedback_base=%s\n' \
+  can0 4340P 0x01 0x11 1 16 0x10
+ip -details link show can0
+```
+
+Expected:
+
+- `can0` is UP and uses the expected bitrate.
+- Damiao logs distinguish `ESC_ID/motor_id` from `MST_ID/feedback_id`.
+
+## 4. Non-Hardware Quality Gate
+
+Requires a source checkout.
+
+### 4.1 Rust tests and builds `[SAFE]`
+
+```bash
+cargo test -p motor_abi -p motor_vendor_robstride -p motor_vendor_damiao -p motor_cli
+cargo build -p motor_abi -p motor_cli --release
+```
+
+Expected:
+
+- All tests pass.
+- RobStride tests cover ID range validation, exact host-id ping, and parameter reply filtering.
+- Damiao tests cover protocol/model helpers used by scan and control modes.
+
+### 4.2 Python syntax and package build `[SAFE]`
+
+```bash
+python3 -m py_compile bindings/python/src/motorbridge/*.py
+bash scripts/release_python_package.sh
+```
+
+Expected:
+
+- `twine check` passes.
+- Wheel and sdist are created under `bindings/python/dist/`.
+
+### 4.3 Python wheel ABI smoke `[SAFE]`
+
+```bash
+python3 -m venv .venv-motorbridge-0.2.6-test
+source .venv-motorbridge-0.2.6-test/bin/activate
+pip install --force-reinstall "$MOTORBRIDGE_WHEEL"
+python3 - <<'PY'
+from motorbridge import Controller
+from motorbridge.abi import Abi
+from motorbridge.core import Motor
+abi = Abi.load()
+for name in [
+    'motor_controller_new_socketcan',
+    'motor_controller_new_socketcanfd',
+    'motor_controller_add_damiao_motor',
+    'motor_controller_add_robstride_motor',
+    'motor_handle_robstride_ping_host_id',
+    'motor_handle_robstride_get_param_f32_host_id',
+    'motor_handle_robstride_set_device_id',
+]:
+    assert hasattr(abi.lib, name), name
+assert hasattr(Controller, 'add_damiao_motor')
+assert hasattr(Controller, 'add_robstride_motor')
+assert hasattr(Motor, 'robstride_ping_host_id')
+assert hasattr(Motor, 'robstride_get_param_f32_host_id')
+print('wheel_abi_smoke_ok')
+PY
+```
+
+Expected:
+
+- Prints `wheel_abi_smoke_ok`.
+- No stale library error such as `undefined symbol: motor_controller_new_socketcanfd`.
+
+### 4.4 Documentation and diff hygiene `[SAFE]`
+
+```bash
+git diff --check
+# If a sibling motorbridge-docs checkout is present:
+node -e "JSON.parse(require('fs').readFileSync('../motorbridge-docs/docs.json','utf8')); console.log('docs_json_ok')"
+git -C ../motorbridge-docs diff --check
+```
+
+Expected:
+
+- No whitespace errors.
+- Docs JSON parses when docs checkout is available.
+
+## 5. Rust `motor_cli` Common Smoke
+
+All commands in this section use `$MB_RUST_CLI`. For a source checkout after `cargo build -p motor_cli --release`, use `./target/release/motor_cli`. For development/debug runs, `cargo run -p motor_cli --release --` also works. For a downloaded release binary, use `./motor_cli` or `motor_cli`.
+
+```bash
+$MB_RUST_CLI --help
+$MB_RUST_CLI
+```
+
+Expected:
+
+- Help prints supported vendors and modes.
+- No-argument invocation prints help and sends no CAN command.
+
+## 6. Rust `motor_cli` RobStride Full Command Set
+
+Supported RobStride modes in Rust CLI: `ping`, `scan`, `enable`, `disable`, `zero`, `set-zero`, `save`, `zero-by-offset`, `mit`, `pos-vel`, `vel`, `read-param`, `write-param`.
+
+### 6.1 Scan and identify `[SAFE]`
+
+```bash
+$MB_RUST_CLI \
+  scan --vendor robstride --channel can0 --model rs-00 \
+  --start-id 1 --end-id 10 \
+  --feedback-ids 0xFD,0xFF,0xFE,0x00,0xAA \
+  --timeout-ms 80 --param-id 0x7019 --param-timeout-ms 120
+```
+
+Expected for the current bench motor:
+
+- Finds `probe=0x02` / `device_id=2` with the default motor ID `2`.
+- Reports `feedback_id=0xFD` with the default host/feedback ID `0xFD`.
+- Log explains `probe/device_id` is motor ID and `feedback_id/host_id` is host-side ID.
+
+### 6.2 Ping and parameter read `[SAFE]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD --mode ping
+
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode read-param --param-id 0x7019
+```
+
+Expected:
+
+- Ping returns `device_id=2` and a responder/host-side ID.
+- Parameter read returns a value or a clear timeout error.
+
+### 6.3 Validation regression checks `[SAFE]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 300 --feedback-id 0xFD --mode ping
+
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0x100 --mode ping
+
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode ping --set-motor-id 300
+
+$MB_RUST_CLI \
+  scan --vendor robstride --channel can0 --model rs-00 \
+  --start-id 1 --end-id 10 --feedback-ids 0x100
+```
+
+Expected:
+
+- Every command fails before sending a misleading truncated ID.
+- Error text says RobStride motor/device ID must be `1..255` or host ID must be `0..255`.
+
+### 6.4 Enable/disable `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD --mode enable
+
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD --mode disable
+```
+
+Expected:
+
+- Enable/disable succeed or print a clear ack-timeout warning without panic.
+
+### 6.5 MIT control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode mit --ensure-mode 1 \
+  --pos 0.0 --vel 0.0 --kp 8 --kd 0.2 --tau 0 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- Mode set is verified when firmware responds to mode register reads.
+- Motor holds or moves only within the commanded small target.
+
+### 6.6 Position/velocity control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode pos-vel --ensure-mode 1 \
+  --pos 0.0 --vel 0.2 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- Position mode is selected and command remains bounded.
+
+### 6.7 Velocity control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode vel --ensure-mode 1 \
+  --vel 0.2 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- Velocity mode is selected and command remains bounded.
+
+### 6.8 Parameter write and save `[PERSIST]`
+
+These are coverage examples, not default release smoke commands. Pick only known-safe parameters and values for the bench motor.
+
+```bash
+# Persistent write example. Keep commented until the parameter/value is intentionally selected.
+# $MB_RUST_CLI \
+#   --vendor robstride --channel can0 --model rs-00 \
+#   --motor-id 2 --feedback-id 0xFD \
+#   --mode write-param --param-id 0x2005 --param-value 0.0
+
+# Save current parameters to non-volatile storage.
+# $MB_RUST_CLI \
+#   --vendor robstride --channel can0 --model rs-00 \
+#   --motor-id 2 --feedback-id 0xFD --mode save
+```
+
+### 6.9 Device ID and zero operations `[PERSIST] [DESTRUCTIVE]`
+
+Run only when intentionally changing a bench motor.
+
+```bash
+# Change device ID from 4 to 2, then verify by ping/scan.
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 4 --feedback-id 0xFD \
+  --mode ping --set-motor-id 2 --store 1 --verify-id 1
+
+# Experimental zero sequence. Use only with motor safely positioned.
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode zero --zero-exp 1 --store 1
+
+# `set-zero` is the same zero path exposed under the explicit alias.
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode set-zero --zero-exp 1 --store 1
+
+# Offset helper currently prints a firmware-safety warning and sends no calibration frames.
+$MB_RUST_CLI \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode zero-by-offset --store 1
+```
+
+Expected:
+
+- ID-set logs old/new device ID clearly.
+- After ID-set, scan finds only the new device ID.
+- Zero commands clearly say they are experimental/persistent.
+
+## 7. Rust `motor_cli` Damiao Full Command Set
+
+Supported Damiao modes in Rust CLI: `scan`, `enable`, `disable`, `mit`, `pos-vel`, `vel`, `force-pos`. ID change is exposed through `--set-motor-id` / `--set-feedback-id` on any Damiao command path.
+
+### 7.1 SocketCAN scan `[SAFE]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --transport socketcan --channel can0 --model 4340P \
+  --mode scan --start-id 1 --end-id 16 \
+  --feedback-base 0x10
+```
+
+Expected:
+
+- Finds active Damiao motors and prints candidate feedback IDs/model hints when available.
+
+### 7.2 Damiao serial bridge scan `[SAFE]`
+
+Run only when using the Damiao serial bridge instead of SocketCAN.
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --transport dm-serial \
+  --serial-port "$DM_SERIAL_PORT" --serial-baud "$DM_SERIAL_BAUD" \
+  --model 4340P \
+  --mode scan --start-id 1 --end-id 16 \
+  --feedback-base 0x10
+```
+
+Expected:
+
+- Serial bridge opens successfully and scan behavior matches SocketCAN.
+
+### 7.3 Enable/disable `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 --mode enable
+
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 --mode disable
+```
+
+Expected:
+
+- Enable/disable succeed and feedback, if received, prints status/state fields.
+
+### 7.4 MIT control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode mit --ensure-mode 1 \
+  --pos 0 --vel 0 --kp 2 --kd 1 --tau 0 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- MIT mode command is sent repeatedly with bounded target values.
+
+### 7.5 Position/velocity control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode pos-vel --ensure-mode 1 \
+  --pos 0 --vlim 0.2 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- Position/velocity command remains bounded.
+
+### 7.6 Velocity control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode vel --ensure-mode 1 \
+  --vel 0.2 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- Velocity command remains bounded.
+
+### 7.7 Force-position control mode `[MOTION]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode force-pos --ensure-mode 1 \
+  --pos 0 --vlim 0.2 --ratio 0.1 \
+  --loop 20 --dt-ms 20
+```
+
+Expected:
+
+- Force-position command remains bounded.
+
+### 7.8 Model verification options `[SAFE]`
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode disable --verify-model 1 --verify-timeout-ms 500 --verify-tol 0.2
+
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode disable --verify-model 0
+```
+
+Expected:
+
+- Verification either confirms the declared model or prints a clear mismatch/suggestion.
+
+### 7.9 ID change `[PERSIST] [DESTRUCTIVE]`
+
+Run only on a bench motor where old and new IDs are recorded.
+
+```bash
+$MB_RUST_CLI \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode disable \
+  --set-motor-id 0x02 --set-feedback-id 0x12 \
+  --store 1 --verify-id 1
+```
+
+Expected:
+
+- Logs old/new `ESC_ID` and `MST_ID`.
+- Reconnects using the new IDs for store/verify.
+- Follow-up scan finds the new IDs.
+
+## 8. Python CLI RobStride Full Command Set
+
+Python CLI supports RobStride through `scan`, `run --mode ping|enable|disable|mit|pos-vel|vel|zero|set-zero`, `id-set`, `robstride-read-param`, and `robstride-write-param`.
+
+### 8.1 Install/check CLI `[SAFE]`
+
+```bash
+motorbridge-cli --help
+which motorbridge-cli
+python3 -m pip show motorbridge
+```
+
+Expected:
+
+- CLI starts from the intended wheel/PyPI/source install.
+
+### 8.2 Scan and ping `[SAFE]`
+
+```bash
+motorbridge-cli scan \
+  --vendor robstride --channel can0 --model rs-00 \
+  --start-id 1 --end-id 10 \
+  --feedback-ids 0xFD,0xFF,0xFE,0x00,0xAA \
+  --timeout-ms 80 --param-id 0x7019 --param-timeout-ms 120
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode ping --loop 1
+```
+
+Expected:
+
+- Scan finds `probe=0x02` / `device_id=2` on the current bench motor.
+- No undefined ABI symbol errors.
+
+### 8.3 Parameter read/write `[SAFE] [PERSIST]`
+
+```bash
+motorbridge-cli robstride-read-param \
+  --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --param-id 0x7019 --type f32 --timeout-ms 500
+
+# Persistent write example. Only run with a known safe parameter/value.
+# motorbridge-cli robstride-write-param \
+#   --channel can0 --model rs-00 \
+#   --motor-id 2 --feedback-id 0xFD \
+#   --param-id 0x2005 --type f32 --value 0.0 --verify 1 --timeout-ms 500
+```
+
+Expected:
+
+- Read returns a value or clear timeout.
+- Write remains commented unless the parameter/value is intentionally selected.
+
+### 8.4 Validation regression checks `[SAFE]`
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 300 --feedback-id 0xFD --mode ping --loop 1
+
+motorbridge-cli id-set \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --new-motor-id 300 --store 0 --verify 0
+
+motorbridge-cli scan \
+  --vendor robstride --channel can0 --model rs-00 \
+  --start-id 1 --end-id 10 --feedback-ids 0x100
+```
+
+Expected:
+
+- All fail with explicit validation errors.
+- No silent `u8` truncation and no fallback to `0xFD` for invalid host IDs.
+
+### 8.5 Motion modes `[MOTION]`
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode enable --loop 1
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode mit --ensure-mode 1 \
+  --pos 0 --vel 0 --kp 8 --kd 0.2 --tau 0 \
+  --loop 20 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode pos-vel --ensure-mode 1 \
+  --pos 0 --vlim 0.2 \
+  --loop 20 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode vel --ensure-mode 1 \
+  --vel 0.2 \
+  --loop 20 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode disable --loop 1
+```
+
+### 8.6 ID and zero operations `[PERSIST] [DESTRUCTIVE]`
+
+```bash
+motorbridge-cli id-set \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 4 --feedback-id 0xFD \
+  --new-motor-id 2 --store 1 --verify 1
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode zero --zero-exp 1 --store 1 --loop 1
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode set-zero --zero-exp 1 --store 1 --loop 1
+```
+
+Expected:
+
+- ID-set verifies the new device ID.
+- Zero commands are explicitly experimental/persistent.
+
+## 9. Python CLI Damiao Full Command Set
+
+Python CLI supports Damiao through `scan`, `run --mode enable|disable|mit|pos-vel|vel|force-pos`, `id-dump`, and `id-set`.
+
+### 9.1 SocketCAN scan and ID dump `[SAFE]`
+
+```bash
+motorbridge-cli scan \
+  --vendor damiao --transport socketcan --channel can0 --model 4340P \
+  --start-id 1 --end-id 16 \
+  --feedback-base 0x10
+
+motorbridge-cli id-dump \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --rids 7,8,9,10,21,22,23 --timeout-ms 500
+```
+
+Expected:
+
+- Scan finds reachable Damiao devices.
+- ID dump prints key register values or a clear timeout.
+
+### 9.2 Damiao serial bridge scan `[SAFE]`
+
+```bash
+motorbridge-cli scan \
+  --vendor damiao --transport dm-serial \
+  --serial-port "$DM_SERIAL_PORT" --serial-baud "$DM_SERIAL_BAUD" \
+  --model 4340P \
+  --start-id 1 --end-id 16 \
+  --feedback-base 0x10
+```
+
+Expected:
+
+- Serial bridge opens and scan behavior matches SocketCAN.
+
+### 9.3 Enable/disable `[MOTION]`
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode enable --loop 1
+
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode disable --loop 1
+```
+
+### 9.4 MIT control mode `[MOTION]`
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode mit --ensure-mode 1 \
+  --pos 0 --vel 0 --kp 2 --kd 1 --tau 0 \
+  --loop 20 --dt-ms 20
+```
+
+### 9.5 Position/velocity control mode `[MOTION]`
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode pos-vel --ensure-mode 1 \
+  --pos 0 --vlim 0.2 \
+  --loop 20 --dt-ms 20
+```
+
+### 9.6 Velocity control mode `[MOTION]`
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode vel --ensure-mode 1 \
+  --vel 0.2 \
+  --loop 20 --dt-ms 20
+```
+
+### 9.7 Force-position control mode `[MOTION]`
+
+```bash
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --mode force-pos --ensure-mode 1 \
+  --pos 0 --vlim 0.2 --ratio 0.1 \
+  --loop 20 --dt-ms 20
+```
+
+### 9.8 ID change `[PERSIST] [DESTRUCTIVE]`
+
+```bash
+motorbridge-cli id-set \
+  --vendor damiao --channel can0 --model 4340P \
+  --motor-id 0x01 --feedback-id 0x11 \
+  --new-motor-id 0x02 --new-feedback-id 0x12 \
+  --store 1 --verify 1 --timeout-ms 800
+```
+
+Expected:
+
+- Logs old/new `ESC_ID` and `MST_ID`.
+- Store/verify uses the new IDs.
+- Follow-up scan finds the new IDs.
+
+## 10. Python SDK Direct Smoke
+
+These checks verify binding API availability. They do not replace CLI hardware tests.
+
+### 10.1 RobStride SDK smoke `[SAFE]`
+
+```bash
+python3 - <<'PY'
+import os
+from motorbridge import Controller
+
+ch = 'can0'
+rs_id = 2
+rs_host = 0xFD
+rs_model = 'rs-00'
+
+ctrl = Controller(ch)
+motor = ctrl.add_robstride_motor(rs_id, rs_host, rs_model)
+print('ping_host_id=', motor.robstride_ping_host_id(rs_host, 500))
+try:
+    print('mech_pos=', motor.robstride_get_param_f32_host_id(0x7019, rs_host, 500))
+except Exception as exc:
+    print('param_read_timeout_or_error=', exc)
+ctrl.shutdown()
+PY
+```
+
+### 10.2 Damiao SDK smoke `[SAFE]`
+
+```bash
+python3 - <<'PY'
+import os
+from motorbridge import Controller
+
+ch = 'can0'
+dm_id = 0x01
+dm_fid = 0x11
+dm_model = '4340P'
+
+ctrl = Controller(ch)
+motor = ctrl.add_damiao_motor(dm_id, dm_fid, dm_model)
+print('damiao_motor_added=', dm_id, dm_fid, dm_model)
+ctrl.shutdown()
+PY
+```
+
+When finished with the local venv:
+
+```bash
+deactivate
+```
+
+## 11. 0.2.6 Acceptance Criteria
+
+RobStride:
+
+- `motor_id` / `device_id`: explicit `1..255` validation in core, Rust CLI, Python SDK/CLI, and websocket gateway paths.
+- `feedback_id` / `host_id`: explicit `0..255` validation in core, Rust CLI, Python SDK/CLI, and websocket gateway paths.
+- Rust and Python scan use the exact `--feedback-ids` candidate being tested; scan does not hide an internal host-id fallback.
+- Parameter replies are filtered by target `device_id`, reducing cross-motor reply confusion.
+- User-facing text says RobStride `feedback_id/host_id` is not the motor ID.
+- Python wheel includes new ABI symbols and does not load a stale shared library.
+
+Damiao:
+
+- Rust CLI and Python CLI both cover scan, enable, disable, MIT, pos-vel, velocity, force-position, and ID change flows.
+- Damiao SocketCAN and `dm-serial` scan examples are present.
+- ID change logs old/new `ESC_ID` and `MST_ID`, then verifies through the new IDs.
+
+Packaging/docs:
+
+- Source checkout, release binary, and wheel/PyPI install paths are documented without machine-specific absolute paths.
+- Local Python test environment uses `.venv-motorbridge-0.2.6-test` in the current working directory.
+- Canonical Mintlify docs live in the separate `motorbridge-docs` repository; embedded `bindings/python/mintlify` is removed.
+
+## 12. Release Decision
+
+Ready to publish only when:
+
+- Section 4 passes on the release machine.
+- RobStride safe checks pass: sections 6.1, 6.2, 6.3, 8.1, 8.2, 8.3, 8.4.
+- Damiao safe checks pass on available hardware: sections 7.1 or 7.2, and 9.1 or 9.2.
+- Any intentionally run `[MOTION]` commands are confirmed safe and bounded.
+- Any `[PERSIST]` commands are recorded with old ID, new ID, and final scan result.

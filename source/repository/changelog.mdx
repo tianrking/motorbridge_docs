@@ -1,0 +1,146 @@
+---
+title: "Changelog"
+---
+
+<Note>Source: `CHANGELOG.md`</Note>
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on Keep a Changelog, and this project adheres to Semantic
+Versioning.
+
+## [Unreleased]
+
+## [0.2.6] - 2026-05-09
+
+### Added
+
+- RobStride host-id-specific ABI helpers for exact scan probing from Python:
+  `motor_handle_robstride_ping_host_id` and `motor_handle_robstride_get_param_f32_host_id`.
+- Python SDK wrappers `robstride_ping_host_id(...)` and `robstride_get_param_f32_host_id(...)`.
+- Release test note `release_test_notes/0.2.6.md` covering Rust core/CLI, Python binding/CLI,
+  package smoke checks, and full RobStride/Damiao CLI command examples.
+
+### Changed
+
+- RobStride `motor_id` / `device_id` is now validated as `1..255`; `feedback_id` / `host_id` is
+  validated as `0..255` across core, Rust CLI, Python SDK/CLI, and websocket gateway flows.
+- Rust and Python RobStride scan now probe each listed `--feedback-ids` host ID exactly instead of
+  silently falling back inside each candidate probe.
+- RobStride parameter response filtering now requires the response `device_id` to match the target
+  motor, reducing cross-talk risk on multi-motor buses.
+- The embedded `bindings/python/mintlify` documentation copy was removed; canonical Mintlify docs now
+  live in the sibling `motorbridge-docs` repository.
+
+## [0.2.5] - 2026-05-09
+
+### Added
+
+- Python CLI `id-set --vendor robstride` now supports RobStride device ID updates with optional store and verify.
+- Rust `motor_cli` accepts Python-style bare mode shorthand, for example `motor_cli scan --vendor robstride ...`.
+- Rust RobStride scan now accepts `--feedback-ids`, `--timeout-ms`, `--param-id`, and `--param-timeout-ms`, matching the Python scan entrypoint.
+
+### Changed
+
+- RobStride scan output and documentation now consistently distinguish motor `device_id` / `probe` from host-side `feedback_id` / `host_id`.
+- Python and Rust RobStride scan defaults are aligned around host ID candidates `0xFD,0xFF,0xFE,0x00,0xAA`.
+
+## [0.2.3] - 2026-04-16
+
+### Changed
+
+- Refactored ABI FFI layers to reduce duplicated controller/motor dispatch boilerplate via shared
+  macros and helpers.
+- Consolidated vendor parameter FFI entrypoints (Hexfellow/HighTorque/MyActuator/RobStride) with
+  shared macro-generated get/write wrappers.
+- Aligned runtime/control-path robustness fixes across motor core, vendor controllers, Python
+  bindings, and websocket gateway integration.
+
+## [0.1.3] - 2026-03-24
+
+### Added
+
+- New practical Damiao guide:
+  - `examples/damiao_controll_all_in_one.md`
+  - includes one-page command bundles for:
+    - CLI four core modes (`mit`, `pos-vel`, `vel`, `force-pos`)
+    - C/C++ ABI examples
+    - Python ctypes ABI examples
+    - Python bindings examples
+    - C++ bindings examples
+
+### Changed
+
+- Damiao CLI runtime output (`motor_cli/src/damiao_cli.rs`) now prints richer realtime fields:
+  - `id`, `arbitration_id`, `status_name`
+  - temperatures `t_mos`, `t_rotor`
+  - mode-aware command/target context and tracking errors
+    - MIT: `cmd_pos/cmd_vel/kp/kd/cmd_tau/e_pos/e_vel`
+    - POS_VEL: `cmd_pos/vlim/e_pos`
+    - VEL: `cmd_vel/e_vel`
+    - FORCE_POS: `cmd_pos/vlim/ratio/e_pos`
+
+## [0.1.2] - 2026-03-23
+
+### Changed
+
+- Release version bump from `0.1.1` to `0.1.2` for clean tag progression.
+- Damiao `dm-serial` documentation rollout remains aligned across:
+  - CLI README (full interface section)
+  - root README
+  - bindings/examples/integrations/tools related READMEs.
+
+## [0.1.1] - 2026-03-23
+
+### Added
+
+- Damiao serial-bridge transport (`dm-serial`) for unix-like systems:
+  - CLI transport selection: `--transport auto|socketcan|dm-serial`
+  - Serial options: `--serial-port`, `--serial-baud`
+  - Damiao controller serial constructor and transport runtime wiring.
+- C ABI constructor for Damiao serial bridge:
+  - `motor_controller_new_dm_serial(serial_port, baud)`
+- SDK support for Damiao serial bridge:
+  - Python: `Controller.from_dm_serial(...)`
+  - C++: `Controller::from_dm_serial(...)`
+- New Chinese operation manual for deployment/runtime usage:
+  - `docs/zh/operation_manual.md`
+
+### Changed
+
+- README alignment across examples/bindings/integrations/tools:
+  - All Damiao-related READMEs now mention `dm-serial` availability.
+  - Added explicit pointer to complete interface/command section in
+    `motor_cli/README.zh-CN.md` (`3.6`) and `motor_cli/README.md`.
+
+## [0.1.0] - 2026-03-20
+
+### Added
+
+- Linux USB-CAN (`slcan`) quick guide in root README (EN/ZH), including `slcand` setup and
+  `--channel slcan0` usage examples.
+- Channel quick reference in `motor_cli/README.md` and `motor_cli/README.zh-CN.md` covering:
+  - Linux SocketCAN channels (`can0`, `slcan0`) and Linux rule "no `@bitrate` in channel name"
+  - Windows PCAN channel mapping (`can0/can1`) with optional `@bitrate`
+
+### Changed
+
+- CLI startup summary now distinguishes scan semantics from control semantics:
+  - `--mode scan` prints `model_hint`, `base_feedback_id`, and `scan_range`
+  - defaults are explicitly tagged as `(default)` to reduce confusion
+
+### Fixed
+
+- RobStride frame filtering now only accepts status/fault frames from the target motor ID,
+  preventing cross-device state pollution on shared CAN buses.
+- Architecture Mermaid diagrams (EN/ZH) now include `myactuator` branch for consistency with
+  workspace/runtime layout.
+
+### Usage
+
+- Linux `slcan` setup and examples:
+  - `README.md` / `README.zh-CN.md` section: "Linux USB-CAN (`slcan`) Quick Guide"
+- Channel compatibility and parameter rules:
+  - `motor_cli/README.md` / `motor_cli/README.zh-CN.md` section: "Channel Quick Reference"
