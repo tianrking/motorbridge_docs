@@ -28,6 +28,21 @@ flowchart LR
 
 ## 选择阅读路径
 
+```mermaid
+flowchart TB
+  New["新用户"] --> Curated["精整理文档\n快速开始 / 教程 / API"]
+  Curated --> Task["任务型使用\n安装、扫描、控制、排障"]
+  Task --> Source["源码参考\n原始仓库文档"]
+  Source --> Deep["深入实现\nABI、Rust CLI、集成、发布记录"]
+
+  classDef start fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef guide fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef ref fill:#FFF7ED,stroke:#EA580C,color:#9A3412;
+  class New start;
+  class Curated,Task guide;
+  class Source,Deep ref;
+```
+
 <Cards>
   <Card title="仓库资料" icon="git-branch" href="/zh/source/repository/overview">
     根 README、变更日志、发布测试记录、贡献、安全和治理文档。

@@ -28,6 +28,21 @@ flowchart LR
 
 ## Choose a Path
 
+```mermaid
+flowchart TB
+  New["New user"] --> Curated["Curated guides\nGet Started / Tutorials / API"]
+  Curated --> Task["Task-oriented use\ninstall, scan, control, troubleshoot"]
+  Task --> Source["Source reference\noriginal repository docs"]
+  Source --> Deep["Deep implementation\nABI, Rust CLI, integrations, release notes"]
+
+  classDef start fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef guide fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef ref fill:#FFF7ED,stroke:#EA580C,color:#9A3412;
+  class New start;
+  class Curated,Task guide;
+  class Source,Deep ref;
+```
+
 <Cards>
   <Card title="Repository" icon="git-branch" href="/source/repository/overview">
     Root README, changelog, release notes, contribution, security, and governance material.

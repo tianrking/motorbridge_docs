@@ -71,38 +71,37 @@
             "group": "Source: Repository",
             "pages": [
               "source/index",
-              "source/repository/changelog",
-              "source/repository/code-of-conduct",
-              "source/repository/contributing",
               "source/repository/overview",
-              "source/repository/pull-request-template",
+              "source/repository/changelog",
               "source/repository/release-test-notes/0-2-6",
-              "source/repository/security"
+              "source/repository/contributing",
+              "source/repository/code-of-conduct",
+              "source/repository/security",
+              "source/repository/pull-request-template"
             ]
           },
           {
             "group": "Source: Project Docs",
             "pages": [
-              "source/project/abi",
+              "source/project/index",
               "source/project/architecture",
-              "source/project/can-debugging",
+              "source/project/abi",
               "source/project/cli",
               "source/project/devices",
-              "source/project/distribution-channels",
               "source/project/examples",
               "source/project/extending",
-              "source/project/index",
-              "source/project/readme",
+              "source/project/can-debugging",
               "source/project/testing",
-              "source/project/windows-distribution"
+              "source/project/distribution-channels",
+              "source/project/windows-distribution",
+              "source/project/readme"
             ]
           },
           {
             "group": "Source: Python Binding",
             "pages": [
-              "source/python/damiao-api",
-              "source/python/damiao-binding",
-              "source/python/examples/overview",
+              "source/python/overview",
+              "source/python/get-started/overview",
               "source/python/get-started/courses/00-enable-and-status",
               "source/python/get-started/courses/01-scan",
               "source/python/get-started/courses/02-register-rw",
@@ -113,44 +112,45 @@
               "source/python/get-started/courses/07-mode-force-pos",
               "source/python/get-started/courses/08-mode-mixed-switch",
               "source/python/get-started/courses/09-multi-motor",
-              "source/python/get-started/overview",
-              "source/python/overview",
+              "source/python/examples/overview",
+              "source/python/damiao-api",
+              "source/python/damiao-binding",
               "source/python/robostride-binding"
             ]
           },
           {
             "group": "Source: C++ Binding",
             "pages": [
-              "source/cpp/examples/overview",
-              "source/cpp/overview"
+              "source/cpp/overview",
+              "source/cpp/examples/overview"
             ]
           },
           {
             "group": "Source: Rust CLI",
             "pages": [
-              "source/rust-cli/damiao-api",
-              "source/rust-cli/myactuator-api",
               "source/rust-cli/overview",
-              "source/rust-cli/robstride-api"
+              "source/rust-cli/damiao-api",
+              "source/rust-cli/robstride-api",
+              "source/rust-cli/myactuator-api"
             ]
           },
           {
             "group": "Source: Examples",
             "pages": [
-              "source/examples/c/overview",
-              "source/examples/cpp/overview",
-              "source/examples/damiao-controll-all-in-one",
               "source/examples/overview",
               "source/examples/python/overview",
-              "source/examples/web/overview"
+              "source/examples/c/overview",
+              "source/examples/cpp/overview",
+              "source/examples/web/overview",
+              "source/examples/damiao-controll-all-in-one"
             ]
           },
           {
             "group": "Source: Integrations",
             "pages": [
               "source/integrations/overview",
-              "source/integrations/ros2-bridge/overview",
-              "source/integrations/ws-gateway/overview"
+              "source/integrations/ws-gateway/overview",
+              "source/integrations/ros2-bridge/overview"
             ]
           },
           {
@@ -221,64 +221,64 @@
           {
             "group": "源码：项目文档",
             "pages": [
-              "zh/source/project/abi",
+              "zh/source/project/index",
               "zh/source/project/architecture",
-              "zh/source/project/can-debugging",
+              "zh/source/project/abi",
               "zh/source/project/cli",
               "zh/source/project/devices",
-              "zh/source/project/distribution-channels",
               "zh/source/project/examples",
               "zh/source/project/extending",
-              "zh/source/project/hightorque-protocol-analysis",
-              "zh/source/project/index",
-              "zh/source/project/operation-manual",
+              "zh/source/project/can-debugging",
               "zh/source/project/testing",
-              "zh/source/project/windows-distribution"
+              "zh/source/project/distribution-channels",
+              "zh/source/project/windows-distribution",
+              "zh/source/project/operation-manual",
+              "zh/source/project/hightorque-protocol-analysis"
             ]
           },
           {
             "group": "源码：Python Binding",
             "pages": [
-              "zh/source/python/damiao-api",
-              "zh/source/python/damiao-python-reference",
-              "zh/source/python/examples/overview",
-              "zh/source/python/get-started/courses/overview",
+              "zh/source/python/overview",
               "zh/source/python/get-started/overview",
-              "zh/source/python/overview"
+              "zh/source/python/get-started/courses/overview",
+              "zh/source/python/examples/overview",
+              "zh/source/python/damiao-api",
+              "zh/source/python/damiao-python-reference"
             ]
           },
           {
             "group": "源码：C++ Binding",
             "pages": [
-              "zh/source/cpp/examples/overview",
-              "zh/source/cpp/overview"
+              "zh/source/cpp/overview",
+              "zh/source/cpp/examples/overview"
             ]
           },
           {
             "group": "源码：Rust CLI",
             "pages": [
-              "zh/source/rust-cli/damiao-api",
-              "zh/source/rust-cli/myactuator-api",
               "zh/source/rust-cli/overview",
-              "zh/source/rust-cli/robstride-api"
+              "zh/source/rust-cli/damiao-api",
+              "zh/source/rust-cli/robstride-api",
+              "zh/source/rust-cli/myactuator-api"
             ]
           },
           {
             "group": "源码：示例",
             "pages": [
-              "zh/source/examples/c/overview",
-              "zh/source/examples/cpp/overview",
-              "zh/source/examples/http-quad-control-demo/overview",
               "zh/source/examples/overview",
               "zh/source/examples/python/overview",
-              "zh/source/examples/web/overview"
+              "zh/source/examples/c/overview",
+              "zh/source/examples/cpp/overview",
+              "zh/source/examples/web/overview",
+              "zh/source/examples/http-quad-control-demo/overview"
             ]
           },
           {
             "group": "源码：集成",
             "pages": [
-              "zh/source/integrations/ros2-bridge/overview",
-              "zh/source/integrations/ws-gateway/overview"
+              "zh/source/integrations/ws-gateway/overview",
+              "zh/source/integrations/ros2-bridge/overview"
             ]
           },
           {
