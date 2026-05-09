@@ -70,6 +70,7 @@
           {
             "group": "Source: Repository",
             "pages": [
+              "source/index",
               "source/repository/changelog",
               "source/repository/code-of-conduct",
               "source/repository/contributing",
@@ -213,6 +214,7 @@
           {
             "group": "源码：仓库",
             "pages": [
+              "zh/source/index",
               "zh/source/repository/overview"
             ]
           },

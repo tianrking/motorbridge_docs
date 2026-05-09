@@ -30,6 +30,46 @@ Without MotorBridge, you need to:
 
 ## MotorBridge Architecture
 
+```mermaid
+flowchart TB
+  App["User application"] --> Bindings["Language bindings"]
+  Bindings --> Python["Python package"]
+  Bindings --> CPP["C++ wrapper"]
+  Bindings --> Gateway["WS / ROS2 integrations"]
+  Python --> ABI["C ABI: libmotor_abi"]
+  CPP --> ABI
+  Gateway --> ABI
+  ABI --> Core["Rust core: controller, bus, models"]
+  Core --> Vendors["Vendor drivers"]
+  Vendors --> Damiao["Damiao"]
+  Vendors --> RobStride["RobStride"]
+  Vendors --> MyActuator["MyActuator"]
+  Vendors --> HighTorque["HighTorque"]
+  Vendors --> Hexfellow["Hexfellow"]
+  Damiao --> Transport["Transport layer"]
+  RobStride --> Transport
+  MyActuator --> Transport
+  HighTorque --> Transport
+  Hexfellow --> Transport
+  Transport --> SocketCAN["SocketCAN"]
+  Transport --> CANFD["SocketCAN-FD"]
+  Transport --> DMSerial["DM Serial"]
+  Transport --> PCAN["PCAN"]
+
+  classDef top fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef abi fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef vendor fill:#FEF3C7,stroke:#D97706,color:#92400E;
+  classDef io fill:#FCE7F3,stroke:#DB2777,color:#831843;
+  class App,Bindings,Python,CPP,Gateway top;
+  class ABI,Core abi;
+  class Vendors,Damiao,RobStride,MyActuator,HighTorque,Hexfellow vendor;
+  class Transport,SocketCAN,CANFD,DMSerial,PCAN io;
+```
+
+<Note>
+The diagram above is the readable system map. The text diagram below is kept as a compact terminal-friendly reference.
+</Note>
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                          Your Application                            │

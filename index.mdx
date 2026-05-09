@@ -85,20 +85,32 @@ Hexfellow motors require CAN-FD transport. Use `Controller.from_socketcanfd("can
 
 ## Architecture
 
+```mermaid
+flowchart TB
+  App["Python app / CLI / gateway"] --> Controller["Controller"]
+  Controller --> Damiao["Damiao Motor"]
+  Controller --> RobStride["RobStride Motor"]
+  Controller --> MyActuator["MyActuator Motor"]
+  Controller --> HighTorque["HighTorque Motor"]
+  Controller --> Hexfellow["Hexfellow Motor"]
+  Damiao --> Transport["SocketCAN / CAN-FD / DM Serial"]
+  RobStride --> Transport
+  MyActuator --> Transport
+  HighTorque --> Transport
+  Hexfellow --> Transport
+  Transport --> Hardware["Physical motors"]
+
+  classDef app fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef motor fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef io fill:#FFF7ED,stroke:#EA580C,color:#9A3412;
+  class App,Controller app;
+  class Damiao,RobStride,MyActuator,HighTorque,Hexfellow motor;
+  class Transport,Hardware io;
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     Controller                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│  │   Motor 1   │  │   Motor 2   │  │   Motor N   │    │
-│  │  (Damiao)   │  │ (RobStride) │  │(MyActuator) │    │
-│  └─────────────┘  └─────────────┘  └─────────────┘    │
-│                        │                               │
-│              ┌─────────┴─────────┐                    │
-│              │    Transport      │                    │
-│              │  (CAN/Serial/FD)  │                    │
-│              └───────────────────┘                    │
-└─────────────────────────────────────────────────────────┘
-```
+
+<Tip>
+For the full project-level architecture, see [Source Architecture](source/project/architecture) and the [Source Documentation Atlas](source/index).
+</Tip>
 
 ## Core Concepts
 

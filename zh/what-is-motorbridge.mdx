@@ -30,6 +30,46 @@ MotorBridge 是一个**统一的电机控制栈**，具有可插拔的厂商驱�
 
 ## MotorBridge 架构
 
+```mermaid
+flowchart TB
+  App["用户应用"] --> Bindings["语言绑定"]
+  Bindings --> Python["Python 包"]
+  Bindings --> CPP["C++ 封装"]
+  Bindings --> Gateway["WS / ROS2 集成"]
+  Python --> ABI["C ABI: libmotor_abi"]
+  CPP --> ABI
+  Gateway --> ABI
+  ABI --> Core["Rust 核心: controller, bus, models"]
+  Core --> Vendors["厂商驱动"]
+  Vendors --> Damiao["达妙"]
+  Vendors --> RobStride["RobStride"]
+  Vendors --> MyActuator["MyActuator"]
+  Vendors --> HighTorque["HighTorque"]
+  Vendors --> Hexfellow["Hexfellow"]
+  Damiao --> Transport["传输层"]
+  RobStride --> Transport
+  MyActuator --> Transport
+  HighTorque --> Transport
+  Hexfellow --> Transport
+  Transport --> SocketCAN["SocketCAN"]
+  Transport --> CANFD["SocketCAN-FD"]
+  Transport --> DMSerial["DM Serial"]
+  Transport --> PCAN["PCAN"]
+
+  classDef top fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef abi fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef vendor fill:#FEF3C7,stroke:#D97706,color:#92400E;
+  classDef io fill:#FCE7F3,stroke:#DB2777,color:#831843;
+  class App,Bindings,Python,CPP,Gateway top;
+  class ABI,Core abi;
+  class Vendors,Damiao,RobStride,MyActuator,HighTorque,Hexfellow vendor;
+  class Transport,SocketCAN,CANFD,DMSerial,PCAN io;
+```
+
+<Note>
+上方是适合文档阅读的系统图。下方保留终端友好的文本图，方便复制到纯文本环境。
+</Note>
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                          你的应用程序                                │

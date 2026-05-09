@@ -1,0 +1,66 @@
+---
+title: "源码文档地图"
+---
+
+# 源码文档地图
+
+<Badge variant="primary">87 篇源码文档</Badge> <Badge variant="secondary">MotorBridge v0.2.6</Badge>
+
+这里整理了从 `motorbridge` 仓库导入的完整 Markdown 知识库。入门和 API 请优先看前面的精整理章节；需要原始项目细节、发布记录、底层 CLI/ABI/集成资料时，从这里进入。
+
+```mermaid
+flowchart LR
+  Repo["仓库资料\nREADME、变更、治理"] --> Project["项目文档\n架构、ABI、测试"]
+  Project --> Python["Python Binding\nSDK、教程、厂商说明"]
+  Project --> RustCLI["Rust CLI\n现场命令与厂商 API"]
+  Project --> CPP["C++ Binding\nRAII 封装与示例"]
+  Project --> Examples["示例\nC、C++、Python、Web"]
+  Project --> Integrations["集成\nROS2 与 WebSocket 网关"]
+  Project --> Tools["工具与厂商\n可靠性与原生协议说明"]
+
+  classDef main fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef lib fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef ops fill:#FFF7ED,stroke:#EA580C,color:#9A3412;
+  class Repo,Project main;
+  class Python,CPP,RustCLI lib;
+  class Examples,Integrations,Tools ops;
+```
+
+## 选择阅读路径
+
+<Cards>
+  <Card title="仓库资料" icon="git-branch" href="zh/source/repository/overview">
+    根 README、变更日志、发布测试记录、贡献、安全和治理文档。
+  </Card>
+  <Card title="项目架构" icon="diagram-project" href="zh/source/project/architecture">
+    核心架构、ABI 设计、设备支持、测试、分发和平台说明。
+  </Card>
+  <Card title="Python Binding" icon="python" href="zh/source/python/overview">
+    Python 包 README、达妙/RobStride 绑定说明、示例和入门课程。
+  </Card>
+  <Card title="Rust CLI" icon="terminal" href="zh/source/rust-cli/overview">
+    原生 `motor_cli` 用法，以及达妙、RobStride、MyActuator 的 CLI 参考。
+  </Card>
+  <Card title="C++ Binding" icon="braces" href="zh/source/cpp/overview">
+    C++ 封装和示例工程说明。
+  </Card>
+  <Card title="示例" icon="code" href="zh/source/examples/overview">
+    C、C++、Python、Web HMI 和达妙完整命令示例。
+  </Card>
+  <Card title="集成" icon="plug" href="zh/source/integrations/ros2-bridge/overview">
+    ROS2 bridge 与 WebSocket gateway 文档。
+  </Card>
+  <Card title="工具与厂商" icon="wrench" href="zh/source/tools/reliability/overview">
+    可靠性工具和厂商原生实现说明。
+  </Card>
+</Cards>
+
+## 阅读建议
+
+<Note>
+每篇导入页面开头都有 `Source:`，标明它在 `motorbridge` 仓库中的原始 Markdown 路径。
+</Note>
+
+- 新手阅读优先走 **快速开始**、**教程**、**接口手册**。
+- 需要项目原始上下文、发布测试记录、底层 CLI/ABI/集成细节时，再进入 **源码文档**。
+- Python binding 的当前行为以精整理 API 页面为准，源码文档作为工程背景和操作资料。

@@ -85,20 +85,32 @@ Hexfellow 电机需要 CAN-FD 传输。使用 `Controller.from_socketcanfd("can0
 
 ## 系统架构
 
+```mermaid
+flowchart TB
+  App["Python 应用 / CLI / 网关"] --> Controller["Controller"]
+  Controller --> Damiao["达妙电机"]
+  Controller --> RobStride["RobStride 电机"]
+  Controller --> MyActuator["MyActuator 电机"]
+  Controller --> HighTorque["HighTorque 电机"]
+  Controller --> Hexfellow["Hexfellow 电机"]
+  Damiao --> Transport["SocketCAN / CAN-FD / DM Serial"]
+  RobStride --> Transport
+  MyActuator --> Transport
+  HighTorque --> Transport
+  Hexfellow --> Transport
+  Transport --> Hardware["真实电机"]
+
+  classDef app fill:#E0F2FE,stroke:#0284C7,color:#075985;
+  classDef motor fill:#F0FDF4,stroke:#16A34A,color:#166534;
+  classDef io fill:#FFF7ED,stroke:#EA580C,color:#9A3412;
+  class App,Controller app;
+  class Damiao,RobStride,MyActuator,HighTorque,Hexfellow motor;
+  class Transport,Hardware io;
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     Controller                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
-│  │   Motor 1   │  │   Motor 2   │  │   Motor N   │    │
-│  │  (达妙)     │  │ (RobStride) │  │(MyActuator) │    │
-│  └─────────────┘  └─────────────┘  └─────────────┘    │
-│                        │                               │
-│              ┌─────────┴─────────┐                    │
-│              │    Transport      │                    │
-│              │  (CAN/Serial/FD)  │                    │
-│              └───────────────────┘                    │
-└─────────────────────────────────────────────────────────┘
-```
+
+<Tip>
+完整项目级架构请看 [源码架构](zh/source/project/architecture) 和 [源码文档地图](zh/source/index)。
+</Tip>
 
 ## 核心概念
 
