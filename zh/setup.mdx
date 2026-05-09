@@ -1,0 +1,365 @@
+---
+title: 安装环境
+---
+
+# 安装与环境
+
+<mintly-toc>
+
+本指南介绍如何在 Linux、Windows、macOS 上安装 `motorbridge` Python 包。
+
+</mintly-toc>
+
+## 系统要求
+
+### 硬件要求
+
+- **操作系统**：Linux / Windows / macOS
+- **Python**：3.10、3.11、3.12、3.13 或 3.14
+- **硬件**：CAN 接口（SocketCAN、PCAN）或串口适配器
+
+### Python 依赖
+
+包会自动安装所需依赖：
+- `ctypes`（标准库）
+- `dataclasses`（标准库）
+
+## 从 PyPI 安装
+
+推荐安装方式：
+
+```bash
+python3 -m pip install motorbridge
+```
+
+### 安装特定版本
+
+```bash
+python3 -m pip install motorbridge==0.2.6
+```
+
+### 升级现有安装
+
+```bash
+python3 -m pip install --upgrade motorbridge
+```
+
+## 验证安装
+
+### 快速测试
+
+```bash
+python3 -c "import motorbridge; print('motorbridge 安装成功')"
+```
+
+### 检查版本
+
+```bash
+python3 -c "import importlib.metadata; print(importlib.metadata.version('motorbridge'))"
+```
+
+### 测试 CLI
+
+```bash
+motorbridge-cli --help
+```
+
+预期输出：
+```
+usage: motorbridge-cli [-h] {run,scan,id-dump,id-set,robstride-read-param,robstride-write-param} ...
+
+motorbridge Python SDK CLI
+...
+```
+
+### 测试网关命令
+
+`motorbridge` wheel 还会安装独立网关启动器：
+
+```bash
+motorbridge-gateway --help
+```
+
+> `--` 是可选的：`motorbridge-gateway -- --help` 与 `motorbridge-gateway --help` 等价。
+
+## WS Gateway 启动（三平台）
+
+下面命令均使用 Python 包内置网关命令 `motorbridge-gateway`（即 `ws_gateway` 启动器）。
+
+### A) Damiao 串口桥（dm-serial）
+
+Ubuntu:
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport dm-serial \
+  --serial-port /dev/ttyACM0 --serial-baud 921600 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+macOS:
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport dm-serial \
+  --serial-port /dev/cu.usbmodemXXXX --serial-baud 921600 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+Windows (PowerShell):
+
+```powershell
+motorbridge-gateway `
+  --bind 127.0.0.1:9002 `
+  --vendor damiao --transport dm-serial `
+  --serial-port COM3 --serial-baud 921600 `
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+### B) CAN 路径（auto/socketcan/pcan）
+
+Ubuntu (SocketCAN):
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport auto \
+  --channel can0 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+macOS (PCBUSB runtime):
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport auto \
+  --channel can0 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+Windows (PCAN backend):
+
+```powershell
+motorbridge-gateway `
+  --bind 127.0.0.1:9002 `
+  --vendor damiao --transport auto `
+  --channel can0@1000000 `
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+提示：
+- `dm-serial` 仅用于 Damiao。
+- CAN 路径下，Linux 需先 `ip link set can0 up`；Windows 需安装 PCAN 驱动/`PCANBasic.dll`；macOS 需安装 PCBUSB 运行时。
+- CLI 与 Gateway 现已在启动前给出平台依赖提示。
+- 本地建议保持 `127.0.0.1`。如需绑定非回环地址，必须设置 `MOTORBRIDGE_WS_TOKEN`，并在客户端握手中携带（`x-motorbridge-token` 或 `Authorization: Bearer ...`）。
+
+仅 macOS（如果出现动态库加载失败）可使用：
+
+```bash
+GW="$(python3 -c "import motorbridge, pathlib; print(pathlib.Path(motorbridge.__file__).resolve().parent/'bin'/'ws_gateway')")"
+PKG_DIR="$(python3 -c "import motorbridge, pathlib; print(pathlib.Path(motorbridge.__file__).resolve().parent)")"
+DYLD_LIBRARY_PATH="$PKG_DIR/lib:${DYLD_LIBRARY_PATH:-}" "$GW" --bind 127.0.0.1:9002 --vendor damiao --channel can0 --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+## 预发布版本（TestPyPI）
+
+测试正式发布前的最新功能：
+
+```bash
+# 从 TestPyPI 安装最新预发布版本（不指定版本号）
+python3 -m pip install --pre -i https://test.pypi.org/simple/ motorbridge
+
+# 或安装指定预发布版本
+python3 -m pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6a1
+```
+
+<Note>
+预发布版本可能不稳定。请勿在生产环境中使用。
+</Note>
+
+## 开发环境安装
+
+### 从源码安装（Git）
+
+```bash
+git clone https://github.com/your-org/dm_candrive.git
+cd dm_candrive/rust_dm/bindings/python
+
+# 以可编辑模式安装
+pip install -e ./src
+```
+
+### 设置库路径（仅源码构建）
+
+如果从源码构建而不使用打包的 wheel：
+
+```bash
+# 设置 Python 路径到源码目录
+export PYTHONPATH=/path/to/dm_candrive/rust_dm/bindings/python/src
+
+# 设置 ABI 共享对象的库路径
+export LD_LIBRARY_PATH=/path/to/dm_candrive/target/release:${LD_LIBRARY_PATH}
+```
+
+<Warning>
+源码构建需要 Rust 工具链并先编译 `libmotor_abi.so` 库。
+</Warning>
+
+## 虚拟环境（推荐）
+
+使用虚拟环境隔离安装：
+
+```bash
+# 创建虚拟环境
+python3 -m venv ~/venv/motorbridge
+
+# 激活
+source ~/venv/motorbridge/bin/activate
+
+# 安装
+pip install motorbridge
+
+# 完成后停用
+deactivate
+```
+
+## 系统 CAN 配置
+
+使用 SDK 前，确保 CAN 接口已配置：
+
+### Linux（SocketCAN）软件检查与初始化
+
+```bash
+# 检查 CAN 接口是否存在
+ip link show can0
+
+# 加载 CAN 内核模块
+sudo modprobe can
+sudo modprobe can_raw
+sudo modprobe can_dev
+
+# 如果不存在，配置 CAN 接口（示例：1M 波特率）
+sudo ip link set can0 type can bitrate 1000000
+sudo ip link set can0 up
+
+# 增加 TX 队列长度（防止缓冲区溢出）
+sudo ifconfig can0 txqueuelen 1000
+```
+
+### Windows（PCAN）软件检查与初始化
+
+PowerShell（管理员）建议流程：
+
+```powershell
+# 检查 Python 包和 CLI 是否就绪
+python -c "import motorbridge; print('motorbridge OK')"
+motorbridge-cli --help
+
+# 可选：检查 PCANBasic.dll 是否可加载（需已安装 PEAK 驱动与 PCAN-Basic）
+python -c "import ctypes; ctypes.CDLL('PCANBasic.dll'); print('PCANBasic load OK')"
+
+# 运行一次扫描验证（can0@1000000 映射 PCAN_USBBUS1）
+motorbridge-cli scan --vendor damiao --transport auto --channel can0@1000000 --start-id 1 --end-id 16
+```
+
+### macOS（PCBUSB）软件检查与初始化
+
+```bash
+# 检查 Python 包和 CLI 是否就绪
+python3 -c "import motorbridge; print('motorbridge OK')"
+motorbridge-cli --help
+
+# 可选：检查 PCBUSB 运行时是否可加载
+python3 -c "import ctypes; ctypes.CDLL('libPCBUSB.dylib'); print('PCBUSB load OK')"
+
+# 运行一次扫描验证（CAN 路径）
+motorbridge-cli scan --vendor damiao --transport auto --channel can0 --start-id 1 --end-id 16
+```
+
+### macOS（PCBUSB）驱动/运行时安装（缺失时）
+
+如果提示 `libPCBUSB.dylib` 无法加载，请先安装 PCBUSB。
+
+系统级安装：
+
+```bash
+curl -L -o macOS_Library_for_PCANUSB_v0.13.tar.gz \
+  https://raw.githubusercontent.com/tianrking/motorbridge/main/third_party/pcan/macos/macOS_Library_for_PCANUSB_v0.13.tar.gz
+tar -xzf macOS_Library_for_PCANUSB_v0.13.tar.gz
+cd PCBUSB
+sudo ./install.sh
+```
+
+用户目录兜底安装：
+
+```bash
+mkdir -p ~/.local/lib ~/.local/include
+cp PCBUSB/libPCBUSB.0.13.dylib ~/.local/lib/
+ln -sf ~/.local/lib/libPCBUSB.0.13.dylib ~/.local/lib/libPCBUSB.dylib
+cp PCBUSB/PCBUSB.h ~/.local/include/
+export DYLD_LIBRARY_PATH="$HOME/.local/lib:${DYLD_LIBRARY_PATH:-}"
+```
+
+### 串口权限（Linux，dm-serial）
+
+对于 DM 串口桥传输：
+
+```bash
+# 将用户添加到 dialout 组以获取串口访问权限
+sudo usermod -a -G dialout $USER
+
+# 注销并重新登录以使更改生效
+```
+
+## 安装故障排除
+
+### ImportError: cannot import name 'Controller'
+
+ABI 库无法找到。确保：
+1. 从 wheel 安装（不仅仅是复制源码）
+2. `libmotor_abi.so` 在包目录或 `LD_LIBRARY_PATH` 中
+
+### /dev/ttyACM0 权限被拒绝
+
+```bash
+# 检查串口权限
+ls -la /dev/ttyACM0
+
+# 将用户添加到 dialout 组
+sudo usermod -a -G dialout $USER
+# 注销并重新登录
+```
+
+### CAN 接口未找到
+
+```bash
+# 检查 CAN 接口是否存在
+ip link show can0
+
+# 如果不存在，加载模块并配置
+sudo modprobe can_raw
+sudo ip link set can0 type can bitrate 1000000
+sudo ip link set can0 up
+```
+
+### Windows PCAN 运行时缺失
+
+如果提示 `PCANBasic.dll` 缺失：
+1. 安装 PEAK 驱动与 PCAN-Basic 运行时。
+2. 重新打开终端/IDE 后重试。
+3. 通道建议使用 `can0@1000000` 或 `can1@1000000`。
+
+### macOS PCBUSB 运行时缺失
+
+如果提示 `libPCBUSB.dylib` 缺失：
+1. 先安装 PCBUSB 运行时。
+2. 确认 `libPCBUSB.dylib` 在系统可搜索路径中（如 `/usr/local/lib`）。
+3. 重新打开终端后重试。
+
+## 下一步
+
+- [传输方式](transports) - 配置通信层
+- [快速开始](quickstart) - 运行第一个电机控制程序

@@ -1,0 +1,361 @@
+# Installation
+
+<mintly-toc>
+
+This guide covers installing the `motorbridge` Python package on Linux, Windows, and macOS.
+
+</mintly-toc>
+
+## Requirements
+
+### System Requirements
+
+- **Operating System**: Linux / Windows / macOS
+- **Python**: 3.10, 3.11, 3.12, 3.13, or 3.14
+- **Hardware**: CAN interface (SocketCAN, PCAN) or serial adapter
+
+### Python Dependencies
+
+The package automatically installs required dependencies:
+- `ctypes` (standard library)
+- `dataclasses` (standard library)
+
+## Install from PyPI
+
+The recommended installation method:
+
+```bash
+python3 -m pip install motorbridge
+```
+
+### Install Specific Version
+
+```bash
+python3 -m pip install motorbridge==0.2.6
+```
+
+### Upgrade Existing Installation
+
+```bash
+python3 -m pip install --upgrade motorbridge
+```
+
+## Verify Installation
+
+### Quick Test
+
+```bash
+python3 -c "import motorbridge; print('motorbridge installed successfully')"
+```
+
+### Check Version
+
+```bash
+python3 -c "import importlib.metadata; print(importlib.metadata.version('motorbridge'))"
+```
+
+### Test CLI
+
+```bash
+motorbridge-cli --help
+```
+
+Expected output:
+```
+usage: motorbridge-cli [-h] {run,scan,id-dump,id-set,robstride-read-param,robstride-write-param} ...
+
+motorbridge Python SDK CLI
+...
+```
+
+### Test Gateway Command
+
+`motorbridge` wheel also installs a standalone gateway launcher:
+
+```bash
+motorbridge-gateway --help
+```
+
+> `--` is optional: `motorbridge-gateway -- --help` and `motorbridge-gateway --help` are equivalent.
+
+## WS Gateway Quick Start (3 Platforms)
+
+Use `motorbridge-gateway` (the Python launcher for `ws_gateway`) directly after `pip install`.
+
+### A) Damiao serial bridge (`dm-serial`)
+
+Ubuntu:
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport dm-serial \
+  --serial-port /dev/ttyACM0 --serial-baud 921600 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+macOS:
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport dm-serial \
+  --serial-port /dev/cu.usbmodemXXXX --serial-baud 921600 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+Windows (PowerShell):
+
+```powershell
+motorbridge-gateway `
+  --bind 127.0.0.1:9002 `
+  --vendor damiao --transport dm-serial `
+  --serial-port COM3 --serial-baud 921600 `
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+### B) CAN path (`auto/socketcan/pcan`)
+
+Ubuntu (SocketCAN):
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport auto \
+  --channel can0 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+macOS (PCBUSB runtime):
+
+```bash
+motorbridge-gateway \
+  --bind 127.0.0.1:9002 \
+  --vendor damiao --transport auto \
+  --channel can0 \
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+Windows (PCAN backend):
+
+```powershell
+motorbridge-gateway `
+  --bind 127.0.0.1:9002 `
+  --vendor damiao --transport auto `
+  --channel can0@1000000 `
+  --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+Notes:
+- `dm-serial` is Damiao-only.
+- For CAN path: Linux needs SocketCAN interface up (`ip link set can0 up`), Windows needs PEAK PCAN driver + `PCANBasic.dll`, macOS needs PCBUSB runtime.
+- CLI/Gateway now print platform-specific dependency hints before startup.
+- Keep default bind `127.0.0.1` for local usage. If exposing non-loopback addresses, set `MOTORBRIDGE_WS_TOKEN` and send it via `x-motorbridge-token` or `Authorization: Bearer ...`.
+
+macOS only (if dynamic library load fails):
+
+```bash
+GW="$(python3 -c "import motorbridge, pathlib; print(pathlib.Path(motorbridge.__file__).resolve().parent/'bin'/'ws_gateway')")"
+PKG_DIR="$(python3 -c "import motorbridge, pathlib; print(pathlib.Path(motorbridge.__file__).resolve().parent)")"
+DYLD_LIBRARY_PATH="$PKG_DIR/lib:${DYLD_LIBRARY_PATH:-}" "$GW" --bind 127.0.0.1:9002 --vendor damiao --channel can0 --model auto --motor-id 0x01 --feedback-id 0x11 --dt-ms 20
+```
+
+## Pre-release Versions (TestPyPI)
+
+For testing bleeding-edge features before official release:
+
+```bash
+# Install latest pre-release from TestPyPI (no version pin)
+python3 -m pip install --pre -i https://test.pypi.org/simple/ motorbridge
+
+# Or install a specific pre-release version
+python3 -m pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6a1
+```
+
+<Note>
+Pre-release versions may be unstable. Do not use in production.
+</Note>
+
+## Development Installation
+
+### From Source (Git)
+
+```bash
+git clone https://github.com/your-org/dm_candrive.git
+cd dm_candrive/rust_dm/bindings/python
+
+# Install in editable mode
+pip install -e ./src
+```
+
+### Set Library Path (Source Builds Only)
+
+If building from source without a packaged wheel:
+
+```bash
+# Set Python path to source directory
+export PYTHONPATH=/path/to/dm_candrive/rust_dm/bindings/python/src
+
+# Set library path for ABI shared object
+export LD_LIBRARY_PATH=/path/to/dm_candrive/target/release:${LD_LIBRARY_PATH}
+```
+
+<Warning>
+Source builds require the Rust toolchain and compiling the `libmotor_abi.so` library first.
+</Warning>
+
+## Virtual Environment (Recommended)
+
+Isolate your installation using a virtual environment:
+
+```bash
+# Create virtual environment
+python3 -m venv ~/venv/motorbridge
+
+# Activate
+source ~/venv/motorbridge/bin/activate
+
+# Install
+pip install motorbridge
+
+# Deactivate when done
+deactivate
+```
+
+## System CAN Setup
+
+Before using the SDK, ensure your CAN interface is configured:
+
+### Linux (SocketCAN) software checks and bring-up
+
+```bash
+# Check whether CAN interface exists
+ip link show can0
+
+# Load CAN kernel modules
+sudo modprobe can
+sudo modprobe can_raw
+sudo modprobe can_dev
+
+# If interface is missing, configure CAN interface (example: 1M bitrate)
+sudo ip link set can0 type can bitrate 1000000
+sudo ip link set can0 up
+
+# Increase TX queue length
+sudo ifconfig can0 txqueuelen 1000
+```
+
+### Windows (PCAN) software checks and bring-up
+
+Recommended PowerShell (Admin) flow:
+
+```powershell
+# Verify package and CLI
+python -c "import motorbridge; print('motorbridge OK')"
+motorbridge-cli --help
+
+# Optional: verify PCANBasic.dll loadability
+python -c "import ctypes; ctypes.CDLL('PCANBasic.dll'); print('PCANBasic load OK')"
+
+# Run a scan check (can0@1000000 maps to PCAN_USBBUS1)
+motorbridge-cli scan --vendor damiao --transport auto --channel can0@1000000 --start-id 1 --end-id 16
+```
+
+### macOS (PCBUSB) software checks and bring-up
+
+```bash
+# Verify package and CLI
+python3 -c "import motorbridge; print('motorbridge OK')"
+motorbridge-cli --help
+
+# Optional: verify PCBUSB runtime loadability
+python3 -c "import ctypes; ctypes.CDLL('libPCBUSB.dylib'); print('PCBUSB load OK')"
+
+# Run a scan check (CAN path)
+motorbridge-cli scan --vendor damiao --transport auto --channel can0 --start-id 1 --end-id 16
+```
+
+### macOS (PCBUSB) driver/runtime install (if missing)
+
+If `libPCBUSB.dylib` cannot be loaded, install PCBUSB first.
+
+System-wide install:
+
+```bash
+curl -L -o macOS_Library_for_PCANUSB_v0.13.tar.gz \
+  https://raw.githubusercontent.com/tianrking/motorbridge/main/third_party/pcan/macos/macOS_Library_for_PCANUSB_v0.13.tar.gz
+tar -xzf macOS_Library_for_PCANUSB_v0.13.tar.gz
+cd PCBUSB
+sudo ./install.sh
+```
+
+User-local fallback:
+
+```bash
+mkdir -p ~/.local/lib ~/.local/include
+cp PCBUSB/libPCBUSB.0.13.dylib ~/.local/lib/
+ln -sf ~/.local/lib/libPCBUSB.0.13.dylib ~/.local/lib/libPCBUSB.dylib
+cp PCBUSB/PCBUSB.h ~/.local/include/
+export DYLD_LIBRARY_PATH="$HOME/.local/lib:${DYLD_LIBRARY_PATH:-}"
+```
+
+### Serial Port Permissions (Linux, dm-serial)
+
+For DM serial bridge transport:
+
+```bash
+# Add user to dialout group for serial port access
+sudo usermod -a -G dialout $USER
+
+# Log out and back in for changes to take effect
+```
+
+## Troubleshooting Installation
+
+### ImportError: cannot import name 'Controller'
+
+The ABI library cannot be found. Ensure:
+1. You installed from a wheel (not just copying source)
+2. `libmotor_abi.so` is in the package directory or `LD_LIBRARY_PATH`
+
+### Permission Denied on /dev/ttyACM0
+
+```bash
+# Check serial port permissions
+ls -la /dev/ttyACM0
+
+# Add user to dialout group
+sudo usermod -a -G dialout $USER
+# Log out and back in
+```
+
+### CAN Interface Not Found
+
+```bash
+# Check if CAN interface exists
+ip link show can0
+
+# If not, load modules and configure
+sudo modprobe can_raw
+sudo ip link set can0 type can bitrate 1000000
+sudo ip link set can0 up
+```
+
+### Windows PCAN runtime missing
+
+If you see `PCANBasic.dll` missing:
+1. Install PEAK driver + PCAN-Basic runtime.
+2. Reopen terminal/IDE and retry.
+3. Prefer channels like `can0@1000000` or `can1@1000000`.
+
+### macOS PCBUSB runtime missing
+
+If you see `libPCBUSB.dylib` missing:
+1. Install PCBUSB runtime first.
+2. Ensure `libPCBUSB.dylib` is in a searchable path (for example `/usr/local/lib`).
+3. Reopen terminal and retry.
+
+## Next Steps
+
+- [Transports](transports) - Configure your communication layer
+- [Quickstart](quickstart) - Run your first motor control program

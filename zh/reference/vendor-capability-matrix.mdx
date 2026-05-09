@@ -1,0 +1,193 @@
+﻿---
+title: 厂商能力矩阵
+---
+
+# 参考：厂商能力矩阵
+
+<mintly-toc>
+
+该页面用于维护 motorbridge 各厂商能力的生产基线状态。
+
+</mintly-toc>
+
+## 厂商概览
+
+| 厂商 | 添加方法 | 典型传输 | 协议族 |
+|------|----------|----------|--------|
+| Damiao | `add_damiao_motor()` | SocketCAN, DM 串口 | DM-J4310/4340 |
+| RobStride | `add_robstride_motor()` | SocketCAN | RobStride 扩展 CAN |
+| MyActuator | `add_myactuator_motor()` | SocketCAN | MyActuator RMD |
+| HighTorque | `add_hightorque_motor()` | SocketCAN | HighTorque 原生 |
+| Hexfellow | `add_hexfellow_motor()` | CAN-FD | Hexfellow MIT |
+
+## 顶层统一模式支持
+
+| 厂商 | 典型型号 | MIT | POS_VEL | VEL | FORCE_POS |
+|------|----------|-----|---------|-----|-----------|
+| Damiao | 4310, 4340P, 6006 | ✅ | ✅ | ✅ | ✅ |
+| RobStride | rs-00, rs-01, rs-06 | ✅ | ✅ | ✅ | ❌ |
+| MyActuator | X8 | ❌ | ✅ | ✅ | ❌ |
+| HighTorque | hightorque | ✅ | ✅ | ✅ | ✅ |
+| Hexfellow | hexfellow | ✅ | ✅ | ❌ | ❌ |
+
+### RobStride 映射说明
+
+- `MIT` 映射到原生阻抗控制报文（`pos/vel/kp/kd/tau` 均有效）。
+- `POS_VEL` 映射到原生位置流程（`run_mode=1` + `loc_ref` + `limit_spd` + 可选 `loc_kp`）。
+- 统一 `pos-vel` 下，CLI 的 `--vel/--kd/--tau` 为无效参数：只给 warning，不报错。
+- 扭矩/电流目前仍是参数级能力（`write-param`），尚未独立成统一模式（因此 `FORCE_POS` 为 ❌）。
+
+## 统一模式 -> 厂商原生能力映射
+
+| 统一模式 | Damiao | RobStride | MyActuator | HighTorque | Hexfellow |
+|----------|--------|-----------|------------|------------|-----------|
+| `MIT` | 原生 MIT | 原生 MIT | 不支持 | 映射到原生 pos+vel+tqe | 原生 MIT |
+| `POS_VEL` | 原生 POS_VEL | 原生位置流程（`run_mode=1 + loc_ref + limit_spd`） | 原生位置流程 | 原生 POS_VEL | 原生 POS_VEL |
+| `VEL` | 原生 VEL | 原生 Velocity | 原生 Velocity | 原生 Velocity | 不支持 |
+| `FORCE_POS` | 原生 FORCE_POS | 不支持 | 不支持 | 映射到原生 pos+vel+tqe | 不支持 |
+
+## 实验章节：厂商原生协议入口（已实现）
+
+> 该章节用于暴露“已实现但不属于统一四模式”的厂商原生能力，便于现场调试与协议联调。
+
+| 厂商 | 原生能力入口（示例） | 说明 |
+|------|----------------------|------|
+| Damiao | `id-dump`, `id-set`（CLI）+ `set_zero_position()`（API） | 寄存器读写、ID 修改、置零流程 |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit 扩展帧参数通道，支持类型化参数读写 |
+| MyActuator | 厂商原生命令路径（由适配层暴露） | 以位置/速度主流程为主，寄存器能力有限 |
+| HighTorque | 厂商原生命令路径（由适配层暴露） | 统一接口下内部做缩放映射 |
+| Hexfellow | CAN-FD 原生路径（`socketcanfd`） | 主要覆盖 MIT/POS_VEL，依赖 CAN-FD |
+
+### RobStride 原生参数命令（跨平台）
+
+Linux / macOS:
+
+```bash
+motorbridge-cli robstride-read-param \
+  --channel can0 --model rs-00 --motor-id 127 \
+  --param-id 0x7019 --type f32 --timeout-ms 500
+```
+
+Windows (PowerShell):
+
+```powershell
+motorbridge-cli robstride-read-param `
+  --channel can0@1000000 --model rs-00 --motor-id 127 `
+  --param-id 0x7019 --type f32 --timeout-ms 500
+```
+
+## 三平台命令模板（统一接口）
+
+以下示例均基于 Python 包命令 `motorbridge-cli`。
+
+### Linux（Ubuntu / SocketCAN）
+
+```bash
+# RobStride POS_VEL（已支持）
+motorbridge-cli run \
+  --vendor robstride --transport auto --channel can0 \
+  --model rs-00 --motor-id 127 --feedback-id 0xFD \
+  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+
+# Damiao FORCE_POS
+motorbridge-cli run \
+  --vendor damiao --transport auto --channel can0 \
+  --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --mode force-pos --pos 0.8 --vlim 1.5 --ratio 0.3 --loop 20 --dt-ms 20
+```
+
+### macOS
+
+```bash
+# CAN 路径（需 PCBUSB 运行时）
+motorbridge-cli run \
+  --vendor robstride --transport auto --channel can0 \
+  --model rs-00 --motor-id 127 --feedback-id 0xFD \
+  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+
+# Damiao dm-serial 路径（不依赖 CAN 运行时）
+motorbridge-cli run \
+  --vendor damiao --transport dm-serial \
+  --serial-port /dev/cu.usbmodemXXXX --serial-baud 921600 \
+  --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --mode mit --pos 0.5 --vel 0 --kp 20 --kd 1 --tau 0 --loop 20 --dt-ms 20
+```
+
+### Windows（PowerShell / PCAN）
+
+```powershell
+# RobStride POS_VEL（PCAN 通道示例）
+motorbridge-cli run `
+  --vendor robstride --transport auto --channel can0@1000000 `
+  --model rs-00 --motor-id 127 --feedback-id 0xFD `
+  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+
+# Damiao FORCE_POS
+motorbridge-cli run `
+  --vendor damiao --transport auto --channel can0@1000000 `
+  --model 4340P --motor-id 0x01 --feedback-id 0x11 `
+  --mode force-pos --pos 0.8 --vlim 1.5 --ratio 0.3 --loop 20 --dt-ms 20
+```
+
+提示：
+- Linux/macOS 的 SocketCAN/PCAN 通道通常写 `can0`。
+- Windows PCAN 建议写 `can0@1000000`。
+- `dm-serial` 仅 Damiao 支持。
+
+## Host / Feedback ID 说明
+
+| 厂商 | 建议策略 |
+|------|----------|
+| Damiao | 每电机使用独立反馈 ID 路径（通常 `motor_id + base`） |
+| RobStride | 默认 `0xFD`，运行时可回退探测 `0xFF/0xFE` |
+| MyActuator | `0x240 + motor_id` |
+| HighTorque | 按协议固定 |
+| Hexfellow | 按协议固定 |
+
+## 寄存器 / 参数访问
+
+| 厂商 | 读 | 写 | 持久化 |
+|------|----|----|--------|
+| Damiao | 完整寄存器 API | 完整寄存器 API | 支持 |
+| RobStride | 类型化参数 API | 类型化参数 API | 支持 |
+| MyActuator | 有限 | 有限 | 支持 |
+| HighTorque | 有限 | 有限 | 支持 |
+| Hexfellow | 有限 | 有限 | 支持 |
+
+### RobStride 参数 API
+
+```python
+motor.robstride_get_param_i8(param_id, timeout_ms)
+motor.robstride_get_param_u8(param_id, timeout_ms)
+motor.robstride_get_param_u16(param_id, timeout_ms)
+motor.robstride_get_param_u32(param_id, timeout_ms)
+motor.robstride_get_param_f32(param_id, timeout_ms)
+
+motor.robstride_write_param_i8(param_id, value)
+motor.robstride_write_param_u8(param_id, value)
+motor.robstride_write_param_u16(param_id, value)
+motor.robstride_write_param_u32(param_id, value)
+motor.robstride_write_param_f32(param_id, value)
+```
+
+## 参考示例（RobStride）
+
+```python
+from motorbridge import Controller, Mode
+
+with Controller("can0") as ctrl:
+    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-00")
+    ctrl.enable_all()
+
+    motor.ensure_mode(Mode.POS_VEL, 1000)
+    motor.send_pos_vel(0.3, 2.0)
+
+    motor.ensure_mode(Mode.MIT, 1000)
+    motor.send_mit(0.0, 0.0, 8.0, 0.3, 0.0)
+```
+
+## RobStride 的 set-id / zero 状态
+
+- `set-id`：已可用，并与上位机报文语义对齐。
+- `zero`：已可用，但 ACK 行为受固件状态影响。
+- 生产标定建议：zero / set-id 后必须做读回验证（例如 `mechPos` 与状态帧）。
