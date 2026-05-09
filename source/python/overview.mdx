@@ -20,25 +20,25 @@ title: "motorbridge Python SDK"
 
 Python binding layer on top of `motor_abi`.
 
-> Chinese version: [README.zh-CN.md](README.zh-CN.md)
+> Chinese version: [README.zh-CN.md](/zh/source/python/overview)
 
 ## README Navigation (What Each One Is For)
 
 If this is your first time in this folder, read in this order:
 
-1. This file: [README.md](README.md)
+1. This file: [README.md](/source/python/overview)
    Purpose: Python binding overview (install, API scope, common commands).
-2. [examples/README.md](examples/README.md) (English) / [examples/READMEzh_cn.md](examples/READMEzh_cn.md) (Chinese)
+2. [examples/README.md](/source/python/examples/overview) (English) / [examples/READMEzh_cn.md](/zh/source/python/examples/overview) (Chinese)
    Purpose: practical demo index and run instructions (from simplest to advanced).
-2.5. [`../motorbridge-docs`](../../../motorbridge-docs)
+2.5. [`../motorbridge-docs`](https://github.com/tianrking/motorbridge/tree/main/../motorbridge-docs)
    Purpose: canonical Mintlify documentation site (tutorial + API style docs).
-3. [get_started/README.md](get_started/README.md) / [get_started/README.zh-CN.md](get_started/README.zh-CN.md)
+3. [get_started/README.md](/source/python/get-started/overview) / [get_started/README.zh-CN.md](/zh/source/python/get-started/overview)
    Purpose: pip-first onboarding path (install -> scan -> run).
-4. [DAMIAO_PYTHON_REFERENCE.zh-CN.md](DAMIAO_PYTHON_REFERENCE.zh-CN.md)
+4. [DAMIAO_PYTHON_REFERENCE.zh-CN.md](/zh/source/python/damiao-python-reference)
    Purpose: Damiao Python interface reference (parameter lookup style).
-5. [DAMIAO_binding.md](DAMIAO_binding.md)
+5. [DAMIAO_binding.md](/source/python/damiao-binding)
    Purpose: Damiao binding implementation notes (design/internal behavior).
-6. [README.zh-CN.md](README.zh-CN.md)
+6. [README.zh-CN.md](/zh/source/python/overview)
    Purpose: Chinese overview for Chinese-speaking teammates.
 
 Notes:
@@ -270,7 +270,7 @@ python -m pip install bindings/python/dist/motorbridge-*.whl
   - `examples/pos_ctrl_demo.py`
   - `examples/pos_repl_demo.py`
 
-See [examples/README.md](examples/README.md) (English) or [examples/READMEzh_cn.md](examples/READMEzh_cn.md) (Chinese).
+See [examples/README.md](/source/python/examples/overview) (English) or [examples/READMEzh_cn.md](/zh/source/python/examples/overview) (Chinese).
 
 ## Damiao Full-Coverage Status
 
@@ -315,8 +315,8 @@ python3 bindings/python/examples/robstride_wrapper_demo.py \
 - `Mode.MIT` and `send_force_pos` are not available for MyActuator in ABI wrapper.
 - Hexfellow supports `MIT` and `POS_VEL` through ABI wrapper; `VEL` and `FORCE_POS` return unsupported.
 - Full Damiao tuning reference stays in:
-  - [DAMIAO_API.md](DAMIAO_API.md)
-  - [DAMIAO_API.zh-CN.md](DAMIAO_API.zh-CN.md)
+  - [DAMIAO_API.md](/source/python/damiao-api)
+  - [DAMIAO_API.zh-CN.md](/zh/source/python/damiao-api)
 
 ## PyPI Auto Publish (GitHub Actions)
 

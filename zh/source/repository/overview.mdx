@@ -14,7 +14,7 @@ title: "motorbridge"
 
 这是一个统一的 CAN 电机控制栈，包含 vendor-agnostic Rust core、稳定 C ABI，以及 Python/C++ bindings。
 
-> English version: [README.md](README.md)
+> English version: [README.md](/source/repository/overview)
 
 ## 配套仓库
 
@@ -124,21 +124,21 @@ flowchart TB
   FB2 --> STATE
 ```
 
-- [`motor_core`](motor_core): 与厂商无关的控制器、路由、CAN 总线层（Linux SocketCAN / Windows 实验性 PCAN）
-- [`motor_vendors/damiao`](motor_vendors/damiao): Damiao 协议 / 型号 / 寄存器
-- [`motor_vendors/hexfellow`](motor_vendors/hexfellow): Hexfellow CANopen-over-CAN-FD 实现
-- [`motor_vendors/hightorque`](motor_vendors/hightorque): HighTorque 原生 ht_can 协议实现
-- [`motor_vendors/robstride`](motor_vendors/robstride): RobStride 扩展 CAN 协议 / 型号 / 参数
-- [`motor_vendors/myactuator`](motor_vendors/myactuator): MyActuator CAN 协议实现
-- [`motor_cli`](motor_cli): 统一 Rust CLI
-  - 全参数英文文档: [`motor_cli/README.md`](motor_cli/README.md)
-  - 全参数中文文档: [`motor_cli/README.zh-CN.md`](motor_cli/README.zh-CN.md)
-  - Damiao 指令/寄存器文档: [`motor_cli/DAMIAO_API.md`](motor_cli/DAMIAO_API.md), [`motor_cli/DAMIAO_API.zh-CN.md`](motor_cli/DAMIAO_API.zh-CN.md)
-  - RobStride 指令/参数文档: [`motor_cli/ROBSTRIDE_API.md`](motor_cli/ROBSTRIDE_API.md), [`motor_cli/ROBSTRIDE_API.zh-CN.md`](motor_cli/ROBSTRIDE_API.zh-CN.md)
-  - MyActuator 指令/模式文档: [`motor_cli/MYACTUATOR_API.md`](motor_cli/MYACTUATOR_API.md), [`motor_cli/MYACTUATOR_API.zh-CN.md`](motor_cli/MYACTUATOR_API.zh-CN.md)
-- [`motor_abi`](motor_abi): 稳定 C ABI
-- [`bindings/python`](bindings/python): Python SDK + `motorbridge-cli`
-- [`bindings/cpp`](bindings/cpp): C++ RAII wrapper
+- [`motor_core`](https://github.com/tianrking/motorbridge/tree/main/motor_core): 与厂商无关的控制器、路由、CAN 总线层（Linux SocketCAN / Windows 实验性 PCAN）
+- [`motor_vendors/damiao`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/damiao): Damiao 协议 / 型号 / 寄存器
+- [`motor_vendors/hexfellow`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/hexfellow): Hexfellow CANopen-over-CAN-FD 实现
+- [`motor_vendors/hightorque`](/source/vendors/hightorque/overview): HighTorque 原生 ht_can 协议实现
+- [`motor_vendors/robstride`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/robstride): RobStride 扩展 CAN 协议 / 型号 / 参数
+- [`motor_vendors/myactuator`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/myactuator): MyActuator CAN 协议实现
+- [`motor_cli`](/source/rust-cli/overview): 统一 Rust CLI
+  - 全参数英文文档: [`motor_cli/README.md`](/source/rust-cli/overview)
+  - 全参数中文文档: [`motor_cli/README.zh-CN.md`](/zh/source/rust-cli/overview)
+  - Damiao 指令/寄存器文档: [`motor_cli/DAMIAO_API.md`](/source/rust-cli/damiao-api), [`motor_cli/DAMIAO_API.zh-CN.md`](/zh/source/rust-cli/damiao-api)
+  - RobStride 指令/参数文档: [`motor_cli/ROBSTRIDE_API.md`](/source/rust-cli/robstride-api), [`motor_cli/ROBSTRIDE_API.zh-CN.md`](/zh/source/rust-cli/robstride-api)
+  - MyActuator 指令/模式文档: [`motor_cli/MYACTUATOR_API.md`](/source/rust-cli/myactuator-api), [`motor_cli/MYACTUATOR_API.zh-CN.md`](/zh/source/rust-cli/myactuator-api)
+- [`motor_abi`](https://github.com/tianrking/motorbridge/tree/main/motor_abi): 稳定 C ABI
+- [`bindings/python`](/source/python/overview): Python SDK + `motorbridge-cli`
+- [`bindings/cpp`](/source/cpp/overview): C++ RAII wrapper
 - `motorbridge-studio`：独立的 Web 控制台仓库（由 `tools/factory_calib_ui_ws` 拆分而来）
 
 ## 快速开始
@@ -464,12 +464,12 @@ cargo run -p motor_cli --release -- --vendor damiao \
 
 如需系统化排查 Linux `slcan` 与 Windows `pcan`，请直接使用：
 
-- [`docs/zh/can_debugging.md`](docs/zh/can_debugging.md)
-- [`docs/en/can_debugging.md`](docs/en/can_debugging.md)
+- [`docs/zh/can_debugging.md`](/zh/source/project/can-debugging)
+- [`docs/en/can_debugging.md`](/source/project/can-debugging)
 
 最终用户完整链路操作（默认 PCAN/SocketCAN，Damiao 串口桥备用）请看：
 
-- [`docs/zh/operation_manual.md`](docs/zh/operation_manual.md)
+- [`docs/zh/operation_manual.md`](/zh/source/project/operation-manual)
 
 结果解读：
 
@@ -522,8 +522,8 @@ ABI/绑定中的统一模式 ID（`ensure_mode`）：
 
 各厂商协议原生模式名映射与不支持项详见：
 
-- [`docs/en/abi.md`](docs/en/abi.md)
-- [`docs/zh/abi.md`](docs/zh/abi.md)
+- [`docs/en/abi.md`](/source/project/abi)
+- [`docs/zh/abi.md`](/zh/source/project/abi)
 
 RobStride 专属 ABI / binding 能力包括:
 

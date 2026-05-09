@@ -14,7 +14,7 @@ title: "motorbridge"
 
 Unified CAN motor control stack with a vendor-agnostic Rust core, stable C ABI, and Python/C++ bindings.
 
-> Chinese version: [README.zh-CN.md](README.zh-CN.md)
+> Chinese version: [README.zh-CN.md](/zh/source/repository/overview)
 
 ## Companion Repos
 
@@ -125,21 +125,21 @@ flowchart TB
   FB2 --> STATE
 ```
 
-- [`motor_core`](motor_core): vendor-agnostic controller, routing, CAN bus layer (Linux SocketCAN / Windows experimental PCAN)
-- [`motor_vendors/damiao`](motor_vendors/damiao): Damiao protocol / models / registers
-- [`motor_vendors/hexfellow`](motor_vendors/hexfellow): Hexfellow CANopen-over-CAN-FD implementation
-- [`motor_vendors/hightorque`](motor_vendors/hightorque): HighTorque native ht_can protocol implementation
-- [`motor_vendors/robstride`](motor_vendors/robstride): RobStride extended CAN protocol / models / parameters
-- [`motor_vendors/myactuator`](motor_vendors/myactuator): MyActuator CAN protocol implementation
-- [`motor_cli`](motor_cli): unified Rust CLI
-  - full parameters (English): [`motor_cli/README.md`](motor_cli/README.md)
-  - full parameters (Chinese): [`motor_cli/README.zh-CN.md`](motor_cli/README.zh-CN.md)
-  - Damiao command/register guide: [`motor_cli/DAMIAO_API.md`](motor_cli/DAMIAO_API.md), [`motor_cli/DAMIAO_API.zh-CN.md`](motor_cli/DAMIAO_API.zh-CN.md)
-  - RobStride command/parameter guide: [`motor_cli/ROBSTRIDE_API.md`](motor_cli/ROBSTRIDE_API.md), [`motor_cli/ROBSTRIDE_API.zh-CN.md`](motor_cli/ROBSTRIDE_API.zh-CN.md)
-  - MyActuator command/mode guide: [`motor_cli/MYACTUATOR_API.md`](motor_cli/MYACTUATOR_API.md), [`motor_cli/MYACTUATOR_API.zh-CN.md`](motor_cli/MYACTUATOR_API.zh-CN.md)
-- [`motor_abi`](motor_abi): stable C ABI
-- [`bindings/python`](bindings/python): Python SDK + `motorbridge-cli`
-- [`bindings/cpp`](bindings/cpp): C++ RAII wrapper
+- [`motor_core`](https://github.com/tianrking/motorbridge/tree/main/motor_core): vendor-agnostic controller, routing, CAN bus layer (Linux SocketCAN / Windows experimental PCAN)
+- [`motor_vendors/damiao`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/damiao): Damiao protocol / models / registers
+- [`motor_vendors/hexfellow`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/hexfellow): Hexfellow CANopen-over-CAN-FD implementation
+- [`motor_vendors/hightorque`](/source/vendors/hightorque/overview): HighTorque native ht_can protocol implementation
+- [`motor_vendors/robstride`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/robstride): RobStride extended CAN protocol / models / parameters
+- [`motor_vendors/myactuator`](https://github.com/tianrking/motorbridge/tree/main/motor_vendors/myactuator): MyActuator CAN protocol implementation
+- [`motor_cli`](/source/rust-cli/overview): unified Rust CLI
+  - full parameters (English): [`motor_cli/README.md`](/source/rust-cli/overview)
+  - full parameters (Chinese): [`motor_cli/README.zh-CN.md`](/zh/source/rust-cli/overview)
+  - Damiao command/register guide: [`motor_cli/DAMIAO_API.md`](/source/rust-cli/damiao-api), [`motor_cli/DAMIAO_API.zh-CN.md`](/zh/source/rust-cli/damiao-api)
+  - RobStride command/parameter guide: [`motor_cli/ROBSTRIDE_API.md`](/source/rust-cli/robstride-api), [`motor_cli/ROBSTRIDE_API.zh-CN.md`](/zh/source/rust-cli/robstride-api)
+  - MyActuator command/mode guide: [`motor_cli/MYACTUATOR_API.md`](/source/rust-cli/myactuator-api), [`motor_cli/MYACTUATOR_API.zh-CN.md`](/zh/source/rust-cli/myactuator-api)
+- [`motor_abi`](https://github.com/tianrking/motorbridge/tree/main/motor_abi): stable C ABI
+- [`bindings/python`](/source/python/overview): Python SDK + `motorbridge-cli`
+- [`bindings/cpp`](/source/cpp/overview): C++ RAII wrapper
 - `motorbridge-studio`: standalone web control UI repository (split out of `tools/factory_calib_ui_ws`)
 
 ## Quick Start
@@ -465,8 +465,8 @@ cargo run -p motor_cli --release -- --vendor damiao \
 
 For deterministic troubleshooting of Linux `slcan` and Windows `pcan`, use:
 
-- [`docs/en/can_debugging.md`](docs/en/can_debugging.md)
-- [`docs/zh/can_debugging.md`](docs/zh/can_debugging.md)
+- [`docs/en/can_debugging.md`](/source/project/can-debugging)
+- [`docs/zh/can_debugging.md`](/zh/source/project/can-debugging)
 
 Interpretation:
 
@@ -519,8 +519,8 @@ Unified control units:
 
 Vendor-specific protocol naming/mapping and unsupported operations are documented in:
 
-- [`docs/en/abi.md`](docs/en/abi.md)
-- [`docs/zh/abi.md`](docs/zh/abi.md)
+- [`docs/en/abi.md`](/source/project/abi)
+- [`docs/zh/abi.md`](/zh/source/project/abi)
 
 RobStride-specific ABI/binding helpers include:
 

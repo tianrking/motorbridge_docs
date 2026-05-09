@@ -20,25 +20,25 @@ title: "motorbridge Python SDK"
 
 这是基于 `motor_abi` 的 Python 绑定层。
 
-> English version: [README.md](README.md)
+> English version: [README.md](/source/python/overview)
 
 ## README 导航（先看哪个）
 
 如果你是第一次接触这个目录，建议按下面顺序阅读：
 
-1. 本文档 [README.zh-CN.md](README.zh-CN.md)
+1. 本文档 [README.zh-CN.md](/zh/source/python/overview)
    作用：Python binding 总览（安装、API 范围、常用命令）。
-2. [examples/READMEzh_cn.md](examples/READMEzh_cn.md)（中文） / [examples/README.md](examples/README.md)（英文）
+2. [examples/READMEzh_cn.md](/zh/source/python/examples/overview)（中文） / [examples/README.md](/source/python/examples/overview)（英文）
    作用：所有 Python 示例的入口说明（从最简单到高级示例）。
-2.5. [`../motorbridge-docs`](../../../motorbridge-docs)
+2.5. [`../motorbridge-docs`](https://github.com/tianrking/motorbridge/tree/main/../motorbridge-docs)
    作用：正式 Mintlify 文档站入口（教程 + API 手册风格）。
-3. [get_started/README.zh-CN.md](get_started/README.zh-CN.md) / [get_started/README.md](get_started/README.md)
+3. [get_started/README.zh-CN.md](/zh/source/python/get-started/overview) / [get_started/README.md](/source/python/get-started/overview)
    作用：pip 安装用户的快速上手路径（安装 -> 扫描 -> 运行）。
-4. [DAMIAO_PYTHON_REFERENCE.zh-CN.md](DAMIAO_PYTHON_REFERENCE.zh-CN.md)
+4. [DAMIAO_PYTHON_REFERENCE.zh-CN.md](/zh/source/python/damiao-python-reference)
    作用：Damiao Python 接口参考，偏“按接口查参数”。
-5. [DAMIAO_binding.md](DAMIAO_binding.md)
+5. [DAMIAO_binding.md](/source/python/damiao-binding)
    作用：Damiao 绑定实现说明，偏“原理/实现细节”。
-6. [README.md](README.md)
+6. [README.md](/source/python/overview)
    作用：英文版总览（给英文协作成员）。
 
 补充：
@@ -310,7 +310,7 @@ python -m pip install bindings/python/dist/motorbridge-*.whl
   - `examples/pos_ctrl_demo.py`
   - `examples/pos_repl_demo.py`
 
-详细见 [examples/READMEzh_cn.md](examples/READMEzh_cn.md)（中文）或 [examples/README.md](examples/README.md)（英文）。
+详细见 [examples/READMEzh_cn.md](/zh/source/python/examples/overview)（中文）或 [examples/README.md](/source/python/examples/overview)（英文）。
 
 ## Damiao 全覆盖状态
 
@@ -355,8 +355,8 @@ python3 bindings/python/examples/robstride_wrapper_demo.py \
 - MyActuator 在 ABI wrapper 中不支持 `Mode.MIT` 与 `send_force_pos`。
 - Hexfellow 在 ABI wrapper 中支持 `MIT` 与 `POS_VEL`，`VEL` / `FORCE_POS` 会返回不支持。
 - Damiao 的完整调参参考仍保留在:
-  - [DAMIAO_API.md](DAMIAO_API.md)
-  - [DAMIAO_API.zh-CN.md](DAMIAO_API.zh-CN.md)
+  - [DAMIAO_API.md](/source/python/damiao-api)
+  - [DAMIAO_API.zh-CN.md](/zh/source/python/damiao-api)
 
 ## PyPI 自动发布（GitHub Actions）
 
