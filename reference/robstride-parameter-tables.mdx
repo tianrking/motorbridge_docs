@@ -17,6 +17,74 @@ Source alignment: RobStride/Product_Information commit [`ba7236bc26417766fda71e7
 - String entries are listed for completeness. The CLI intentionally does not write string parameters.
 - Rust `motor_cli` uses the full table types, including `i16` and `i32`. Python `motorbridge-cli` 0.2.7 exposes the ABI-backed parameter types `i8`, `u8`, `u16`, `u32`, and `f32`; for `i16`/`i32` table entries, use the Rust CLI/core path.
 
+## Communication Protocol Summary
+
+This page is generated from the same RobStride core used at runtime:
+
+- Protocol framing: `motor_vendors/robstride/src/protocol.rs`
+- Model limits and high-level mode mapping: `motor_vendors/robstride/src/motor.rs`
+- Model-specific parameter tables: `motor_vendors/robstride/src/registers_00.rs` through `registers_06.rs`
+
+RobStride uses 29-bit extended CAN IDs. MotorBridge builds the arbitration ID as:
+
+```text
+extended_id = (comm_type << 24) | (extra_data << 8) | device_id
+```
+
+When decoded:
+
+| Field | Bits | Meaning |
+|---|---:|---|
+| `comm_type` | 28..24 | RobStride communication type |
+| `extra_data` | 23..8 | Command-specific data, host ID, torque field, or status flags |
+| `device_id` | 7..0 | Target motor device ID for requests; responder ID for some replies |
+
+`motor_id` / `device_id` must be `1..255`. `feedback_id` / `host_id` must be `0..255`; common host IDs are `0xFD`, `0xFF`, and `0xFE`. The host ID is not the motor ID.
+
+### Communication Types
+
+| Type | Name | MotorBridge status |
+|---:|---|---|
+| 0 | `GET_DEVICE_ID` | ping request/reply |
+| 1 | `OPERATION_CONTROL` | MIT operation-control frame |
+| 2 | `OPERATION_STATUS` | received and decoded as status feedback |
+| 3 | `ENABLE` | enable command |
+| 4 | `DISABLE` | disable command |
+| 6 | `SET_ZERO_POSITION` | experimental zero command path |
+| 7 | `SET_DEVICE_ID` | RobStride device ID update |
+| 17 | `READ_PARAMETER` | typed parameter read |
+| 18 | `WRITE_PARAMETER` | typed parameter write |
+| 21 | `FAULT_REPORT` | receive/parse path |
+| 22 | `SAVE_PARAMETERS` | store/save parameters |
+| 23 | `SET_BAUDRATE` | protocol constant present; no first-class high-level API yet |
+| 24 | `ACTIVE_REPORT` | protocol constant present; no first-class high-level API yet |
+| 25 | `SET_PROTOCOL` | protocol constant present; no first-class high-level API yet |
+
+### Parameter Frames
+
+Parameter read payload:
+
+```text
+byte[0..2] = param_id little-endian
+byte[2..8] = 0
+```
+
+Parameter write payload:
+
+```text
+byte[0..2] = param_id little-endian
+byte[2..4] = 0
+byte[4..8] = typed raw value
+```
+
+Read replies return the typed raw value in `byte[4..8]`. Integer and float parameter values are encoded little-endian. The selected `--model` decides which function-code table is used for name and type validation.
+
+### Control and Status Frames
+
+MIT control uses `OPERATION_CONTROL` (`comm_type=1`). The 8-byte data field packs position, velocity, `kp`, and `kd`; the torque command is carried in the extended-ID `extra_data` field. Values are clamped against the selected model limits before packing.
+
+Status frames use `OPERATION_STATUS` (`comm_type=2`). The 8-byte data field contains packed position, velocity, torque, and temperature. The status `extra_data` field carries fault flags plus the reporting device ID.
+
 ## CLI Examples
 
 Read:
@@ -37,15 +105,15 @@ motorbridge-cli robstride-write-param \
 
 ## Model Index
 
-| Model | Parameter count | Table section |
-|---|---:|---|
-| `rs-00` | 151 | [RS00](#rs00) |
-| `rs-01` | 120 | [RS01](#rs01) |
-| `rs-02` | 139 | [RS02](#rs02) |
-| `rs-03` | 148 | [RS03](#rs03) |
-| `rs-04` | 149 | [RS04](#rs04) |
-| `rs-05` | 148 | [RS05](#rs05) |
-| `rs-06` | 147 | [RS06](#rs06) |
+| Model | Parameter count | Core source | Table section |
+|---|---:|---|---|
+| `rs-00` | 151 | `registers_00.rs` | [RS00](#rs00) |
+| `rs-01` | 120 | `registers_01.rs` | [RS01](#rs01) |
+| `rs-02` | 139 | `registers_02.rs` | [RS02](#rs02) |
+| `rs-03` | 148 | `registers_03.rs` | [RS03](#rs03) |
+| `rs-04` | 149 | `registers_04.rs` | [RS04](#rs04) |
+| `rs-05` | 148 | `registers_05.rs` | [RS05](#rs05) |
+| `rs-06` | 147 | `registers_06.rs` | [RS06](#rs06) |
 
 ## RS00
 
