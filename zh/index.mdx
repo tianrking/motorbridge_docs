@@ -21,6 +21,9 @@ title: 首页
   <Card title="代码配方" icon="code" href="tutorials/06-practical-recipes">
     复制粘贴即用的代码
   </Card>
+  <Card title="RobStride 参数表" icon="table" href="/zh/reference/robstride-parameter-tables">
+    RS00-RS06 通信协议摘要和各型号独立参数表
+  </Card>
 </Cards>
 
 ## 为什么选择 MotorBridge？
@@ -144,6 +147,20 @@ flowchart TB
     - [Motor API](/zh/api/motor) - 单电机操作
     - [Mode 与 State](/zh/api/mode-and-state) - 枚举和数据结构
     - [CLI 工具](/zh/api/cli) - 命令行工具
+  </Accordion>
+
+  <Accordion title="参考资料">
+    - [厂商能力矩阵](/zh/reference/vendor-capability-matrix) - 支持厂商、控制模式和参数 API
+    - [CAN ID 与型号速查表](/zh/reference/can-id-and-model-cheatsheet) - 各厂商 ID 规则和型号字符串
+    - [RobStride 参数表](/zh/reference/robstride-parameter-tables) - 通信协议摘要以及 RS00-RS06 独立参数表
+  </Accordion>
+
+  <Accordion title="源码文档">
+    - [源码文档地图](/zh/source/index) - 完整仓库文档地图
+    - [仓库概览](/zh/source/repository/overview) - 当前生产基线和架构入口
+    - [RobStride CLI/API 参考](/zh/source/rust-cli/robstride-api) - 完整 RobStride 命令和协议说明
+    - [Python Binding 概览](/zh/source/python/overview) - Python SDK 和 CLI 使用入口
+    - [WebSocket 网关](/zh/source/integrations/ws-gateway/overview) - 网关 JSON 操作和型号要求
   </Accordion>
 </AccordionGroup>
 

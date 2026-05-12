@@ -21,6 +21,9 @@ A unified, high-performance motor control library for Python. Control brushless 
   <Card title="Examples" icon="code" href="tutorials/06-practical-recipes">
     Copy-paste ready code recipes
   </Card>
+  <Card title="RobStride Parameters" icon="table" href="reference/robstride-parameter-tables">
+    RS00-RS06 protocol notes and model-specific parameter tables
+  </Card>
 </Cards>
 
 ## Why MotorBridge?
@@ -144,6 +147,20 @@ For the full project-level architecture, see [Source Architecture](source/projec
     - [Motor API](api/motor) - Per-motor operations
     - [Mode & State](api/mode-and-state) - Enums and data structures
     - [CLI Tools](api/cli) - Command-line utilities
+  </Accordion>
+
+  <Accordion title="Reference">
+    - [Vendor Capability Matrix](reference/vendor-capability-matrix) - Supported vendors, modes, and parameter APIs
+    - [CAN ID & Model Cheatsheet](reference/can-id-and-model-cheatsheet) - ID rules and model strings by vendor
+    - [RobStride Parameter Tables](reference/robstride-parameter-tables) - Communication protocol summary plus independent RS00-RS06 parameter tables
+  </Accordion>
+
+  <Accordion title="Source Documentation">
+    - [Source Documentation Atlas](source/index) - Full repository documentation map
+    - [Repository Overview](source/repository/overview) - Current production baseline and architecture links
+    - [RobStride CLI/API Reference](source/rust-cli/robstride-api) - Complete RobStride command and protocol guide
+    - [Python RobStride Binding](source/python/robostride-binding) - Core CLI, Python CLI, and Python SDK comparison
+    - [WebSocket Gateway](source/integrations/ws-gateway/overview) - Gateway JSON operations and model requirements
   </Accordion>
 </AccordionGroup>
 
