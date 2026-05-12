@@ -13,6 +13,20 @@ Versioning.
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-05-12
+
+### Added
+
+- RobStride RS00-RS06 model-specific parameter/function-code tables aligned with RobStride/Product_Information commit `ba7236bc26417766fda71e75ae128c66dbd21aba`.
+- Complete RobStride parameter table reference pages in English and Chinese docs.
+
+### Changed
+
+- RobStride parameter read/write now selects names and data types from the physical `--model`.
+- Rust CLI accepts `robstride-read-param` and `robstride-write-param` bare commands as RobStride operations.
+- Websocket gateway rejects generic RobStride models for real interaction and requires `rs-00` through `rs-06`.
+- Python package version advanced to `0.2.7`; Rust workspace crates advanced to `0.2.4`.
+
 ## [0.2.6] - 2026-05-09
 
 ### Added

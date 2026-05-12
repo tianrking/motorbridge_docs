@@ -27,8 +27,8 @@ Current source alignment:
 
 | Component | Source file | Current version |
 |-----------|-------------|-----------------|
-| Git release tag | `motorbridge` repository | `v0.2.6` |
-| Python package | `bindings/python/pyproject.toml` | `0.2.6` |
+| Git release tag | `motorbridge` repository | `v0.2.7` |
+| Python package | `bindings/python/pyproject.toml` | `0.2.7` |
 | Rust workspace crates | `Cargo.toml` `[workspace.package]` | `0.2.3` |
 
 ```
@@ -49,9 +49,9 @@ Examples:
 
 | Category | Example | Stability |
 |----------|---------|-----------|
-| Stable | `0.2.6` | Production ready |
-| Pre-release | `0.2.6a1` | Testing only |
-| Development | `0.2.6.dev1` | Internal use |
+| Stable | `0.2.7` | Production ready |
+| Pre-release | `0.2.7a1` | Testing only |
+| Development | `0.2.7.dev1` | Internal use |
 
 ## Installation Channels
 
@@ -62,7 +62,7 @@ Examples:
 pip install motorbridge
 
 # Specific version
-pip install motorbridge==0.2.6
+pip install motorbridge==0.2.7
 
 # Upgrade
 pip install --upgrade motorbridge
@@ -72,7 +72,7 @@ pip install --upgrade motorbridge
 
 ```bash
 # Install from TestPyPI
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6a1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.7a1
 ```
 
 <Warning>
@@ -83,7 +83,7 @@ Pre-release versions may have breaking changes and are not recommended for produ
 
 ```bash
 # Install from Git
-pip install git+https://github.com/tianrking/motorbridge@v0.2.6
+pip install git+https://github.com/tianrking/motorbridge@v0.2.7
 
 # Install specific branch
 pip install git+https://github.com/tianrking/motorbridge@main
@@ -118,11 +118,11 @@ Stay on stable versions, upgrade for bug fixes:
 
 ```bash
 # Current: any older 0.x release
-# Upgrade to latest stable: 0.2.6
+# Upgrade to latest stable: 0.2.7
 pip install --upgrade motorbridge
 
 # Or specific patch
-pip install motorbridge==0.2.6
+pip install motorbridge==0.2.7
 ```
 
 ### Early Adopter
@@ -131,13 +131,13 @@ Test pre-releases in development:
 
 ```bash
 # Development environment
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6b1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.7b1
 
 # Test your code
 python3 -m pytest tests/
 
 # Production stays on stable
-pip install motorbridge==0.2.6
+pip install motorbridge==0.2.7
 ```
 
 ### Pinned Versions
@@ -146,14 +146,14 @@ For reproducible deployments:
 
 ```requirements.txt
 # requirements.txt
-motorbridge==0.2.6
+motorbridge==0.2.7
 ```
 
 Or with version constraints:
 
 ```requirements.txt
 # Allow patches, block minor/major changes
-motorbridge>=0.2.6,<0.3.0
+motorbridge>=0.2.7,<0.3.0
 ```
 
 ## API Stability
@@ -172,7 +172,7 @@ motorbridge>=0.2.6,<0.3.0
 
 ## Changelog
 
-### v0.2.6
+### v0.2.7
 
 - Added RobStride host-id-specific ABI helpers: `motor_handle_robstride_ping_host_id` and `motor_handle_robstride_get_param_f32_host_id`
 - Added Python wrappers `robstride_ping_host_id(...)` and `robstride_get_param_f32_host_id(...)`
@@ -218,7 +218,7 @@ For maintainers releasing new versions:
 1. **Update version:**
    ```bash
    # Update [project].version in bindings/python/pyproject.toml
-   version = "0.2.6"
+   version = "0.2.7"
    ```
 
 2. **Update changelog:**
@@ -227,8 +227,8 @@ For maintainers releasing new versions:
 
 3. **Tag release:**
    ```bash
-   git tag v0.2.6
-   git push origin v0.2.6
+   git tag v0.2.7
+   git push origin v0.2.7
    ```
 
 4. **Build package:**
@@ -245,7 +245,7 @@ For maintainers releasing new versions:
 
 6. **Verify installation:**
    ```bash
-   pip install -i https://test.pypi.org/simple/ motorbridge==0.2.6
+   pip install -i https://test.pypi.org/simple/ motorbridge==0.2.7
    python3 -m pytest tests/
    ```
 
@@ -266,7 +266,7 @@ Once a version is uploaded to PyPI, it cannot be overwritten. Always increment t
 
 ```bash
 # Bad: Trying to re-upload same version
-twine upload dist/motorbridge-0.2.6.tar.gz
+twine upload dist/motorbridge-0.2.7.tar.gz
 # Error: File already exists
 
 # Solution: Increment version
