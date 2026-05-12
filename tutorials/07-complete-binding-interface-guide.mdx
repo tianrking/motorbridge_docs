@@ -105,7 +105,7 @@ with Controller.from_dm_serial("/dev/ttyACM0", 921600) as ctrl:
 ```python
 ctrl.enable_all()    # Enable all motors
 ctrl.disable_all()   # Disable all motors
-ctrl.poll_feedback_once()  # Manual feedback poll (optional in v0.2.7)
+ctrl.poll_feedback_once()  # Manual feedback poll (optional in v0.2.8)
 ```
 
 ### Lifecycle
@@ -399,7 +399,7 @@ if __name__ == "__main__":
 | Version | Notes |
 |---------|-------|
 | v0.1.6 and earlier | Requires manual `poll_feedback_once()` after `request_feedback()` |
-| v0.2.7 | Background polling enabled by default; `poll_feedback_once()` is optional |
+| v0.2.8 | Background polling enabled by default; `poll_feedback_once()` is optional |
 
 ## See Also
 

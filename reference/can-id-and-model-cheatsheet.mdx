@@ -93,7 +93,7 @@ with Controller.from_dm_serial("/dev/ttyACM0", 921600) as ctrl:
 | `rs-05` | RobStride RS05 |
 | `rs-06` | RobStride RS06 |
 
-RobStride model selection is required. RS00-RS06 use different manual function-code/parameter tables, so parameter read/write is encoded and decoded from the selected model. Do not use `rs-00` as a generic placeholder for other RS motors.
+RobStride uses one upper-level command shape across RS models. Parameter read/write in MotorBridge v0.2.8 uses the common protocol section 4 runtime table (`0x7005..0x702E`).
 
 For the complete text tables used by the runtime encoder/decoder, see [RobStride Parameter Tables](/reference/robstride-parameter-tables).
 
@@ -117,7 +117,7 @@ with Controller("can0") as ctrl:
     motor = ctrl.add_robstride_motor(
         motor_id=127,       # Device ID
         feedback_id=0xFD,   # host_id, not the motor/device ID
-        model="rs-06"       # Replace with the physical RS00-RS06 model
+        model="rs-06"       # Replace with the RS model you use for limits/logging
     )
 
     ctrl.enable_all()

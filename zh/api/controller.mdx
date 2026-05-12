@@ -220,7 +220,7 @@ with Controller("can0") as ctrl:
 |------|------|------|
 | `motor_id` | `int` | 设备 ID，范围校验为 `1..255`（通常为 127） |
 | `feedback_id` | `int` | 上位机侧 host_id，范围校验为 `0..255`（默认 `0xFD`；扫描会尝试 `0xFD,0xFF,0xFE,0x00,0xAA`） |
-| `model` | `str` | 真实 RobStride 型号：`"rs-00"` 到 `"rs-06"`；参数表按型号区分 |
+| `model` | `str` | 真实 RobStride 型号：`"rs-00"` 到 `"rs-06"`；参数表使用第 4 章通用运行参数 |
 
 <Note>
 RobStride 的 `feedback_id` 是控制器使用的 host_id，不是电机 `device_id`。

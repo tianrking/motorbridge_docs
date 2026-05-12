@@ -25,7 +25,7 @@ Practical and complete reference for RobStride control, parameter access, and cu
 | Parameter | Meaning | Typical value |
 |---|---|---|
 | `channel` | CAN interface name | `can0` |
-| `model` | RobStride model string; must match the physical motor | `rs-00` ... `rs-06` |
+| `model` | RobStride model string; is used for limits and logging | `rs-00` ... `rs-06` |
 | `motor-id` | Device ID | e.g. `127` |
 | `feedback-id` | Host/feedback ID used in command frame | usually `0xFD` |
 | `loop` | Send cycles for periodic control | `20`~`100` |
@@ -184,7 +184,7 @@ Raw protocol alignment (with official upper software):
 
 ## 5) Parameter Read/Write
 
-Parameter access is model-aware. For common runtime control parameters in the `0x7000` range, the unified control paths share the same IDs. For manual function-code parameters from the RobStride manuals, especially the `0x2000` and `0x3000` ranges, each RS model may define different names, data types, or valid ranges at the same ID.
+Parameter access is section-4-runtime. For common runtime control parameters in the `0x7000` range, the unified control paths share the same IDs. For manual function-code parameters from the RobStride manuals, especially the `0x2000` and `0x3000` ranges, each RS model may define different names, data types, or valid ranges at the same ID.
 
 Read parameter:
 

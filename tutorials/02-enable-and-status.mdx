@@ -232,12 +232,12 @@ with Controller("can0") as ctrl:
 
 ## Understanding poll_feedback_once()
 
-### Background Polling (current v0.2.7)
+### Background Polling (current v0.2.8)
 
-In current v0.2.7, the SDK uses background polling by default. You typically don't need to call `poll_feedback_once()`.
+In current v0.2.8, the SDK uses background polling by default. You typically don't need to call `poll_feedback_once()`.
 
 ```python
-# Recommended pattern (current v0.2.7)
+# Recommended pattern (current v0.2.8)
 motor.request_feedback()
 state = motor.get_state()
 ```

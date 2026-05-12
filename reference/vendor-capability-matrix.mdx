@@ -176,7 +176,7 @@ motor.robstride_write_param_f32(param_id, value)
 from motorbridge import Controller, Mode
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-06")  # replace with the physical RS00-RS06 model
+    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-06")  # replace with the RS model you use for limits/logging
     ctrl.enable_all()
 
     motor.ensure_mode(Mode.POS_VEL, 1000)

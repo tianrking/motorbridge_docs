@@ -96,7 +96,7 @@ Note:
 
 - RobStride unified high-level control currently covers `MIT` / `POS_VEL` / `VEL`.
 - Torque/current is parameter-level only for RobStride (`robstride_write_param_*`), not a dedicated unified mode.
-- RobStride supports `rs-00` through `rs-06`; pass the real model to `add_robstride_motor(...)` because parameter read/write uses model-specific function-code tables.
+- RobStride supports `rs-00` through `rs-06`; pass the real model to `add_robstride_motor(...)` because parameter read/write uses the common section 4 runtime parameter table.
 - RobStride feedback/host default should use `0xFD`; scan tries `0xFD,0xFF,0xFE,0x00,0xAA` by default.
 - RobStride `feedback_id` / `host_id` is not the motor `device_id`; scan hits report the motor ID as `probe` / `device_id`.
 
@@ -133,7 +133,7 @@ RobStride quick use:
 from motorbridge import Controller
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")  # replace with the physical RS00-RS06 model
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")  # replace with the RS model you use for limits/logging
     print(motor.robstride_ping())
     print(motor.robstride_get_param_f32(0x7019))
     motor.close()

@@ -329,7 +329,7 @@ motor_cli $DM_SERIAL --motor-id 0x04 --feedback-id 0x14 \
 
 - RobStride 统一高层当前支持 `MIT` / `POS_VEL` / `VEL`。
 - 当前支持 RobStride 型号：`rs-00`、`rs-01`、`rs-02`、`rs-03`、`rs-04`、`rs-05`、`rs-06`。
-- RobStride 必须按真实电机传 `--model`。基础控制命令的上层形态一致，但原生功能码/参数表按型号区分；同一个功能码在不同型号上可能对应不同名称或类型。
+- RobStride 必须按真实电机传 `--model`。基础控制命令的上层形态一致，但原生功能码/参数表使用第 4 章通用运行参数；同一个功能码在不同型号上可能对应不同名称或类型。
 - 内置 RS00-RS06 参数表对齐 RobStride/Product_Information commit `ba7236bc26417766fda71e75ae128c66dbd21aba`。
 - `TORQUE/CURRENT` 目前仍是参数级能力（通过 `write-param` 写 `iq_ref` 与限幅参数），尚未开放统一模式。
 - RobStride 的 `mit` 五个参数都生效：`--pos`、`--vel`、`--kp`、`--kd`、`--tau`。

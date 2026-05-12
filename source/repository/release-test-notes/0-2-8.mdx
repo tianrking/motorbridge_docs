@@ -1,0 +1,71 @@
+---
+title: "MotorBridge 0.2.8 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.2.8.md`</Note>
+
+# MotorBridge 0.2.8 Release Test Note
+
+Date: 2026-05-12
+Scope: v0.2.6-compatible unified interfaces, RobStride protocol section 4 runtime parameters, zeroing behavior, Rust core/CLI, websocket gateway, Python binding/CLI, and documentation alignment.
+
+## Summary
+
+MotorBridge 0.2.8 restores the unified v0.2.6 RobStride command shape and applies the minimal protocol fixes needed for production use. RobStride parameter read/write uses the common protocol section 4 runtime list `0x7005..0x702E`. The upper-level zero command is unchanged, but RobStride now writes `zero_sta(0x7029)=1` behind the scenes so zeroed motors use the `-pi..pi` startup range.
+
+## Version Alignment
+
+| Component | Version |
+|---|---|
+| Git release tag | `v0.2.8` |
+| Rust workspace crates | `0.2.8` |
+| Python package | `0.2.8` |
+
+## RobStride Checks
+
+Read runtime position:
+
+```bash
+cargo run -p motor_cli --release -- robstride-read-param \
+  --channel can0 --model rs-06 --motor-id 2 --feedback-id 0xFD \
+  --param-id 0x7019 --type f32
+```
+
+Write one of the newly completed section 4 parameters:
+
+```bash
+motorbridge-cli robstride-write-param \
+  --channel can0 --model rs-06 --motor-id 2 --feedback-id 0xFD \
+  --param-id 0x702A --type u8 --value 1 --store 1 --verify 1
+```
+
+Zero through the unchanged upper-level command:
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-06 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode zero --zero-exp 1 --store 1
+```
+
+Expected:
+
+- `set_zero_position` sends type 6, then writes `zero_sta(0x7029)=1` internally.
+- `--store 1` / `store_parameters` sends type 22 with payload `01 02 03 04 05 06 07 08`.
+- No websocket command shape changes are required.
+
+## Release Quality Gate
+
+```bash
+cargo check -p motor_vendor_robstride -p motor_cli -p motor_abi -p ws_gateway
+cargo test -p motor_vendor_robstride -p motor_cli
+python3 -m compileall -q bindings/python/src/motorbridge
+```
+
+## Acceptance Criteria
+
+- Python binding package version is `0.2.8`.
+- Rust workspace package version is `0.2.8`.
+- GitHub release tag should be `v0.2.8`.
+- RobStride section 4 runtime parameter list includes `0x702A..0x702E`.
+- RobStride zeroing keeps the same user-facing command and persists correctly when followed by store.

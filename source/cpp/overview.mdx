@@ -80,7 +80,7 @@ RobStride:
 
 int main() {
   motorbridge::Controller ctrl("can0");
-  auto motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06"); // replace with the physical RS00-RS06 model
+  auto motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06"); // replace with the RS model you use for limits/logging
   auto ids = motor.robstride_ping();
   float pos = motor.robstride_get_param_f32(0x7019);
   ctrl.shutdown();
@@ -88,7 +88,7 @@ int main() {
 }
 ```
 
-RobStride supports `rs-00` through `rs-06`. The C++ wrapper keeps one `add_robstride_motor(...)` shape, but parameter read/write is model-specific behind the ABI.
+RobStride supports `rs-00` through `rs-06`. The C++ wrapper keeps one `add_robstride_motor(...)` shape, but parameter read/write is backed by the common section 4 runtime table.
 
 MyActuator:
 

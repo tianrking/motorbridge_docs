@@ -282,7 +282,7 @@ ctrl.disable_all()
 
 版本差异：
 - **v0.1.6 及以前**：需要手动调用 `ctrl.poll_feedback_once()`
-- **v0.2.7**：后台自动处理，通常不需要手动调用
+- **v0.2.8**：后台自动处理，通常不需要手动调用
 
 ```python
 # v0.1.6 及以前
@@ -290,7 +290,7 @@ motor.request_feedback()
 ctrl.poll_feedback_once()  # 必须调用
 state = motor.get_state()
 
-# v0.2.7
+# v0.2.8
 motor.request_feedback()
 # 可省略 poll_feedback_once()
 state = motor.get_state()

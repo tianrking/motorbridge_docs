@@ -82,7 +82,7 @@ Current status:
 Notes:
 - RobStride default `--feedback-id` is `0xFD`; scan defaults to `--feedback-ids 0xFD,0xFF,0xFE,0x00,0xAA`.
 - RobStride `feedback_id` / `host_id` is not the motor `device_id`; scan reports the motor ID as `probe` / `device_id`.
-- RobStride `--model` must match the physical motor for parameter access. RS00-RS06 use separate function-code tables, so `read-param` and `write-param` are typed from the selected model.
+- RobStride `--model` is still passed for limits and logging, while v0.2.8 parameter read/write uses the common section 4 runtime table.
 - RobStride `pos-vel` ignores `--vel/--kd/--tau` by design (warning only, no hard error).
 
 ## 1. Argument Parsing Rules

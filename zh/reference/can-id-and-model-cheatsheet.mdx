@@ -102,7 +102,7 @@ with Controller.from_dm_serial("/dev/ttyACM0", 921600) as ctrl:
 | `rs-05` | RobStride RS05 |
 | `rs-06` | RobStride RS06 |
 
-RobStride 必须指定真实型号。RS00-RS06 的手册功能码/参数表不同，参数读写会根据所选型号编码和解码；不要把 `rs-00` 当作所有 RS 电机的通用占位。
+RobStride 在 RS 系列上保持统一上层命令形态。MotorBridge v0.2.8 的参数读写使用协议第 4 章通用运行表（`0x7005..0x702E`）。
 
 运行时编码/解码使用的完整文本表见 [RobStride 参数表](/zh/reference/robstride-parameter-tables)。
 
@@ -126,7 +126,7 @@ with Controller("can0") as ctrl:
     motor = ctrl.add_robstride_motor(
         motor_id=127,       # 设备 ID
         feedback_id=0xFD,   # host_id，上位机侧 ID，不是电机 ID
-        model="rs-06"       # 请替换为真实 RS00-RS06 型号
+        model="rs-06"       # 请替换为你用于限值/日志的 RS 型号
     )
 
     ctrl.enable_all()
