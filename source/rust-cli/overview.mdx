@@ -103,7 +103,7 @@ Notes:
 | `--channel` | string | `can0` | Linux: SocketCAN interface name (`can0`/`slcan0`); Windows (PCAN backend): `can0`/`can1` with optional `@bitrate` suffix (for example `can0@1000000`); macOS (PCBUSB backend): `can0`/`can1` |
 | `--serial-port` | string | `/dev/ttyACM0` | Used when `--transport dm-serial` |
 | `--serial-baud` | u64 | `921600` | Used when `--transport dm-serial` |
-| `--model` | string | vendor dependent | `4340` for Damiao, `rs-00` for RobStride, `hightorque` for HighTorque, `X8` for MyActuator |
+| `--model` | string | vendor dependent | `4340` for Damiao; physical `rs-00` through `rs-06` for RobStride; `hightorque` for HighTorque; `X8` for MyActuator |
 | `--motor-id` | u16 (hex/dec) | `0x01` | Motor CAN ID |
 | `--feedback-id` | u16 (hex/dec) | vendor dependent | Damiao `0x11`, RobStride `0xFD`, HighTorque `0x01`, MyActuator `0x241` (for motor-id `1`) |
 | `--mode` | string | vendor dependent | Damiao `mit`, RobStride `ping`, HighTorque `read`, MyActuator `status`, `all` -> `scan` |

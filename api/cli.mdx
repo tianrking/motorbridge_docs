@@ -489,7 +489,7 @@ motorbridge-cli robstride-read-param [OPTIONS]
 |--------|---------|-------------|
 | `--channel` | `can0` | CAN interface |
 | `--transport` | `auto` | Transport: auto, socketcan, socketcanfd |
-| `--model` | `rs-00` | Physical RobStride model (`rs-00` through `rs-06`); required because parameter tables differ by model |
+| `--model` | physical model | Physical RobStride model (`rs-00` through `rs-06`); required because parameter tables differ by model |
 | `--motor-id` | `127` | Motor ID |
 | `--feedback-id` | `0xFD` | RobStride host_id default; not the motor/device ID |
 | `--param-id` | (required) | Parameter ID to read |
@@ -532,7 +532,7 @@ motorbridge-cli robstride-write-param [OPTIONS]
 |--------|---------|-------------|
 | `--channel` | `can0` | CAN interface |
 | `--transport` | `auto` | Transport: auto, socketcan, socketcanfd |
-| `--model` | `rs-00` | Physical RobStride model (`rs-00` through `rs-06`); required because parameter tables differ by model |
+| `--model` | physical model | Physical RobStride model (`rs-00` through `rs-06`); required because parameter tables differ by model |
 | `--motor-id` | `127` | Motor ID |
 | `--feedback-id` | `0xFD` | RobStride host_id default; not the motor/device ID |
 | `--param-id` | (required) | Parameter ID to write |

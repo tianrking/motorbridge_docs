@@ -126,7 +126,7 @@ motor_cli \
 | `--channel` | string | `can0` | Linux：SocketCAN 网卡名（`can0`/`slcan0`）；Windows（PCAN 后端）：`can0`/`can1`，可加 `@bitrate`（如 `can0@1000000`）；macOS（PCBUSB 后端）：`can0`/`can1` |
 | `--serial-port` | string | `/dev/ttyACM0` | `--transport dm-serial` 时使用 |
 | `--serial-baud` | u64 | `921600` | `--transport dm-serial` 时使用 |
-| `--model` | string | 按 vendor 决定 | Damiao 默认 `4340`；RobStride 默认 `rs-00`；HighTorque 默认 `hightorque`；MyActuator 默认 `X8` |
+| `--model` | string | 按 vendor 决定 | Damiao 默认 `4340`；RobStride 必须使用真实 `rs-00` 到 `rs-06` 型号；HighTorque 默认 `hightorque`；MyActuator 默认 `X8` |
 | `--motor-id` | u16(hex/dec) | `0x01` | 电机 CAN ID |
 | `--feedback-id` | u16(hex/dec) | 按 vendor 决定 | Damiao 默认 `0x11`；RobStride 默认 `0xFD`；HighTorque 默认 `0x01`；MyActuator 默认 `0x241`（motor-id=1） |
 | `--mode` | string | 按 vendor 决定 | Damiao 默认 `mit`；RobStride 默认 `ping`；HighTorque 默认 `read`；MyActuator 默认 `status`；`all` 默认 `scan` |

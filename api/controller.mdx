@@ -254,7 +254,7 @@ Register a RobStride motor and return its handle.
 |------|------|-------------|
 | `motor_id` | `int` | Device ID, validated as `1..255` (typically 127) |
 | `feedback_id` | `int` | Host-side ID, validated as `0..255` (default `0xFD`; scans try `0xFD,0xFF,0xFE,0x00,0xAA`) |
-| `model` | `str` | Motor model: "rs-00", etc. |
+| `model` | `str` | Physical RobStride model: `"rs-00"` through `"rs-06"`; parameter tables differ by model |
 
 <Note>
 For RobStride, `feedback_id` is the host_id used by the controller, not the motor `device_id`.
