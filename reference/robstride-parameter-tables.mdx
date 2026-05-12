@@ -27,37 +27,43 @@ MotorBridge keeps the upper-level RobStride API shape shared across RS models. T
 
 ## Section 4 Parameter List
 
-| Index | Name | Type | Bytes | Unit / Meaning | R/W |
-|---:|---|---:|---:|---|---|
-| `0x7005` | `run_mode` | `u8` | 1 | `0` MIT, `1` PP, `2` velocity, `3` current, `5` CSP | W/R |
-| `0x7006` | `iq_ref` | `f32` | 4 | Current-mode Iq target, `-43..43 A` | W/R |
-| `0x700A` | `spd_ref` | `f32` | 4 | Velocity-mode target, `-20..20 rad/s` | W/R |
-| `0x700B` | `limit_torque` | `f32` | 4 | Torque limit, `0..60 Nm` | W/R |
-| `0x7010` | `cur_kp` | `f32` | 4 | Current-loop Kp, default `0.17` | W/R |
-| `0x7011` | `cur_ki` | `f32` | 4 | Current-loop Ki, default `0.012` | W/R |
-| `0x7014` | `cur_filter_gain` | `f32` | 4 | Current filter gain, `0..1`, default `0.1` | W/R |
-| `0x7016` | `loc_ref` | `f32` | 4 | Position target, `rad` | W/R |
-| `0x7017` | `limit_spd` | `f32` | 4 | CSP position speed limit, `0..20 rad/s` | W/R |
-| `0x7018` | `limit_cur` | `f32` | 4 | Velocity/position current limit, `0..43 A` | W/R |
-| `0x7019` | `mechPos` | `f32` | 4 | Load-side counted mechanical angle, `rad` | R |
-| `0x701A` | `iqf` | `f32` | 4 | Filtered iq, `A` | R |
-| `0x701B` | `mechVel` | `f32` | 4 | Load-side velocity, `rad/s` | R |
-| `0x701C` | `VBUS` | `f32` | 4 | Bus voltage, `V` | R |
-| `0x701E` | `loc_kp` | `f32` | 4 | Position-loop Kp, default `60` | W/R |
-| `0x701F` | `spd_kp` | `f32` | 4 | Speed-loop Kp, default `6` | W/R |
-| `0x7020` | `spd_ki` | `f32` | 4 | Speed-loop Ki, default `0.02` | W/R |
-| `0x7021` | `spd_filter_gain` | `f32` | 4 | Speed filter gain, default `0.1` | W/R |
-| `0x7022` | `acc_rad` | `f32` | 4 | Velocity-mode acceleration, default `20 rad/s^2` | W/R |
-| `0x7024` | `vel_max` | `f32` | 4 | PP mode velocity, default `10 rad/s` | W/R |
-| `0x7025` | `acc_set` | `f32` | 4 | PP mode acceleration, default `10 rad/s^2` | W/R |
-| `0x7026` | `EPScan_time` | `u16` | 2 | Report period: `1` means `10 ms`, each +1 adds `5 ms` | W |
-| `0x7028` | `canTimeout` | `u32` | 4 | CAN timeout; `20000` means `1 s`; default `0` | W |
-| `0x7029` | `zero_sta` | `u8` | 1 | `0` = `0..2pi`, `1` = `-pi..pi`; save with type 22 | W |
-| `0x702A` | `damper` | `u8` | 1 | Power-off back-drive damping switch; `1` cancels damping | W/R |
-| `0x702B` | `add_offset` | `f32` | 4 | Zero offset, `rad`; default `0` | W/R |
-| `0x702C` | `alveolous_open` | `u8` | 1 | Cogging compensation enable; default `0` | W/R |
-| `0x702D` | `iq_test` | `u8` | 1 | Initialization calibration switch; default `0` | W/R |
-| `0x702E` | `dcc_set` | `f32` | 4 | PP-mode deceleration, default `10 rad/s^2` | W/R |
+| Index | Name | Type | Bytes | Unit | Range / Default | R/W | Notes |
+|---:|---|---:|---:|---|---|---|---|
+| `0x7005` | `run_mode` | `u8` | 1 | enum | `0` MIT, `1` PP, `2` velocity, `3` current, `5` CSP | W/R | Selects the active RobStride control mode before mode-specific command parameters are used. |
+| `0x7006` | `iq_ref` | `f32` | 4 | A | `-43..43`, current-mode target | W/R | Effective when `run_mode=3` current mode. Positive/negative direction follows motor firmware convention. |
+| `0x700A` | `spd_ref` | `f32` | 4 | rad/s | `-20..20`, velocity-mode target | W/R | Effective when `run_mode=2` velocity mode. |
+| `0x700B` | `limit_torque` | `f32` | 4 | Nm | `0..60` | W/R | Torque clamp used by firmware. Keep within the motor/manual limit. |
+| `0x7010` | `cur_kp` | `f32` | 4 | gain | default `0.17` | W/R | Current-loop proportional gain. Tune carefully; bad values can destabilize current control. |
+| `0x7011` | `cur_ki` | `f32` | 4 | gain | default `0.012` | W/R | Current-loop integral gain. Tune carefully. |
+| `0x7014` | `cur_filter_gain` | `f32` | 4 | ratio | `0..1`, default `0.1` | W/R | Current filter coefficient. |
+| `0x7016` | `loc_ref` | `f32` | 4 | rad | position target | W/R | Position command used by PP/CSP-style position modes. |
+| `0x7017` | `limit_spd` | `f32` | 4 | rad/s | `0..20` | W/R | Position/CSP speed limit. MotorBridge POS_VEL path writes this before `loc_ref`. |
+| `0x7018` | `limit_cur` | `f32` | 4 | A | `0..43` | W/R | Current limit for velocity/position modes. |
+| `0x7019` | `mechPos` | `f32` | 4 | rad | read-only | R | Load-side counted mechanical position. After MotorBridge RobStride zero + store, startup range is intended to be `-pi..pi` via `zero_sta=1`. |
+| `0x701A` | `iqf` | `f32` | 4 | A | read-only | R | Filtered q-axis current feedback. |
+| `0x701B` | `mechVel` | `f32` | 4 | rad/s | read-only | R | Load-side velocity feedback. |
+| `0x701C` | `VBUS` | `f32` | 4 | V | read-only | R | DC bus voltage. |
+| `0x701E` | `loc_kp` | `f32` | 4 | gain | default `60` | W/R | Position-loop proportional gain. |
+| `0x701F` | `spd_kp` | `f32` | 4 | gain | default `6` | W/R | Speed-loop proportional gain. |
+| `0x7020` | `spd_ki` | `f32` | 4 | gain | default `0.02` | W/R | Speed-loop integral gain. |
+| `0x7021` | `spd_filter_gain` | `f32` | 4 | ratio | default `0.1` | W/R | Speed filter coefficient. |
+| `0x7022` | `acc_rad` | `f32` | 4 | rad/s^2 | default `20` | W/R | Velocity-mode acceleration limit. |
+| `0x7024` | `vel_max` | `f32` | 4 | rad/s | default `10` | W/R | PP mode maximum velocity. |
+| `0x7025` | `acc_set` | `f32` | 4 | rad/s^2 | default `10` | W/R | PP mode acceleration. If deceleration split is enabled in firmware, `dcc_set(0x702E)` may control deceleration separately. |
+| `0x7026` | `EPScan_time` | `u16` | 2 | ms step | default `1`; `1=10 ms`, each +1 adds `5 ms` | W | Active-report interval setting. Only matters when active report is enabled by communication type 24. |
+| `0x7028` | `canTimeout` | `u32` | 4 | firmware ticks | default `0`; `20000=1 s` | W | CAN timeout threshold. `0` disables/uses default firmware behavior depending on firmware. Save if persistence is required. |
+| `0x7029` | `zero_sta` | `u8` | 1 | enum | default `0`; `0=0..2pi`, `1=-pi..pi` | W | MotorBridge RobStride `set_zero_position()` writes `1` automatically. Use type 22 save / `--store 1` for power-cycle persistence. |
+| `0x702A` | `damper` | `u8` | 1 | switch | default `0`; `1` cancels power-off back-drive damping | W/R | Controls the shutdown/back-drive damping behavior described by the RobStride manual. Save if persistence is required. |
+| `0x702B` | `add_offset` | `f32` | 4 | rad | default `0` | W/R | Adds an offset to the current zero. Example: after zeroing at physical `1 rad`, setting `add_offset=1` makes that physical position report as `1 rad` after reboot while zero is shifted by `1 rad`. |
+| `0x702C` | `alveolous_open` | `u8` | 1 | switch | default `0`; `1` enables cogging compensation | W/R | Enable after cogging calibration has succeeded. The manual says calibration should be done unloaded and typically with `iq_test=1`. |
+| `0x702D` | `iq_test` | `u8` | 1 | switch | default `0`; `1` enables extended initialization/calibration behavior | W/R | Used for motor initialization calibration and as a preparation step for cogging calibration. Save/reboot behavior depends on firmware workflow. |
+| `0x702E` | `dcc_set` | `f32` | 4 | rad/s^2 | default `10` | W/R | PP-mode deceleration. The manual notes this is used when PP acceleration/deceleration are separated by firmware configuration. |
+
+### Persistence and Zeroing Notes
+
+- `W/R` or `W` only means the parameter can be written over CAN; it does not guarantee persistence by itself. Send type 22 save, or use CLI `--store 1`, when the value must survive power cycling.
+- For RobStride zeroing, MotorBridge keeps the same upper-level command as other vendors. Internally it sends type 6 and then writes `zero_sta(0x7029)=1`; with `--store 1`, type 22 saves the `-pi..pi` startup behavior.
+- Use radians for all position quantities and radians per second / radians per second squared for velocity and acceleration.
 
 ## Examples
 
