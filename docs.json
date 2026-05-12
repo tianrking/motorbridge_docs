@@ -64,7 +64,8 @@
             "group": "Reference",
             "pages": [
               "reference/vendor-capability-matrix",
-              "reference/can-id-and-model-cheatsheet"
+              "reference/can-id-and-model-cheatsheet",
+              "reference/robstride-parameter-tables"
             ]
           },
           {
@@ -208,7 +209,8 @@
             "group": "参考",
             "pages": [
               "zh/reference/vendor-capability-matrix",
-              "zh/reference/can-id-and-model-cheatsheet"
+              "zh/reference/can-id-and-model-cheatsheet",
+              "zh/reference/robstride-parameter-tables"
             ]
           },
           {

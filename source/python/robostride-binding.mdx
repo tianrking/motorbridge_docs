@@ -39,6 +39,8 @@ MID=127
 FID=0xFD
 ```
 
+`MODEL` must be the physical RobStride model. Supported values are `rs-00` through `rs-06`; parameter read/write selects the function-code table from this value, so do not use `rs-00` as a generic default for every RS motor.
+
 ### 0.3 默认值与原厂协议关系（总览）
 
 - 统一默认反馈 ID：`0xFD`（运行时可回退尝试 `0xFF/0xFE`）。
@@ -58,6 +60,7 @@ FID=0xFD
 ### 0.4 入口差异（你关心的“不同点”）
 
 - 控制语义本身：Core CLI / Python CLI / Python SDK 一致。
+- 型号语义：Core CLI / Python CLI / Python SDK 都需要传真实 `rs-00` 到 `rs-06` 型号，尤其是参数读写场景。
 - 主要差异只在入口：
   - CLI：命令行参数入口（`--mode ...`）。
   - SDK：先 `Controller(\"can0\")`，再 `add_robstride_motor(motor_id, feedback_id, model)`。

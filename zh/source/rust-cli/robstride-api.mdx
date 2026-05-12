@@ -52,11 +52,17 @@ motorbridge-cli scan --vendor robstride --channel can0 --model rs-06 --start-id 
 | 参数 | 含义 | 常用值 |
 |---|---|---|
 | `channel` | CAN 接口名 | `can0` |
-| `model` | RobStride 型号字符串 | `rs-00`、`rs-06` |
+| `model` | RobStride 型号字符串，必须和真实电机一致 | `rs-00` 到 `rs-06` |
 | `motor-id` | 设备 ID | 如 `127` |
 | `feedback-id` | 命令帧里的主机/反馈 ID | 常用 `0xFD` |
 | `loop` | 周期控制发送次数 | `20`~`100` |
 | `dt-ms` | 周期发送间隔 | `20`~`50` |
+
+当前支持的 RobStride 型号字符串为：`rs-00`、`rs-01`、`rs-02`、`rs-03`、`rs-04`、`rs-05`、`rs-06`。
+
+这些型号的高层控制调用形态保持一致，但原生功能码参数不是同一张表。`read-param` 和 `write-param` 会根据 `--model` 选择对应型号的参数名称/类型表，再做 payload 编码或解码。实际使用 RS01-RS06 时，不要把 `rs-00` 当作通用占位。
+
+内置 RS00-RS06 参数表对齐 RobStride/Product_Information commit `ba7236bc26417766fda71e75ae128c66dbd21aba`。
 
 ## 2）`motor_cli` 的 RobStride 模式
 
@@ -212,6 +218,8 @@ motorbridge-cli id-set \
 | `0x701C` | `VBUS` | `f32` | 母线电压 |
 
 ## 5）参数读写
+
+参数访问是按型号区分的。`0x7000` 段的常用运行控制参数由统一控制路径共用；RobStride 手册里的功能码参数，尤其是 `0x2000` 和 `0x3000` 段，同一个 ID 在不同 RS 型号上可能对应不同名称、数据类型或范围。
 
 读参数：
 

@@ -489,11 +489,11 @@ motorbridge-cli robstride-read-param [OPTIONS]
 |--------|---------|-------------|
 | `--channel` | `can0` | CAN interface |
 | `--transport` | `auto` | Transport: auto, socketcan, socketcanfd |
-| `--model` | `rs-00` | Motor model (fixed to RobStride) |
+| `--model` | `rs-00` | Physical RobStride model (`rs-00` through `rs-06`); required because parameter tables differ by model |
 | `--motor-id` | `127` | Motor ID |
 | `--feedback-id` | `0xFD` | RobStride host_id default; not the motor/device ID |
 | `--param-id` | (required) | Parameter ID to read |
-| `--type` | (required) | Data type: i8, u8, u16, u32, f32 |
+| `--type` | (required) | Data type: i8, i16, i32, u8, u16, u32, f32 |
 | `--timeout-ms` | `500` | Read timeout |
 
 ### Example
@@ -531,11 +531,11 @@ motorbridge-cli robstride-write-param [OPTIONS]
 |--------|---------|-------------|
 | `--channel` | `can0` | CAN interface |
 | `--transport` | `auto` | Transport: auto, socketcan, socketcanfd |
-| `--model` | `rs-00` | Motor model (fixed to RobStride) |
+| `--model` | `rs-00` | Physical RobStride model (`rs-00` through `rs-06`); required because parameter tables differ by model |
 | `--motor-id` | `127` | Motor ID |
 | `--feedback-id` | `0xFD` | RobStride host_id default; not the motor/device ID |
 | `--param-id` | (required) | Parameter ID to write |
-| `--type` | (required) | Data type: i8, u8, u16, u32, f32 |
+| `--type` | (required) | Data type: i8, i16, i32, u8, u16, u32, f32 |
 | `--value` | (required) | Value to write (parsed according to `--type`) |
 | `--verify` | `1` | Read back and verify |
 | `--timeout-ms` | `500` | Verify timeout |

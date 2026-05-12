@@ -104,6 +104,8 @@ cargo run -p motor_cli --release -- \
   --mode read-param --param-id 0x7019
 ```
 
+For RobStride examples, replace `rs-00` with the physical RS00-RS06 model before real interaction. High-level control commands keep the same shape, but parameter read/write is selected from the model-specific RobStride table.
+
 MyActuator with Rust CLI:
 
 ```bash

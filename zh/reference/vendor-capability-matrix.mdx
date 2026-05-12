@@ -50,10 +50,12 @@ title: 厂商能力矩阵
 
 > 该章节用于暴露“已实现但不属于统一四模式”的厂商原生能力，便于现场调试与协议联调。
 
+RobStride 完整运行时参数表见 [RobStride 参数表](/zh/reference/robstride-parameter-tables)。
+
 | 厂商 | 原生能力入口（示例） | 说明 |
 |------|----------------------|------|
 | Damiao | `id-dump`, `id-set`（CLI）+ `set_zero_position()`（API） | 寄存器读写、ID 修改、置零流程 |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit 扩展帧参数通道，支持类型化参数读写 |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit 扩展帧参数通道；参数表由 `model` 选择 |
 | MyActuator | 厂商原生命令路径（由适配层暴露） | 以位置/速度主流程为主，寄存器能力有限 |
 | HighTorque | 厂商原生命令路径（由适配层暴露） | 统一接口下内部做缩放映射 |
 | Hexfellow | CAN-FD 原生路径（`socketcanfd`） | 主要覆盖 MIT/POS_VEL，依赖 CAN-FD |
@@ -75,6 +77,8 @@ motorbridge-cli robstride-read-param `
   --channel can0@1000000 --model rs-00 --motor-id 127 `
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
+
+`--model rs-00` 只适用于 RS00 电机。RS01-RS06 必须替换成真实型号，因为 `0x2000`/`0x3000` 手册参数表不同。
 
 ## 三平台命令模板（统一接口）
 

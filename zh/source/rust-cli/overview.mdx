@@ -111,7 +111,7 @@ motor_cli \
 | 品牌 | `--model` 传入 | `--motor-id` / `--feedback-id` 传入 | 常用 `--mode` |
 |---|---|---|---|
 | Damiao | 必传且建议按电机真实型号（混型场景不要写死一个 model） | `motor-id` 与 `feedback-id` 都需要按实际设备传入 | `scan`、`enable`、`disable`、`mit`（当前串口桥建议这四个） |
-| RobStride | 传 `rs-00/01...` 等 | `motor-id` 必传；`feedback-id` 常用 `0xFD` | `ping`、`scan`、`mit`、`vel`、`read-param`、`write-param` |
+| RobStride | 必须传真实型号：`rs-00` 到 `rs-06` | `motor-id` 必传；`feedback-id` 常用 `0xFD` | `ping`、`scan`、`mit`、`vel`、`read-param`、`write-param` |
 | HighTorque | 传 `hightorque`（hint） | 按设备 ID 传入 | `read`、`mit`、`pos`、`vel`、`tqe`、`scan` 等 |
 | MyActuator | 传运行时型号字符串（默认 `X8`） | 标准 11-bit 规则（常用 `0x140+id` / `0x240+id`） | `status`、`scan`、`current`、`vel`、`pos`、`enable/disable` |
 | all | 分品牌 hint（`--damiao-model` 等） | 仅扫描场景使用 | `scan` |
@@ -314,7 +314,7 @@ motor_cli $DM_SERIAL --motor-id 0x04 --feedback-id 0x14 \
 | `--set-motor-id` | u16 可选 | 无 | 改 ID 流程 | 设置新设备 ID，范围 1..255 |
 | `--store` | `0/1` | `1` | 改 ID 流程 | 保存参数 |
 | `--param-id` | u16 | 参数模式必填 | 读写参数 | 参数 ID |
-| `--param-value` | 类型化值 | 写参数必填 | write-param | 按参数元数据解析 |
+| `--param-value` | 类型化值 | 写参数必填 | write-param | 按所选 RobStride 型号的参数元数据解析 |
 
 ### 4.3 各模式控制参数
 
@@ -328,6 +328,9 @@ motor_cli $DM_SERIAL --motor-id 0x04 --feedback-id 0x14 \
 说明：
 
 - RobStride 统一高层当前支持 `MIT` / `POS_VEL` / `VEL`。
+- 当前支持 RobStride 型号：`rs-00`、`rs-01`、`rs-02`、`rs-03`、`rs-04`、`rs-05`、`rs-06`。
+- RobStride 必须按真实电机传 `--model`。基础控制命令的上层形态一致，但原生功能码/参数表按型号区分；同一个功能码在不同型号上可能对应不同名称或类型。
+- 内置 RS00-RS06 参数表对齐 RobStride/Product_Information commit `ba7236bc26417766fda71e75ae128c66dbd21aba`。
 - `TORQUE/CURRENT` 目前仍是参数级能力（通过 `write-param` 写 `iq_ref` 与限幅参数），尚未开放统一模式。
 - RobStride 的 `mit` 五个参数都生效：`--pos`、`--vel`、`--kp`、`--kd`、`--tau`。
 - RobStride 的 `mit` 单位：`pos(rad)`、`vel(rad/s)`、`tau(Nm)`，`kp/kd` 为 MIT 闭环增益。

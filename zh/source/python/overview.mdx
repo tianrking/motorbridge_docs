@@ -89,6 +89,7 @@ title: "Python Binding 总览"
 
 - RobStride 统一高层当前覆盖 `MIT` / `POS_VEL` / `VEL`。
 - `TORQUE/CURRENT` 对 RobStride 仍为参数级能力（`robstride_write_param_*`），尚未提供独立统一模式。
+- RobStride 支持 `rs-00` 到 `rs-06`；调用 `add_robstride_motor(...)` 时请传真实型号，因为参数读写会使用按型号区分的功能码表。
 - RobStride 建议默认使用 `feedback-id=0xFD`；扫描默认尝试 `0xFD,0xFF,0xFE,0x00,0xAA`。
 - RobStride 的 `feedback_id` / `host_id` 不是电机 `device_id`；扫描命中的电机 ID 看 `probe` / `device_id`。
 
@@ -132,7 +133,7 @@ from motorbridge import Controller, Mode
 TARGET_POS = 1.0  # 目标角度(rad)
 
 with Controller("can0") as ctrl:
-motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")  # 可替换为你的 id / model
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")  # 请替换为你的 id / 真实 RS00-RS06 型号
     ctrl.enable_all()
     motor.ensure_mode(Mode.MIT, 1000)
     motor.send_mit(TARGET_POS, 0.0, 8.0, 0.2, 0.0)
@@ -223,6 +224,8 @@ motorbridge-cli run \
   --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
   --mode ping
 ```
+
+Python CLI 和 SDK 调用都请使用真实 RobStride 型号（`rs-00` 到 `rs-06`）。系列内控制方法一致，但手册功能码参数 ID 和类型会按型号表选择。
 
 RobStride 读参数:
 

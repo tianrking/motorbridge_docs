@@ -92,6 +92,8 @@ cargo run -p motor_cli --release -- \
 
 ## RobStride
 
+RobStride supports `rs-00` through `rs-06`. Always pass the physical motor model: control commands share the same CLI shape, but `read-param` / `write-param` use model-specific manual parameter tables.
+
 ```bash
 cargo run -p motor_cli --release -- \
   --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
@@ -191,3 +193,4 @@ cargo run -p motor_cli --release -- \
 
 For RobStride, `probe` / `device_id` is the motor ID. `feedback_id` / `host_id` (for example `0xFD`) is the host-side ID, not the motor ID.
 RobStride `motor_id` / `device_id` values are validated as `1..255`; `feedback_id` / `host_id` values are validated as `0..255`.
+RobStride parameter tables are selected by `--model`; use the exact RS00-RS06 model when scanning for later parameter read/write workflows.

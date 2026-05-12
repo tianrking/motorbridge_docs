@@ -21,7 +21,7 @@ This page tracks the production capability status across vendors in motorbridge.
 | Vendor | Typical Models | MIT | POS_VEL | VEL | FORCE_POS |
 |--------|----------------|-----|---------|-----|-----------|
 | Damiao | 4310, 4340P, 6006 | ✅ | ✅ | ✅ | ✅ |
-| RobStride | rs-00, rs-01, rs-06 | ✅ | ✅ | ✅ | ❌ |
+| RobStride | rs-00 through rs-06 | ✅ | ✅ | ✅ | ❌ |
 | MyActuator | X8 | ❌ | ✅ | ✅ | ❌ |
 | HighTorque | hightorque | ✅ | ✅ | ✅ | ✅ |
 | Hexfellow | hexfellow | ✅ | ✅ | ❌ | ❌ |
@@ -30,6 +30,8 @@ This page tracks the production capability status across vendors in motorbridge.
 
 - `MIT` maps to native impedance packet (`pos/vel/kp/kd/tau` all effective).
 - `POS_VEL` maps to native position flow (`run_mode=1`, `loc_ref`, `limit_spd`, optional `loc_kp`).
+- Always pass the physical RobStride model (`rs-00` ... `rs-06`). High-level control shape is shared, but manual function-code parameters differ by model.
+- Full runtime parameter tables are available in [RobStride Parameter Tables](/reference/robstride-parameter-tables).
 - In unified `pos-vel`, CLI args `--vel/--kd/--tau` are ignored by design and shown as warnings.
 - Torque/current is currently parameter-level only (`write-param`), not a separate unified mode (`FORCE_POS` remains ❌).
 
@@ -49,7 +51,7 @@ This page tracks the production capability status across vendors in motorbridge.
 | Vendor | Native Entrypoints (examples) | Notes |
 |--------|--------------------------------|-------|
 | Damiao | `id-dump`, `id-set` (CLI) + `set_zero_position()` (API) | Register R/W, ID update, zeroing flow |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit extended-frame parameter path |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit extended-frame parameter path; parameter tables are selected by `model` |
 | MyActuator | Vendor-native command path (adapter exposed) | Position/velocity-first flow, limited register surface |
 | HighTorque | Vendor-native command path (adapter exposed) | Internal scaling under unified API |
 | Hexfellow | CAN-FD native path (`socketcanfd`) | Primarily MIT/POS_VEL, requires CAN-FD |
@@ -71,6 +73,8 @@ motorbridge-cli robstride-read-param `
   --channel can0@1000000 --model rs-00 --motor-id 127 `
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
+
+Use `--model rs-00` only for an RS00 motor. For RS01-RS06, replace it with the actual model because the `0x2000`/`0x3000` manual parameter tables are different.
 
 ## Cross-Platform Command Templates
 
@@ -172,7 +176,7 @@ motor.robstride_write_param_f32(param_id, value)
 from motorbridge import Controller, Mode
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-00")
+    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-00")  # replace with the physical RS00-RS06 model
     ctrl.enable_all()
 
     motor.ensure_mode(Mode.POS_VEL, 1000)

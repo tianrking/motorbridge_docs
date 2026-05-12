@@ -39,6 +39,7 @@ title: "仓库总览"
 - RobStride:
   - 型号: `rs-00`, `rs-01`, `rs-02`, `rs-03`, `rs-04`, `rs-05`, `rs-06`
   - 模式: `scan`, `ping`, `MIT`, `POS_VEL`, `VEL`, 参数读写
+  - 型号必须按真实电机指定：RS00-RS06 的功能码/参数表不同，参数读写会按 `--model` 选择对应表，不能把 `rs-00` 当作所有 RobStride 电机的通用占位
   - 说明: 力矩/电流当前仅支持参数级写入（如 `iq_ref`/限幅参数），尚未开放为统一高层模式
 - MyActuator:
   - 型号: `X8`（运行时字符串，协议按 ID 通信）
@@ -54,6 +55,7 @@ title: "仓库总览"
 
 - Damiao：`scan / enable / disable / MIT / POS_VEL / VEL / FORCE_POS / set-id / set-zero` 均已纳入生产基线。
 - RobStride：`scan / ping / enable / disable / MIT / POS_VEL / VEL / 参数读写 / set-id / zero` 已可用。
+- RobStride RS00-RS06 已拆分为独立功能码/参数表。统一控制命令的使用方式保持一致，但原生参数读写会根据 `--model` 做不同型号的编码/解码。
 - RobStride 默认 host/feedback 路径为 `0xFD`；扫描默认尝试 `0xFD,0xFF,0xFE,0x00,0xAA`。
 - RobStride 的 `feedback_id` / `host_id` 是上位机侧 ID，不是电机 `device_id`；扫描命中的电机 ID 看 `probe` / `device_id`。
 - RobStride `pos-vel` 的 `--vel/--kd/--tau` 属于无效参数：CLI 仅 warning，不会中断。
@@ -199,6 +201,8 @@ cargo run -p motor_cli --release -- \
   --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
   --mode vel --vel 0.3 --loop 40 --dt-ms 50
 ```
+
+RobStride 使用时请把 `--model rs-00` 替换为真实型号（`rs-00` 到 `rs-06`）。该型号会决定 `read-param` / `write-param` 背后的参数表。
 
 RobStride CLI 读参数:
 
