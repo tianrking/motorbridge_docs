@@ -14,6 +14,7 @@ Source alignment: RobStride/Product_Information commit [`ba7236bc26417766fda71e7
 - Do not use `rs-00` as a generic RobStride default for another RS model.
 - For runtime reads and writes, prefer the protocol section 4 IDs in `0x7005..0x702E`.
 - The `0x7000` range contains common runtime control parameters shared by the unified control path. The `0x0000`/`0x1000`/`0x2000`/`0x3000` manual ranges differ by model and are kept as commented reference entries in core, not active high-level control registers.
+- For a persistent `-pi..pi` startup position range, write `zero_sta(0x7029)=1` and then send the type-22 save frame. The CLI `zero --zero-exp 1` path does this after the type-6 mechanical-zero command.
 - String entries are listed for completeness. The CLI intentionally does not write string parameters.
 - Rust `motor_cli` uses the full table types, including `i16` and `i32`. Python `motorbridge-cli` 0.2.7 exposes the ABI-backed parameter types `i8`, `u8`, `u16`, `u32`, and `f32`; for `i16`/`i32` table entries, use the Rust CLI/core path.
 
@@ -55,7 +56,7 @@ When decoded:
 | 17 | `READ_PARAMETER` | typed parameter read |
 | 18 | `WRITE_PARAMETER` | typed parameter write |
 | 21 | `FAULT_REPORT` | receive/parse path |
-| 22 | `SAVE_PARAMETERS` | store/save parameters |
+| 22 | `SAVE_PARAMETERS` | store/save parameters; MotorBridge sends official payload `01 02 03 04 05 06 07 08` |
 | 23 | `SET_BAUDRATE` | protocol constant present; no first-class high-level API yet |
 | 24 | `ACTIVE_REPORT` | protocol constant present; no first-class high-level API yet |
 | 25 | `SET_PROTOCOL` | protocol constant present; no first-class high-level API yet |
@@ -107,13 +108,13 @@ motorbridge-cli robstride-write-param \
 
 | Model | Manual reference entries | Active runtime entries | Core source | Table section |
 |---|---:|---:|---|---|
-| `rs-00` | 151 | 24 | `registers_00.rs` | [RS00](#rs00) |
-| `rs-01` | 120 | 24 | `registers_01.rs` | [RS01](#rs01) |
-| `rs-02` | 139 | 24 | `registers_02.rs` | [RS02](#rs02) |
-| `rs-03` | 148 | 24 | `registers_03.rs` | [RS03](#rs03) |
-| `rs-04` | 149 | 24 | `registers_04.rs` | [RS04](#rs04) |
-| `rs-05` | 148 | 24 | `registers_05.rs` | [RS05](#rs05) |
-| `rs-06` | 147 | 24 | `registers_06.rs` | [RS06](#rs06) |
+| `rs-00` | 151 | 29 | `registers_00.rs` | [RS00](#rs00) |
+| `rs-01` | 120 | 29 | `registers_01.rs` | [RS01](#rs01) |
+| `rs-02` | 139 | 29 | `registers_02.rs` | [RS02](#rs02) |
+| `rs-03` | 148 | 29 | `registers_03.rs` | [RS03](#rs03) |
+| `rs-04` | 149 | 29 | `registers_04.rs` | [RS04](#rs04) |
+| `rs-05` | 148 | 29 | `registers_05.rs` | [RS05](#rs05) |
+| `rs-06` | 147 | 29 | `registers_06.rs` | [RS06](#rs06) |
 
 ## RS00
 
