@@ -133,7 +133,7 @@ RobStride quick use:
 from motorbridge import Controller
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")  # replace with the physical RS00-RS06 model
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")  # replace with the physical RS00-RS06 model
     print(motor.robstride_ping())
     print(motor.robstride_get_param_f32(0x7019))
     motor.close()
@@ -181,7 +181,7 @@ RobStride:
 
 ```bash
 motorbridge-cli run \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
   --mode ping
 ```
 
@@ -191,7 +191,7 @@ RobStride parameter read:
 
 ```bash
 motorbridge-cli robstride-read-param \
-  --channel can0 --model rs-00 --motor-id 127 --param-id 0x7019 --type f32
+  --channel can0 --model rs-06 --motor-id 127 --param-id 0x7019 --type f32
 ```
 
 Unified scan (all vendors):

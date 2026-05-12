@@ -80,7 +80,7 @@ RobStride:
 
 int main() {
   motorbridge::Controller ctrl("can0");
-  auto motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00"); // 请替换为真实 RS00-RS06 型号
+  auto motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06"); // 请替换为真实 RS00-RS06 型号
   auto ids = motor.robstride_ping();
   float pos = motor.robstride_get_param_f32(0x7019);
   ctrl.shutdown();

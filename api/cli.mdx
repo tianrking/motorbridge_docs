@@ -148,7 +148,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode mit \
@@ -164,7 +164,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode pos-vel \
@@ -179,7 +179,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode ping \
@@ -192,7 +192,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode zero \
@@ -451,7 +451,7 @@ motorbridge-cli id-set \
 motorbridge-cli id-set \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 0x7F \
     --feedback-id 0xFD \
     --new-motor-id 0x7E \
@@ -493,7 +493,7 @@ motorbridge-cli robstride-read-param [OPTIONS]
 | `--motor-id` | `127` | Motor ID |
 | `--feedback-id` | `0xFD` | RobStride host_id default; not the motor/device ID |
 | `--param-id` | (required) | Parameter ID to read |
-| `--type` | (required) | Data type: i8, i16, i32, u8, u16, u32, f32 |
+| `--type` | (required) | Data type: i8, u8, u16, u32, f32 |
 | `--timeout-ms` | `500` | Read timeout |
 
 ### Example
@@ -501,6 +501,7 @@ motorbridge-cli robstride-read-param [OPTIONS]
 ```bash
 motorbridge-cli robstride-read-param \
     --channel can0 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --param-id 0x7019 \
@@ -510,7 +511,7 @@ motorbridge-cli robstride-read-param \
 ### Output
 
 ```
-command=robstride-read-param channel=can0 model=rs-00 motor_id=0x7F param_id=0x7019 type=f32 value=1.5
+command=robstride-read-param channel=can0 model=rs-06 motor_id=0x7F param_id=0x7019 type=f32 value=1.5
 ```
 
 ---
@@ -535,7 +536,7 @@ motorbridge-cli robstride-write-param [OPTIONS]
 | `--motor-id` | `127` | Motor ID |
 | `--feedback-id` | `0xFD` | RobStride host_id default; not the motor/device ID |
 | `--param-id` | (required) | Parameter ID to write |
-| `--type` | (required) | Data type: i8, i16, i32, u8, u16, u32, f32 |
+| `--type` | (required) | Data type: i8, u8, u16, u32, f32 |
 | `--value` | (required) | Value to write (parsed according to `--type`) |
 | `--verify` | `1` | Read back and verify |
 | `--timeout-ms` | `500` | Verify timeout |
@@ -545,6 +546,7 @@ motorbridge-cli robstride-write-param [OPTIONS]
 ```bash
 motorbridge-cli robstride-write-param \
     --channel can0 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --param-id 0x7019 \
@@ -556,7 +558,7 @@ motorbridge-cli robstride-write-param \
 ### Output
 
 ```
-command=robstride-write-param channel=can0 model=rs-00 motor_id=0x7F param_id=0x7019 type=f32 value=2.0 verify=2.0
+command=robstride-write-param channel=can0 model=rs-06 motor_id=0x7F param_id=0x7019 type=f32 value=2.0 verify=2.0
 ```
 
 ---
@@ -600,13 +602,13 @@ motorbridge-cli id-dump --motor-id 0x05 --feedback-id 0x15
 
 ```bash
 # Read current parameter
-motorbridge-cli robstride-read-param --motor-id 127 --param-id 0x7019 --type f32
+motorbridge-cli robstride-read-param --model rs-06 --motor-id 127 --param-id 0x7019 --type f32
 
 # Write new value
-motorbridge-cli robstride-write-param --motor-id 127 --param-id 0x7019 --type f32 --value 2.5
+motorbridge-cli robstride-write-param --model rs-06 --motor-id 127 --param-id 0x7019 --type f32 --value 2.5
 
 # Verify
-motorbridge-cli robstride-read-param --motor-id 127 --param-id 0x7019 --type f32
+motorbridge-cli robstride-read-param --model rs-06 --motor-id 127 --param-id 0x7019 --type f32
 ```
 
 ---

@@ -119,7 +119,7 @@ python3 bindings/python/examples/quad_vendor_binding_ws_demo.py \
   --dm1-id 0x01 --dm1-fid 0x11 --dm1-model 4340P \
   --dm2-id 0x07 --dm2-fid 0x17 --dm2-model 4310 \
   --my-id 1 --my-fid 0x241 --my-model X8 \
-  --rs-id 127 --rs-fid 0xFE --rs-model rs-00
+  --rs-id 127 --rs-fid 0xFE --rs-model rs-06
 ```
 
 ### Key Points Beginners Must Know
@@ -277,14 +277,14 @@ RobStride:
 
 ```bash
 PYTHONPATH=bindings/python/src python3 bindings/python/examples/robstride_wrapper_demo.py \
-  --channel can0 --model rs-00 --motor-id 127 --mode ping
+  --channel can0 --model rs-06 --motor-id 127 --mode ping
 ```
 
 RobStride read parameter:
 
 ```bash
 PYTHONPATH=bindings/python/src python3 bindings/python/examples/robstride_wrapper_demo.py \
-  --channel can0 --model rs-00 --motor-id 127 --mode read-param --param-id 0x7019
+  --channel can0 --model rs-06 --motor-id 127 --mode read-param --param-id 0x7019
 ```
 
 Hexfellow (CAN-FD only):

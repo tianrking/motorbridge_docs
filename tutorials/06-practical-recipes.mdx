@@ -248,7 +248,7 @@ Read and write RobStride motor parameters:
 from motorbridge import Controller, Mode
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")  # 0xFD is host_id, not motor ID
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")  # 0xFD is host_id, not motor ID
 
     # Ping motor
     device_id, responder_id = motor.robstride_ping()

@@ -57,14 +57,14 @@ RobStride ping:
 
 ```bash
 LD_LIBRARY_PATH=target/release ./c_abi_demo \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --mode ping
 ```
 
 RobStride read position parameter:
 
 ```bash
 LD_LIBRARY_PATH=target/release ./c_abi_demo \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
   --mode read-param --param-id 0x7019 --param-type f32
 ```
 
@@ -74,7 +74,7 @@ RobStride low-gain MIT:
 
 ```bash
 LD_LIBRARY_PATH=target/release ./c_abi_demo \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
   --mode mit --pos 0 --vel 0 --kp 0.5 --kd 0.2 --tau 0 --loop 20 --dt-ms 50
 ```
 

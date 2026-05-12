@@ -66,7 +66,7 @@ Linux / macOS:
 
 ```bash
 motorbridge-cli robstride-read-param \
-  --channel can0 --model rs-00 --motor-id 127 \
+  --channel can0 --model rs-06 --motor-id 127 \
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
 
@@ -74,11 +74,11 @@ Windows (PowerShell):
 
 ```powershell
 motorbridge-cli robstride-read-param `
-  --channel can0@1000000 --model rs-00 --motor-id 127 `
+  --channel can0@1000000 --model rs-06 --motor-id 127 `
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
 
-`--model rs-00` 只适用于 RS00 电机。RS01-RS06 必须替换成真实型号，因为 `0x2000`/`0x3000` 手册参数表不同。
+`--model rs-06` 只适用于 RS00 电机。RS01-RS06 必须替换成真实型号，因为 `0x2000`/`0x3000` 手册参数表不同。
 
 ## 三平台命令模板（统一接口）
 
@@ -90,7 +90,7 @@ motorbridge-cli robstride-read-param `
 # RobStride POS_VEL（已支持）
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
-  --model rs-00 --motor-id 127 --feedback-id 0xFD \
+  --model rs-06 --motor-id 127 --feedback-id 0xFD \
   --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
 
 # Damiao FORCE_POS
@@ -106,7 +106,7 @@ motorbridge-cli run \
 # CAN 路径（需 PCBUSB 运行时）
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
-  --model rs-00 --motor-id 127 --feedback-id 0xFD \
+  --model rs-06 --motor-id 127 --feedback-id 0xFD \
   --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
 
 # Damiao dm-serial 路径（不依赖 CAN 运行时）
@@ -123,7 +123,7 @@ motorbridge-cli run \
 # RobStride POS_VEL（PCAN 通道示例）
 motorbridge-cli run `
   --vendor robstride --transport auto --channel can0@1000000 `
-  --model rs-00 --motor-id 127 --feedback-id 0xFD `
+  --model rs-06 --motor-id 127 --feedback-id 0xFD `
   --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
 
 # Damiao FORCE_POS
@@ -180,7 +180,7 @@ motor.robstride_write_param_f32(param_id, value)
 from motorbridge import Controller, Mode
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-00")
+    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-06")
     ctrl.enable_all()
 
     motor.ensure_mode(Mode.POS_VEL, 1000)

@@ -310,17 +310,17 @@ motor_cli \
 
 # Set motor ID (old 1 -> new 11) and persist
 motor_cli \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 1 --feedback-id 0xFD \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 1 --feedback-id 0xFD \
   --set-motor-id 11 --store 1
 
 # Python CLI equivalent for RobStride ID update
 motorbridge-cli id-set \
-  --vendor robstride --channel can0 --model rs-00 \
+  --vendor robstride --channel can0 --model rs-06 \
   --motor-id 1 --feedback-id 0xFD --new-motor-id 11 --store 1 --verify 1
 
 # Zero (experimental sequence)
 motor_cli \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 11 --feedback-id 0xFD \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 11 --feedback-id 0xFD \
   --mode zero --zero-exp 1 --store 1
 ```
 

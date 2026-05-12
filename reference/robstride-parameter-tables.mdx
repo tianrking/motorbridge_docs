@@ -15,6 +15,7 @@ Source alignment: RobStride/Product_Information commit [`ba7236bc26417766fda71e7
 - For reads and writes, match `--param-id` and `--type` to the selected model table.
 - The `0x7000` range contains common runtime control parameters shared by the unified control path; the `0x2000` and `0x3000` manual ranges differ by model.
 - String entries are listed for completeness. The CLI intentionally does not write string parameters.
+- Rust `motor_cli` uses the full table types, including `i16` and `i32`. Python `motorbridge-cli` 0.2.7 exposes the ABI-backed parameter types `i8`, `u8`, `u16`, `u32`, and `f32`; for `i16`/`i32` table entries, use the Rust CLI/core path.
 
 ## CLI Examples
 

@@ -42,14 +42,14 @@ python3 examples/python/python_ctypes_demo.py --vendor damiao --channel can0 --m
 RobStride Python ctypes:
 
 ```bash
-python3 examples/python/python_ctypes_demo.py --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
+python3 examples/python/python_ctypes_demo.py --vendor robstride --channel can0 --model rs-06 --motor-id 127 --mode ping
 ```
 
 RobStride C ABI:
 
 ```bash
 cc examples/c/c_abi_demo.c -I motor_abi/include -L target/release -lmotor_abi -o c_abi_demo
-LD_LIBRARY_PATH=target/release ./c_abi_demo --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode read-param --param-id 0x7019 --param-type f32
+LD_LIBRARY_PATH=target/release ./c_abi_demo --vendor robstride --channel can0 --model rs-06 --motor-id 127 --mode read-param --param-id 0x7019 --param-type f32
 ```
 
 Multi-vendor position sync helper:

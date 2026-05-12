@@ -92,7 +92,7 @@ RobStride with Rust CLI:
 
 ```bash
 cargo run -p motor_cli --release -- \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
   --mode ping
 ```
 
@@ -100,7 +100,7 @@ RobStride parameter read:
 
 ```bash
 cargo run -p motor_cli --release -- \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
   --mode read-param --param-id 0x7019
 ```
 
@@ -120,7 +120,7 @@ Python ctypes:
 
 ```bash
 cargo build -p motor_abi --release
-python3 examples/python/python_ctypes_demo.py --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
+python3 examples/python/python_ctypes_demo.py --vendor robstride --channel can0 --model rs-06 --motor-id 127 --mode ping
 python3 examples/python/python_ctypes_demo.py --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 --mode mit
 ```
 
@@ -129,7 +129,7 @@ C:
 ```bash
 cargo build -p motor_abi --release
 cc examples/c/c_abi_demo.c -I motor_abi/include -L target/release -lmotor_abi -o c_abi_demo
-LD_LIBRARY_PATH=target/release ./c_abi_demo --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
+LD_LIBRARY_PATH=target/release ./c_abi_demo --vendor robstride --channel can0 --model rs-06 --motor-id 127 --mode ping
 LD_LIBRARY_PATH=target/release ./c_abi_demo --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 --mode mit
 ```
 
@@ -138,7 +138,7 @@ C++:
 ```bash
 cargo build -p motor_abi --release
 g++ -std=c++17 examples/cpp/cpp_abi_demo.cpp -I motor_abi/include -L target/release -lmotor_abi -o cpp_abi_demo
-LD_LIBRARY_PATH=target/release ./cpp_abi_demo --vendor robstride --channel can0 --model rs-00 --motor-id 127 --mode ping
+LD_LIBRARY_PATH=target/release ./cpp_abi_demo --vendor robstride --channel can0 --model rs-06 --motor-id 127 --mode ping
 LD_LIBRARY_PATH=target/release ./cpp_abi_demo --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 --mode mit
 ```
 

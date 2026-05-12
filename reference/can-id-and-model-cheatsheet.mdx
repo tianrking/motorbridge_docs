@@ -117,7 +117,7 @@ with Controller("can0") as ctrl:
     motor = ctrl.add_robstride_motor(
         motor_id=127,       # Device ID
         feedback_id=0xFD,   # host_id, not the motor/device ID
-        model="rs-00"       # Replace with the physical RS00-RS06 model
+        model="rs-06"       # Replace with the physical RS00-RS06 model
     )
 
     ctrl.enable_all()
@@ -275,7 +275,7 @@ with Controller("can0") as dm_ctrl:
     dm = dm_ctrl.add_damiao_motor(0x01, 0x11, "4340P")
 
     with Controller("can0") as rs_ctrl:
-        rs = rs_ctrl.add_robstride_motor(127, 0xFD, "rs-00")
+        rs = rs_ctrl.add_robstride_motor(127, 0xFD, "rs-06")
 ```
 
 ## ID Configuration Tools
@@ -319,7 +319,7 @@ motorbridge-cli id-set \
 from motorbridge import Controller
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
 
     # Set new device ID
     motor.robstride_set_device_id(42)
@@ -398,7 +398,7 @@ MOTORS = {
         "vendor": "robstride",
         "motor_id": 127,
         "feedback_id": 0xFD,
-        "model": "rs-00",
+        "model": "rs-06",
     },
 }
 # =======================================

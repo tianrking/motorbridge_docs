@@ -62,7 +62,7 @@ Linux / macOS:
 
 ```bash
 motorbridge-cli robstride-read-param \
-  --channel can0 --model rs-00 --motor-id 127 \
+  --channel can0 --model rs-06 --motor-id 127 \
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
 
@@ -70,11 +70,11 @@ Windows (PowerShell):
 
 ```powershell
 motorbridge-cli robstride-read-param `
-  --channel can0@1000000 --model rs-00 --motor-id 127 `
+  --channel can0@1000000 --model rs-06 --motor-id 127 `
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
 
-Use `--model rs-00` only for an RS00 motor. For RS01-RS06, replace it with the actual model because the `0x2000`/`0x3000` manual parameter tables are different.
+Use `--model rs-06` only for an RS00 motor. For RS01-RS06, replace it with the actual model because the `0x2000`/`0x3000` manual parameter tables are different.
 
 ## Cross-Platform Command Templates
 
@@ -86,7 +86,7 @@ All examples below use the unified Python package CLI: `motorbridge-cli`.
 # RobStride POS_VEL (supported)
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
-  --model rs-00 --motor-id 127 --feedback-id 0xFD \
+  --model rs-06 --motor-id 127 --feedback-id 0xFD \
   --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
 
 # Damiao FORCE_POS
@@ -102,7 +102,7 @@ motorbridge-cli run \
 # CAN path (requires PCBUSB runtime)
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
-  --model rs-00 --motor-id 127 --feedback-id 0xFD \
+  --model rs-06 --motor-id 127 --feedback-id 0xFD \
   --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
 
 # Damiao dm-serial path (no CAN runtime needed)
@@ -119,7 +119,7 @@ motorbridge-cli run \
 # RobStride POS_VEL (PCAN channel example)
 motorbridge-cli run `
   --vendor robstride --transport auto --channel can0@1000000 `
-  --model rs-00 --motor-id 127 --feedback-id 0xFD `
+  --model rs-06 --motor-id 127 --feedback-id 0xFD `
   --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
 
 # Damiao FORCE_POS
@@ -176,7 +176,7 @@ motor.robstride_write_param_f32(param_id, value)
 from motorbridge import Controller, Mode
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-00")  # replace with the physical RS00-RS06 model
+    motor = ctrl.add_robstride_motor(6, 0xFD, "rs-06")  # replace with the physical RS00-RS06 model
     ctrl.enable_all()
 
     motor.ensure_mode(Mode.POS_VEL, 1000)

@@ -161,7 +161,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode mit \
@@ -177,7 +177,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode pos-vel \
@@ -192,7 +192,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode ping \
@@ -205,7 +205,7 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
     --mode zero \
@@ -404,7 +404,7 @@ motorbridge-cli id-set \
 motorbridge-cli id-set \
     --vendor robstride \
     --channel can0 \
-    --model rs-00 \
+    --model rs-06 \
     --motor-id 0x7F \
     --feedback-id 0xFD \
     --new-motor-id 0x7E \
@@ -434,7 +434,7 @@ motorbridge-cli robstride-read-param [选项]
 | `--motor-id` | `127` | 电机 ID |
 | `--feedback-id` | `0xFD` | RobStride 默认 host_id；不是电机 ID |
 | `--param-id` | (必需) | 要读取的参数 ID |
-| `--type` | (必需) | 数据类型：i8, i16, i32, u8, u16, u32, f32 |
+| `--type` | (必需) | 数据类型：i8, u8, u16, u32, f32 |
 | `--timeout-ms` | `500` | 读取超时 |
 
 ### 示例
@@ -442,6 +442,7 @@ motorbridge-cli robstride-read-param [选项]
 ```bash
 motorbridge-cli robstride-read-param \
     --channel can0 \
+    --model rs-06 \
     --motor-id 127 \
     --param-id 0x7019 \
     --type f32
@@ -469,7 +470,7 @@ motorbridge-cli robstride-write-param [选项]
 | `--motor-id` | `127` | 电机 ID |
 | `--feedback-id` | `0xFD` | RobStride 默认 host_id；不是电机 ID |
 | `--param-id` | (必需) | 要写入的参数 ID |
-| `--type` | (必需) | 数据类型：i8, i16, i32, u8, u16, u32, f32 |
+| `--type` | (必需) | 数据类型：i8, u8, u16, u32, f32 |
 | `--value` | (必需) | 要写入的值（根据 `--type` 解析） |
 | `--verify` | `1` | 回读并验证 |
 | `--timeout-ms` | `500` | 验证超时 |
@@ -479,6 +480,7 @@ motorbridge-cli robstride-write-param [选项]
 ```bash
 motorbridge-cli robstride-write-param \
     --channel can0 \
+    --model rs-06 \
     --motor-id 127 \
     --param-id 0x7019 \
     --type f32 \

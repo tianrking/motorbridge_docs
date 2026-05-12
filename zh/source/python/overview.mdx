@@ -133,7 +133,7 @@ from motorbridge import Controller, Mode
 TARGET_POS = 1.0  # 目标角度(rad)
 
 with Controller("can0") as ctrl:
-    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")  # 请替换为你的 id / 真实 RS00-RS06 型号
+    motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")  # 请替换为你的 id / 真实 RS00-RS06 型号
     ctrl.enable_all()
     motor.ensure_mode(Mode.MIT, 1000)
     motor.send_mit(TARGET_POS, 0.0, 8.0, 0.2, 0.0)
@@ -169,7 +169,7 @@ from motorbridge import Controller, Mode
 TARGET_POS = 1.0  # 目标角度(rad)
 
 with Controller("can0") as ctrl:
-motor = ctrl.add_robstride_motor(127, 0xFD, "rs-00")
+motor = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
     ctrl.enable_all()
     motor.ensure_mode(Mode.MIT, 1000)
     motor.send_mit(TARGET_POS, 0.0, 8.0, 0.2, 0.0)  # 控制到目标角度
@@ -221,7 +221,7 @@ RobStride:
 
 ```bash
 motorbridge-cli run \
-  --vendor robstride --channel can0 --model rs-00 --motor-id 127 \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
   --mode ping
 ```
 
@@ -231,7 +231,7 @@ RobStride 读参数:
 
 ```bash
 motorbridge-cli robstride-read-param \
-  --channel can0 --model rs-00 --motor-id 127 --param-id 0x7019 --type f32
+  --channel can0 --model rs-06 --motor-id 127 --param-id 0x7019 --type f32
 ```
 
 统一扫描（所有 vendor）:
