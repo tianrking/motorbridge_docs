@@ -14,7 +14,7 @@ Source alignment: RobStride/Product_Information commit [`ba7236bc26417766fda71e7
 - Do not use `rs-00` as a generic RobStride default for another RS model.
 - For runtime reads and writes, prefer the protocol section 4 IDs in `0x7005..0x702E`.
 - The `0x7000` range contains common runtime control parameters shared by the unified control path. The `0x0000`/`0x1000`/`0x2000`/`0x3000` manual ranges differ by model and are kept as commented reference entries in core, not active high-level control registers.
-- For a persistent `-pi..pi` startup position range, write `zero_sta(0x7029)=1` and then send the type-22 save frame. The CLI `zero --zero-exp 1` path does this after the type-6 mechanical-zero command.
+- For persistent startup position range selection, use the same zero command interface: `zero --zero-exp 1 --zero-range neg-pi-pi` writes `zero_sta(0x7029)=1`, and `--zero-range zero-2pi` writes `zero_sta(0x7029)=0`. With `--store 1`, the command then sends the type-22 save frame.
 - String entries are listed for completeness. The CLI intentionally does not write string parameters.
 - Rust `motor_cli` uses the full table types, including `i16` and `i32`. Python `motorbridge-cli` 0.2.7 exposes the ABI-backed parameter types `i8`, `u8`, `u16`, `u32`, and `f32`; for `i16`/`i32` table entries, use the Rust CLI/core path.
 

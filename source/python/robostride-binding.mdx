@@ -458,23 +458,24 @@ with Controller("can0") as ctrl:
 ## 11）写零点（zero / set-zero）
 
 共同语义：
-- 设置当前机械位置为零点；可选择持久化。
+- 设置当前机械位置为零点；通过同一个接口选择上电坐标范围；可选择持久化。
 
 参数有效性：
-- 有效：`mode=zero|set-zero`、`zero-exp`、`store`。
+- 有效：`mode=zero|set-zero`、`zero-exp`、`zero-range`、`store`。
 - 关键：`--zero-exp 1` 必须开启，否则不发送实验序列。
+- `zero-range=neg-pi-pi` 写 `zero_sta(0x7029)=1`；`zero-range=zero-2pi` 写 `zero_sta(0x7029)=0`。
 
 默认值：
 - `store=1`（建议）。
 
 原厂协议对应：
-- `disable -> set_zero_position -> (optional) store_parameters`。
+- `disable -> set_zero_position -> write zero_sta(0x7029) -> (optional) store_parameters`。
 
 ### Core CLI
 
 ```bash
 $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode zero --zero-exp 1 --store 1
+  --mode zero --zero-exp 1 --zero-range neg-pi-pi --store 1
 ```
 
 ### Python CLI
@@ -482,11 +483,11 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ```bash
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode zero --zero-exp 1 --store 1
+  --mode zero --zero-exp 1 --zero-range neg-pi-pi --store 1
 
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode set-zero --zero-exp 1 --store 1
+  --mode set-zero --zero-exp 1 --zero-range zero-2pi --store 1
 ```
 
 ### Python SDK
@@ -497,8 +498,7 @@ from motorbridge import Controller
 with Controller("can0") as ctrl:
     m = ctrl.add_robstride_motor(127, 0xFD, "rs-06")
     m.disable()
-    m.set_zero_position()
-    m.store_parameters()
+    m.robstride_set_zero_position(zero_range="neg-pi-pi", store=True)
     m.close()
 ```
 

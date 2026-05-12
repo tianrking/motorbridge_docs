@@ -392,7 +392,7 @@ motorbridge-cli id-set \
 # 设零（实验时序）
 motor_cli \
   --vendor robstride --channel can0 --model rs-06 --motor-id 11 --feedback-id 0xFD \
-  --mode zero --zero-exp 1 --store 1
+  --mode zero --zero-exp 1 --zero-range neg-pi-pi --store 1
 ```
 
 ## 5. vendor=`all`

@@ -88,13 +88,14 @@ motorbridge-cli run [OPTIONS]
 | `--vlim` | `1.0` | Velocity limit (rad/s) |
 | `--ratio` | `0.3` | Force ratio (force-pos mode) |
 | `--zero-exp` | `0` | Enable RobStride experimental zero sequence (`1` to execute) |
+| `--zero-range` | `neg-pi-pi` | RobStride zero coordinate range: `neg-pi-pi` writes `zero_sta=1`; `zero-2pi` writes `zero_sta=0` |
 | `--store` | `1` | Persist parameters after write / zero sequence |
 
 ### Mode-Parameter Mapping Notes
 
 - `mit`: `--pos/--vel/--kp/--kd/--tau` are effective.
 - `pos-vel`: effective args are `--pos/--vlim`; `--vel/--kd/--tau` are ignored by design (warning only).
-- `zero` / `set-zero`: currently RobStride-only; must pass `--zero-exp 1` to actually send zero command sequence.
+- `zero` / `set-zero`: currently RobStride-only; must pass `--zero-exp 1` to actually send zero command sequence. Use `--zero-range neg-pi-pi` or `--zero-range zero-2pi` on the same command instead of writing `0x7029` manually.
 
 ### Examples
 
@@ -197,6 +198,7 @@ motorbridge-cli run \
     --feedback-id 0xFD \
     --mode zero \
     --zero-exp 1 \
+    --zero-range neg-pi-pi \
     --store 1 \
     --loop 1
 ```

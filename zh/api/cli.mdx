@@ -92,13 +92,14 @@ motorbridge-cli run [选项]
 | `--vlim` | `1.0` | 速度限制（rad/s） |
 | `--ratio` | `0.3` | 力比例（force-pos 模式） |
 | `--zero-exp` | `0` | 启用 RobStride 实验性置零序列（传 `1` 才真正执行） |
+| `--zero-range` | `neg-pi-pi` | RobStride 置零坐标范围：`neg-pi-pi` 写 `zero_sta=1`；`zero-2pi` 写 `zero_sta=0` |
 | `--store` | `1` | 写入/置零后持久化保存 |
 
 ### 模式与参数生效关系
 
 - `mit`：`--pos/--vel/--kp/--kd/--tau` 全部生效。
 - `pos-vel`：只使用 `--pos/--vlim`；`--vel/--kd/--tau` 按设计忽略（仅 warning，不报错）。
-- `zero` / `set-zero`：当前仅 RobStride 支持；必须传 `--zero-exp 1` 才会下发置零序列。
+- `zero` / `set-zero`：当前仅 RobStride 支持；必须传 `--zero-exp 1` 才会下发置零序列。用同一个命令的 `--zero-range neg-pi-pi` 或 `--zero-range zero-2pi` 选择坐标范围，不需要手写 `0x7029` 参数。
 
 ### 示例
 
@@ -210,6 +211,7 @@ motorbridge-cli run \
     --feedback-id 0xFD \
     --mode zero \
     --zero-exp 1 \
+    --zero-range neg-pi-pi \
     --store 1 \
     --loop 1
 ```
