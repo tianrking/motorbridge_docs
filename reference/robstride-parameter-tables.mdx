@@ -2,18 +2,18 @@
 
 <mintly-toc>
 
-Complete text reference for the RobStride RS00-RS06 function-code tables used by MotorBridge.
+Complete text reference for RobStride RS00-RS06 function-code tables plus the active MotorBridge runtime parameter set.
 
 </mintly-toc>
 
-Source alignment: RobStride/Product_Information commit [`ba7236bc26417766fda71e75ae128c66dbd21aba`](https://github.com/RobStride/Product_Information/commit/ba7236bc26417766fda71e75ae128c66dbd21aba). The tables below are generated from the MotorBridge core files `motor_vendors/robstride/src/registers_00.rs` through `registers_06.rs`, so the docs and runtime encoder/decoder use the same IDs and data types.
+Source alignment: RobStride/Product_Information commit [`ba7236bc26417766fda71e75ae128c66dbd21aba`](https://github.com/RobStride/Product_Information/commit/ba7236bc26417766fda71e75ae128c66dbd21aba). The full RS00-RS06 manual entries are preserved in the MotorBridge core files `motor_vendors/robstride/src/registers_00.rs` through `registers_06.rs` as comment/reference material. The active runtime table intentionally exposes the protocol section 4 single-parameter IDs in the `0x7005..0x702E` range.
 
 ## How to Use These Tables
 
 - Always pass the physical model: `rs-00`, `rs-01`, `rs-02`, `rs-03`, `rs-04`, `rs-05`, or `rs-06`.
 - Do not use `rs-00` as a generic RobStride default for another RS model.
-- For reads and writes, match `--param-id` and `--type` to the selected model table.
-- The `0x7000` range contains common runtime control parameters shared by the unified control path; the `0x2000` and `0x3000` manual ranges differ by model.
+- For runtime reads and writes, prefer the protocol section 4 IDs in `0x7005..0x702E`.
+- The `0x7000` range contains common runtime control parameters shared by the unified control path. The `0x0000`/`0x1000`/`0x2000`/`0x3000` manual ranges differ by model and are kept as commented reference entries in core, not active high-level control registers.
 - String entries are listed for completeness. The CLI intentionally does not write string parameters.
 - Rust `motor_cli` uses the full table types, including `i16` and `i32`. Python `motorbridge-cli` 0.2.7 exposes the ABI-backed parameter types `i8`, `u8`, `u16`, `u32`, and `f32`; for `i16`/`i32` table entries, use the Rust CLI/core path.
 
@@ -23,7 +23,7 @@ This page is generated from the same RobStride core used at runtime:
 
 - Protocol framing: `motor_vendors/robstride/src/protocol.rs`
 - Model limits and high-level mode mapping: `motor_vendors/robstride/src/motor.rs`
-- Model-specific parameter tables: `motor_vendors/robstride/src/registers_00.rs` through `registers_06.rs`
+- Model-specific manual reference tables: `motor_vendors/robstride/src/registers_00.rs` through `registers_06.rs`
 
 RobStride uses 29-bit extended CAN IDs. MotorBridge builds the arbitration ID as:
 
@@ -77,7 +77,7 @@ byte[2..4] = 0
 byte[4..8] = typed raw value
 ```
 
-Read replies return the typed raw value in `byte[4..8]`. Integer and float parameter values are encoded little-endian. The selected `--model` decides which function-code table is used for name and type validation.
+Read replies return the typed raw value in `byte[4..8]`. Integer and float parameter values are encoded little-endian. MotorBridge's normal runtime control path validates active parameters against the `0x7005..0x702E` protocol section 4 list; non-`0x7xxx` manual entries are retained for source-level cross-checking and diagnostics.
 
 ### Control and Status Frames
 
@@ -105,15 +105,15 @@ motorbridge-cli robstride-write-param \
 
 ## Model Index
 
-| Model | Parameter count | Core source | Table section |
-|---|---:|---|---|
-| `rs-00` | 151 | `registers_00.rs` | [RS00](#rs00) |
-| `rs-01` | 120 | `registers_01.rs` | [RS01](#rs01) |
-| `rs-02` | 139 | `registers_02.rs` | [RS02](#rs02) |
-| `rs-03` | 148 | `registers_03.rs` | [RS03](#rs03) |
-| `rs-04` | 149 | `registers_04.rs` | [RS04](#rs04) |
-| `rs-05` | 148 | `registers_05.rs` | [RS05](#rs05) |
-| `rs-06` | 147 | `registers_06.rs` | [RS06](#rs06) |
+| Model | Manual reference entries | Active runtime entries | Core source | Table section |
+|---|---:|---:|---|---|
+| `rs-00` | 151 | 24 | `registers_00.rs` | [RS00](#rs00) |
+| `rs-01` | 120 | 24 | `registers_01.rs` | [RS01](#rs01) |
+| `rs-02` | 139 | 24 | `registers_02.rs` | [RS02](#rs02) |
+| `rs-03` | 148 | 24 | `registers_03.rs` | [RS03](#rs03) |
+| `rs-04` | 149 | 24 | `registers_04.rs` | [RS04](#rs04) |
+| `rs-05` | 148 | 24 | `registers_05.rs` | [RS05](#rs05) |
+| `rs-06` | 147 | 24 | `registers_06.rs` | [RS06](#rs06) |
 
 ## RS00
 
