@@ -60,9 +60,9 @@ motorbridge-cli scan --vendor robstride --channel can0 --model rs-06 --start-id 
 
 当前支持的 RobStride 型号字符串为：`rs-00`、`rs-01`、`rs-02`、`rs-03`、`rs-04`、`rs-05`、`rs-06`。
 
-这些型号的高层控制调用形态保持一致，但原生功能码参数不是同一张表。`read-param` 和 `write-param` 会根据 `--model` 选择对应型号的参数名称/类型表，再做 payload 编码或解码。实际使用 RS01-RS06 时，不要把 `rs-00` 当作通用占位。
+这些型号的高层控制调用形态保持一致。运行参数 `read-param` / `write-param` 使用协议第 4 章通用表（`0x7005..0x702E`）；`--model` 仍请填写真实 RS 型号，用于限值和日志。
 
-内置 RS00-RS06 参数表对齐 RobStride/Product_Information commit `ba7236bc26417766fda71e75ae128c66dbd21aba`。
+运行参数表对齐 RobStride 手册第 4 章“可读写单个参数列表”。
 
 ## 2）`motor_cli` 的 RobStride 模式
 
@@ -267,9 +267,9 @@ with Controller("can0") as ctrl:
 1. `pos-vel` 参数生效性在部分固件上不稳定：
    - `--vlim`（`0x7017`）和 `--kp`/`loc_kp`（`0x701E`）可能回读正常，但体感效果弱或不明显。
    - 当前 `MIT` 路径相对更稳定。
-2. RobStride 零点校准仍未稳定：
-   - 实验性 `zero` 时序可能发送/ACK 正常，但设备侧 `zero_sta`/`mechPos` 校验仍可能失败。
-   - 在完成固件级时序完全对齐前，零点校准视为未彻底解决。
+2. RobStride 置零已保持统一上层命令，并在内部写 `zero_sta(0x7029)=1`：
+   - 正常使用 `zero` / `set_zero_position()`；
+   - 如果需要掉电后仍保持 `-pi..pi` 上电区间，请配合 `store_parameters` / `--store 1`。
 
 可优先增强：
 

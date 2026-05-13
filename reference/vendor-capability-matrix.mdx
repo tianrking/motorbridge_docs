@@ -30,7 +30,7 @@ This page tracks the production capability status across vendors in motorbridge.
 
 - `MIT` maps to native impedance packet (`pos/vel/kp/kd/tau` all effective).
 - `POS_VEL` maps to native position flow (`run_mode=1`, `loc_ref`, `limit_spd`, optional `loc_kp`).
-- Always pass the physical RobStride model (`rs-00` ... `rs-06`). High-level control shape is shared, but manual function-code parameters differ by model.
+- Always pass the physical RobStride model (`rs-00` ... `rs-06`) for limits and logs. High-level control and runtime parameter read/write share the protocol section 4 table (`0x7005..0x702E`).
 - Full runtime parameter tables are available in [RobStride Parameter Tables](/reference/robstride-parameter-tables).
 - In unified `pos-vel`, CLI args `--vel/--kd/--tau` are ignored by design and shown as warnings.
 - Torque/current is currently parameter-level only (`write-param`), not a separate unified mode (`FORCE_POS` remains ❌).
@@ -51,7 +51,7 @@ This page tracks the production capability status across vendors in motorbridge.
 | Vendor | Native Entrypoints (examples) | Notes |
 |--------|--------------------------------|-------|
 | Damiao | `id-dump`, `id-set` (CLI) + `set_zero_position()` (API) | Register R/W, ID update, zeroing flow |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit extended-frame parameter path; parameter tables are selected by `model` |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit extended-frame parameter path; runtime parameters use the common section 4 table (`0x7005..0x702E`) |
 | MyActuator | Vendor-native command path (adapter exposed) | Position/velocity-first flow, limited register surface |
 | HighTorque | Vendor-native command path (adapter exposed) | Internal scaling under unified API |
 | Hexfellow | CAN-FD native path (`socketcanfd`) | Primarily MIT/POS_VEL, requires CAN-FD |
@@ -74,7 +74,7 @@ motorbridge-cli robstride-read-param `
   --param-id 0x7019 --type f32 --timeout-ms 500
 ```
 
-Use `--model rs-06` only for a physical RS06 motor. For other RS00-RS05 motors, replace it with the actual model because the `0x2000`/`0x3000` manual parameter tables are different.
+Use `--model rs-06` only for a physical RS06 motor. For other RS00-RS05 motors, replace it with the actual model for limits/logging; runtime `read-param` / `write-param` uses the common section 4 table.
 
 ## Cross-Platform Command Templates
 

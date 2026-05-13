@@ -33,9 +33,9 @@ Practical and complete reference for RobStride control, parameter access, and cu
 
 Supported RobStride model strings are `rs-00`, `rs-01`, `rs-02`, `rs-03`, `rs-04`, `rs-05`, and `rs-06`.
 
-High-level control commands keep the same shape across these models, but native function-code parameters are not one shared table. `read-param` and `write-param` choose the parameter name/type table from `--model`, then encode or decode the payload accordingly. Do not use `rs-00` as a generic placeholder for RS01-RS06 motors.
+High-level control commands keep the same shape across these models. Runtime `read-param` and `write-param` use the common protocol section 4 table (`0x7005..0x702E`); keep `--model` set to the physical RS model for limits and logging.
 
-The built-in RS00-RS06 parameter tables are aligned with RobStride/Product_Information commit `ba7236bc26417766fda71e75ae128c66dbd21aba`.
+The runtime parameter table is aligned with the RobStride manual section 4 "read/write single parameter" list.
 
 ## 2) `motor_cli` RobStride Modes
 
@@ -232,9 +232,9 @@ Known issues (observed in field tests):
 1. `pos-vel` parameter effectiveness can be inconsistent on some firmware:
    - `--vlim` (`0x7017`) and `--kp`/`loc_kp` (`0x701E`) may read back as written but show weak/no visible effect.
    - `MIT` path is currently more reliable.
-2. RobStride zero calibration is still inconsistent:
-   - experimental `zero` sequence may complete transport-level send/ack but device-side `zero_sta`/`mechPos` verification can fail.
-   - treat zero calibration as unresolved until firmware-specific sequence is fully matched.
+2. RobStride zeroing now keeps the unified user-facing command and writes `zero_sta(0x7029)=1` internally:
+   - use the normal `zero` / `set_zero_position()` path;
+   - use `store_parameters` / `--store 1` when the `-pi..pi` startup range must survive power cycles.
 
 Main improvement opportunities:
 

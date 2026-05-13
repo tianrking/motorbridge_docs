@@ -193,4 +193,4 @@ cargo run -p motor_cli --release -- \
 
 RobStride 输出中，`probe` / `device_id` 是电机 ID；`feedback_id` / `host_id`（如 `0xFD`）是上位机侧 ID，不是电机 ID。
 RobStride `motor_id` / `device_id` 会校验为 `1..255`；`feedback_id` / `host_id` 会校验为 `0..255`。
-RobStride 参数表由 `--model` 选择；扫描后如果要做参数读写，请继续使用用于限值/日志的 RS 型号。
+RobStride 请继续使用真实 RS 型号作为限值/日志提示；参数读写使用第 4 章通用运行参数表。
