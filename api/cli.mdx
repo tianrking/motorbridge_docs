@@ -48,6 +48,8 @@ motorbridge-cli [OPTIONS] COMMAND [ARGS]
 | `id-set` | Write Damiao ID registers |
 | `robstride-read-param` | Read RobStride parameter |
 | `robstride-write-param` | Write RobStride parameter |
+| `damiao-read-param` | Read Damiao parameter/register |
+| `damiao-write-param` | Write Damiao parameter/register |
 
 ---
 
@@ -73,7 +75,7 @@ motorbridge-cli run [OPTIONS]
 | `--model` | `4340` | Motor model string |
 | `--motor-id` | `0x01` | Motor CAN ID (hex supported) |
 | `--feedback-id` | `0x11` | Feedback CAN ID (hex supported) |
-| `--mode` | `mit` | Control mode: enable, disable, mit, pos-vel, vel, force-pos, ping, zero, set-zero |
+| `--mode` | `mit` | Control mode: enable, disable, mit, pos-vel, vel, force-pos, ping, zero, set-zero, save, zero-by-offset, read-param, write-param |
 | `--loop` | `100` | Number of control iterations |
 | `--dt-ms` | `20` | Control period in milliseconds |
 | `--ensure-mode` | `1` | Whether to ensure mode before control |
@@ -83,19 +85,34 @@ motorbridge-cli run [OPTIONS]
 | `--pos` | `0.0` | Target position (rad) |
 | `--vel` | `0.0` | Target velocity (rad/s) |
 | `--kp` | `30.0` | Position stiffness (MIT mode) |
+| `--loc-kp` | empty | RobStride `pos-vel` position-loop gain; falls back to `--kp` when omitted |
 | `--kd` | `1.0` | Velocity damping (MIT mode) |
 | `--tau` | `0.0` | Feedforward torque (Nm) |
 | `--vlim` | `1.0` | Velocity limit (rad/s) |
 | `--ratio` | `0.3` | Force ratio (force-pos mode) |
 | `--zero-exp` | `0` | Enable RobStride experimental zero sequence (`1` to execute) |
-| `--zero-range` | `neg-pi-pi` | RobStride zero coordinate range: `neg-pi-pi` writes `zero_sta=1`; `zero-2pi` writes `zero_sta=0` |
+| `--offset-negate` | `0` | Reserved for RobStride zero-by-offset; current firmware path is disabled |
 | `--store` | `1` | Persist parameters after write / zero sequence |
+| `--param-id` | `0x0` | RobStride parameter ID for `run --mode read-param/write-param` |
+| `--param-value` | empty | RobStride value for `run --mode write-param` |
+| `--param-type` | inferred | RobStride type for `run --mode read-param/write-param`: i8, u8, u16, u32, f32 |
+| `--timeout-ms` | `500` | Parameter read/write timeout |
+| `--set-motor-id` | empty | Damiao/RobStride Rust-style ID update shortcut |
+| `--set-feedback-id` | empty | Damiao MST_ID update shortcut; RobStride feedback_id/host_id is not changed |
+| `--verify-id` | `1` | Verify ID update |
+| `--verify-model` | `1` | Damiao model handshake using PMAX/VMAX/TMAX before active control |
+| `--verify-timeout-ms` | `500` | Damiao model/ID verification timeout |
+| `--verify-tol` | `0.2` | Damiao model verification tolerance |
 
 ### Mode-Parameter Mapping Notes
 
 - `mit`: `--pos/--vel/--kp/--kd/--tau` are effective.
-- `pos-vel`: effective args are `--pos/--vlim`; `--vel/--kd/--tau` are ignored by design (warning only).
-- `zero` / `set-zero`: currently RobStride-only; must pass `--zero-exp 1` to actually send zero command sequence. Use `--zero-range neg-pi-pi` or `--zero-range zero-2pi` on the same command instead of writing `0x7029` manually.
+- `pos-vel`: effective args are `--pos/--vlim`; for RobStride, Python CLI follows the same native register path as the WS gateway (`limit_spd` `0x7017`, `loc_kp` `0x701E`, `loc_ref` `0x7016`). Use `--loop 1` for one target write; `--vel/--kd/--tau` are ignored by design.
+- `zero` / `set-zero`: currently RobStride-only; must pass `--zero-exp 1` to actually send zero command sequence. MotorBridge writes `zero_sta=1` internally for the RobStride zero flow.
+- `save`: currently RobStride-only; sends save-parameters.
+- `zero-by-offset`: currently RobStride-only and intentionally disabled; it prints a warning and sends no calibration frames.
+- `read-param` / `write-param`: currently RobStride-only in `run`; use `--param-id`, `--param-type`, `--param-value`.
+- `--set-motor-id` / `--set-feedback-id`: when present, `run` enters the same ID update path as `id-set`. Damiao supports both; RobStride supports device ID only.
 
 ### Examples
 
@@ -149,14 +166,18 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-06 \
-    --motor-id 127 \
+    --model rs-00 \
+    --motor-id 2 \
     --feedback-id 0xFD \
     --mode mit \
-    --loop 100 \
     --pos 0.5 \
-    --kp 2.0 \
-    --kd 0.1
+    --vel 0 \
+    --kp 20.0 \
+    --kd 0.5 \
+    --tau 0 \
+    --ensure-strict 1 \
+    --loop 100 \
+    --dt-ms 20
 ```
 
 #### RobStride Position-Velocity Mode
@@ -165,13 +186,35 @@ motorbridge-cli run \
 motorbridge-cli run \
     --vendor robstride \
     --channel can0 \
-    --model rs-06 \
-    --motor-id 127 \
+    --model rs-00 \
+    --motor-id 2 \
     --feedback-id 0xFD \
     --mode pos-vel \
-    --loop 100 \
-    --pos 0.5 \
-    --vlim 1.0
+    --pos 1.5 \
+    --vlim 1.0 \
+    --loc-kp 5.0 \
+    --loop 1 \
+    --dt-ms 20
+    --loc-kp 5.0 \
+    --loop 1 \
+    --dt-ms 20
+```
+
+Reverse direction by writing the opposite absolute position:
+
+```bash
+motorbridge-cli run \
+    --vendor robstride \
+    --channel can0 \
+    --model rs-00 \
+    --motor-id 2 \
+    --feedback-id 0xFD \
+    --mode pos-vel \
+    --pos -1.5 \
+    --vlim 1.0 \
+    --loc-kp 5.0 \
+    --loop 1 \
+    --dt-ms 20
 ```
 
 #### RobStride Ping
@@ -196,11 +239,11 @@ motorbridge-cli run \
     --model rs-06 \
     --motor-id 127 \
     --feedback-id 0xFD \
-    --mode zero \
+    --mode set-zero \
     --zero-exp 1 \
-    --zero-range neg-pi-pi \
     --store 1 \
-    --loop 1
+    --loop 1 \
+    --dt-ms 100
 ```
 
 #### MyActuator Position-Velocity Mode
@@ -501,6 +544,16 @@ motorbridge-cli robstride-read-param [OPTIONS]
 ### Example
 
 ```bash
+motorbridge-cli run \
+    --vendor robstride \
+    --channel can0 \
+    --model rs-06 \
+    --motor-id 127 \
+    --feedback-id 0xFD \
+    --mode read-param \
+    --param-id 0x7019 \
+    --param-type f32
+
 motorbridge-cli robstride-read-param \
     --channel can0 \
     --model rs-06 \
@@ -546,6 +599,17 @@ motorbridge-cli robstride-write-param [OPTIONS]
 ### Example
 
 ```bash
+motorbridge-cli run \
+    --vendor robstride \
+    --channel can0 \
+    --model rs-06 \
+    --motor-id 127 \
+    --feedback-id 0xFD \
+    --mode write-param \
+    --param-id 0x7019 \
+    --param-type f32 \
+    --param-value 2.0
+
 motorbridge-cli robstride-write-param \
     --channel can0 \
     --model rs-06 \
@@ -561,6 +625,84 @@ motorbridge-cli robstride-write-param \
 
 ```
 command=robstride-write-param channel=can0 model=rs-06 motor_id=0x7F param_id=0x7019 type=f32 value=2.0 verify=2.0
+```
+
+---
+
+## damiao-read-param
+
+Read a Damiao parameter/register exposed by the Python binding.
+
+### Usage
+
+```bash
+motorbridge-cli damiao-read-param [OPTIONS]
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--channel` | `can0` | CAN interface |
+| `--transport` | `auto` | Transport: auto, socketcan, socketcanfd, dm-serial |
+| `--model` | `4340` | Damiao model |
+| `--motor-id` | `0x01` | Damiao ESC_ID |
+| `--feedback-id` | `0x11` | Damiao MST_ID |
+| `--param-id` | (required) | Register/parameter ID |
+| `--type` | (required) | Data type: u32 or f32 |
+| `--timeout-ms` | `500` | Read timeout |
+
+### Example
+
+```bash
+motorbridge-cli damiao-read-param \
+    --channel can0 \
+    --model 4340P \
+    --motor-id 0x01 \
+    --feedback-id 0x11 \
+    --param-id 21 \
+    --type f32
+```
+
+---
+
+## damiao-write-param
+
+Write a Damiao parameter/register and optionally read it back.
+
+### Usage
+
+```bash
+motorbridge-cli damiao-write-param [OPTIONS]
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--channel` | `can0` | CAN interface |
+| `--transport` | `auto` | Transport: auto, socketcan, socketcanfd, dm-serial |
+| `--model` | `4340` | Damiao model |
+| `--motor-id` | `0x01` | Damiao ESC_ID |
+| `--feedback-id` | `0x11` | Damiao MST_ID |
+| `--param-id` | (required) | Register/parameter ID |
+| `--type` | (required) | Data type: u32 or f32 |
+| `--value` | (required) | Value to write |
+| `--verify` | `1` | Read back after write |
+| `--timeout-ms` | `500` | Verify timeout |
+
+### Example
+
+```bash
+motorbridge-cli damiao-write-param \
+    --channel can0 \
+    --model 4340P \
+    --motor-id 0x01 \
+    --feedback-id 0x11 \
+    --param-id 8 \
+    --type u32 \
+    --value 0x01 \
+    --verify 1
 ```
 
 ---

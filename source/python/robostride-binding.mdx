@@ -216,7 +216,7 @@ with Controller("can0") as ctrl:
 
 ```bash
 $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode mit --pos 0 --vel 0 --kp 3 --kd 0.2 --tau 0 --loop 40 --dt-ms 50
+  --mode mit --ensure-strict 1 --pos 0.5 --vel 0 --kp 20.0 --kd 0.5 --tau 0 --loop 100 --dt-ms 20
 ```
 
 ### Python CLI
@@ -224,7 +224,7 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ```bash
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode mit --pos 0 --vel 0 --kp 3 --kd 0.2 --tau 0 --loop 40 --dt-ms 50
+  --mode mit --ensure-strict 1 --pos 0.5 --vel 0 --kp 20.0 --kd 0.5 --tau 0 --loop 100 --dt-ms 20
 ```
 
 ### Python SDK
@@ -237,7 +237,7 @@ with Controller("can0") as ctrl:
     m.enable()
     m.ensure_mode(Mode.MIT, 1000)
     for _ in range(40):
-        m.send_mit(0.0, 0.0, 3.0, 0.2, 0.0)
+        m.send_mit(0.5, 0.0, 20.0, 0.5, 0.0)
     m.close()
 ```
 
@@ -260,7 +260,7 @@ with Controller("can0") as ctrl:
 
 ```bash
 $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode pos-vel --pos 1.0 --vlim 0.8 --loop 1 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 ```
 
 ### Python CLI
@@ -268,8 +268,8 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ```bash
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode pos-vel --pos 1.0 --vlim 0.8 \
-  --ensure-mode 1 --ensure-timeout-ms 1500 --ensure-strict 1 \
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 \
+  --ensure-strict 1 --ensure-timeout-ms 1500 \
   --loop 1 --dt-ms 20
 ```
 
@@ -354,6 +354,10 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ### Python CLI
 
 ```bash
+motorbridge-cli run \
+  --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
+  --mode read-param --param-id 0x7019 --param-type f32 --timeout-ms 200
+
 motorbridge-cli robstride-read-param \
   --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
   --param-id 0x7019 --type f32 --timeout-ms 200
@@ -394,6 +398,10 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ### Python CLI
 
 ```bash
+motorbridge-cli run \
+  --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
+  --mode write-param --param-id 0x700A --param-type f32 --param-value 0.3 --timeout-ms 200
+
 motorbridge-cli robstride-write-param \
   --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
   --param-id 0x700A --type f32 --value 0.3 --verify 1 --timeout-ms 200
@@ -458,24 +466,24 @@ with Controller("can0") as ctrl:
 ## 11）写零点（zero / set-zero）
 
 共同语义：
-- 设置当前机械位置为零点；通过同一个接口选择上电坐标范围；可选择持久化。
+- 设置当前机械位置为零点；可选择持久化。
 
 参数有效性：
-- 有效：`mode=zero|set-zero`、`zero-exp`、`zero-range`、`store`。
+- 有效：`mode=zero|set-zero`、`zero-exp`、`store`。
 - 关键：`--zero-exp 1` 必须开启，否则不发送实验序列。
-- `zero-range=neg-pi-pi` 写 `zero_sta(0x7029)=1`；`zero-range=zero-2pi` 写 `zero_sta(0x7029)=0`。
+- 当前 RobStride 置零流程会内部写 `zero_sta(0x7029)=1`。
 
 默认值：
 - `store=1`（建议）。
 
 原厂协议对应：
-- `disable -> set_zero_position -> write zero_sta(0x7029) -> (optional) store_parameters`。
+- `disable -> set_zero_position -> write zero_sta(0x7029)=1 -> (optional) store_parameters`。
 
 ### Core CLI
 
 ```bash
 $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode zero --zero-exp 1 --zero-range neg-pi-pi --store 1
+  --mode zero --zero-exp 1 --store 1
 ```
 
 ### Python CLI
@@ -483,11 +491,11 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ```bash
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode zero --zero-exp 1 --zero-range neg-pi-pi --store 1
+  --mode zero --zero-exp 1 --store 1
 
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode set-zero --zero-exp 1 --zero-range zero-2pi --store 1
+  --mode set-zero --zero-exp 1 --store 1
 ```
 
 ### Python SDK
@@ -513,7 +521,8 @@ motorbridge-cli robstride-read-param \
 ## 12）最终口径（给查证者）
 
 - 三通道在 RobStride 上的控制语义已对齐；主要差异在“入口形式”和少量命令覆盖面。
-- Python CLI 已支持 RobStride `scan / ping(run) / read-param / write-param / id-set`。
+- Python CLI 已支持 RobStride `scan / ping(run) / read-param / write-param / save / id-set`。
+- `read-param` / `write-param` 既可使用专用子命令，也可使用 Rust CLI 风格的 `motorbridge-cli run --mode read-param/write-param`。
 - 参数“有效/无效”请以本手册各节为准，尤其：
   - `mit`：`pos/vel/kp/kd/tau` 全有效。
   - `pos-vel`：仅 `pos/vlim` 主有效；`vel/kd/tau` 无效。

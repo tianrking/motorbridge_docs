@@ -13,6 +13,30 @@ Versioning.
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-05-14
+
+### Added
+
+- Python CLI now exposes Damiao parameter/register read and write commands:
+  `damiao-read-param` and `damiao-write-param`.
+- Python CLI `run` now accepts Rust-style RobStride parameter modes:
+  `--mode read-param`, `--mode write-param`, and `--mode save`.
+- Python CLI `run` now accepts Rust-style ID update shortcuts:
+  `--set-motor-id`, `--set-feedback-id`, `--verify-id`, and Damiao model verification options.
+
+### Fixed
+
+- Legacy Python CLI flat commands such as `motorbridge-cli --vendor robstride ...`
+  are parsed as `run` commands instead of being rejected as invalid subcommands.
+- Python CLI RobStride `pos-vel` now follows the same native register path as the
+  WS gateway (`limit_spd` `0x7017`, `loc_kp` `0x701E`, `loc_ref` `0x7016`).
+- RobStride and Damiao Python CLI documentation was aligned with the Rust CLI and binding behavior.
+
+### Changed
+
+- Python package version advanced to `0.2.9`.
+- Rust workspace crates advanced to `0.2.9`.
+
 ## [0.2.8] - 2026-05-12
 
 ### Fixed

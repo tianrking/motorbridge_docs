@@ -50,8 +50,8 @@ This page tracks the production capability status across vendors in motorbridge.
 
 | Vendor | Native Entrypoints (examples) | Notes |
 |--------|--------------------------------|-------|
-| Damiao | `id-dump`, `id-set` (CLI) + `set_zero_position()` (API) | Register R/W, ID update, zeroing flow |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit extended-frame parameter path; runtime parameters use the common section 4 table (`0x7005..0x702E`) |
+| Damiao | `id-dump`, `id-set`, `damiao-read-param`, `damiao-write-param` (CLI) + `set_zero_position()` (API) | Register/parameter R/W, ID update, zeroing flow |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param`, `run --mode read-param/write-param/save` | 29-bit extended-frame parameter path; runtime parameters use the common section 4 table (`0x7005..0x702E`) |
 | MyActuator | Vendor-native command path (adapter exposed) | Position/velocity-first flow, limited register surface |
 | HighTorque | Vendor-native command path (adapter exposed) | Internal scaling under unified API |
 | Hexfellow | CAN-FD native path (`socketcanfd`) | Primarily MIT/POS_VEL, requires CAN-FD |
@@ -87,7 +87,7 @@ All examples below use the unified Python package CLI: `motorbridge-cli`.
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
   --model rs-06 --motor-id 127 --feedback-id 0xFD \
-  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 
 # Damiao FORCE_POS
 motorbridge-cli run \
@@ -103,7 +103,7 @@ motorbridge-cli run \
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
   --model rs-06 --motor-id 127 --feedback-id 0xFD \
-  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 
 # Damiao dm-serial path (no CAN runtime needed)
 motorbridge-cli run \
@@ -120,7 +120,7 @@ motorbridge-cli run \
 motorbridge-cli run `
   --vendor robstride --transport auto --channel can0@1000000 `
   --model rs-06 --motor-id 127 --feedback-id 0xFD `
-  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 
 # Damiao FORCE_POS
 motorbridge-cli run `

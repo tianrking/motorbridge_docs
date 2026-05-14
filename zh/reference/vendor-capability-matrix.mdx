@@ -54,8 +54,8 @@ RobStride 完整运行时参数表见 [RobStride 参数表](/zh/reference/robstr
 
 | 厂商 | 原生能力入口（示例） | 说明 |
 |------|----------------------|------|
-| Damiao | `id-dump`, `id-set`（CLI）+ `set_zero_position()`（API） | 寄存器读写、ID 修改、置零流程 |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param` | 29-bit 扩展帧参数通道；运行参数使用第 4 章通用表（`0x7005..0x702E`） |
+| Damiao | `id-dump`, `id-set`, `damiao-read-param`, `damiao-write-param`（CLI）+ `set_zero_position()`（API） | 寄存器/参数读写、ID 修改、置零流程 |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param`, `run --mode read-param/write-param/save` | 29-bit 扩展帧参数通道；运行参数使用第 4 章通用表（`0x7005..0x702E`） |
 | MyActuator | 厂商原生命令路径（由适配层暴露） | 以位置/速度主流程为主，寄存器能力有限 |
 | HighTorque | 厂商原生命令路径（由适配层暴露） | 统一接口下内部做缩放映射 |
 | Hexfellow | CAN-FD 原生路径（`socketcanfd`） | 主要覆盖 MIT/POS_VEL，依赖 CAN-FD |
@@ -91,7 +91,7 @@ motorbridge-cli robstride-read-param `
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
   --model rs-06 --motor-id 127 --feedback-id 0xFD \
-  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 
 # Damiao FORCE_POS
 motorbridge-cli run \
@@ -107,7 +107,7 @@ motorbridge-cli run \
 motorbridge-cli run \
   --vendor robstride --transport auto --channel can0 \
   --model rs-06 --motor-id 127 --feedback-id 0xFD \
-  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 
 # Damiao dm-serial 路径（不依赖 CAN 运行时）
 motorbridge-cli run \
@@ -124,7 +124,7 @@ motorbridge-cli run \
 motorbridge-cli run `
   --vendor robstride --transport auto --channel can0@1000000 `
   --model rs-06 --motor-id 127 --feedback-id 0xFD `
-  --mode pos-vel --pos 1.2 --vlim 2.0 --loop 20 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 
 # Damiao FORCE_POS
 motorbridge-cli run `

@@ -2,11 +2,11 @@
 
 <mintly-toc>
 
-MotorBridge v0.2.8 uses one unified RobStride runtime parameter table from protocol section 4.
+MotorBridge v0.2.9 uses one unified RobStride runtime parameter table from protocol section 4.
 
 </mintly-toc>
 
-MotorBridge keeps the upper-level RobStride API shape shared across RS models. The active runtime parameter table is the protocol section 4 "read/write single parameter" list in the `0x7005..0x702E` range. Older/manual `0x2000` and `0x3000` function-code fields are not split into per-model high-level tables in v0.2.8.
+MotorBridge keeps the upper-level RobStride API shape shared across RS models. The active runtime parameter table is the protocol section 4 "read/write single parameter" list in the `0x7005..0x702E` range. Older/manual `0x2000` and `0x3000` function-code fields are not split into per-model high-level tables in v0.2.9.
 
 ## Runtime Rules
 
@@ -61,7 +61,7 @@ MotorBridge keeps the upper-level RobStride API shape shared across RS models. T
 
 ### Persistence and Zeroing Notes
 
-- `W/R` or `W` only means the parameter can be written over CAN; it does not guarantee persistence by itself. Send type 22 save, or use CLI `--store 1`, when the value must survive power cycling.
+- `W/R` or `W` only means the parameter can be written over CAN; it does not guarantee persistence by itself. Use `motorbridge-cli run --vendor robstride ... --mode save` when a parameter value must survive power cycling. `--store 1` is used by the zeroing flow.
 - For RobStride zeroing, MotorBridge keeps the same upper-level command as other vendors. Internally it sends type 6 and then writes `zero_sta(0x7029)=1`; with `--store 1`, type 22 saves the `-pi..pi` startup behavior.
 - Use radians for all position quantities and radians per second / radians per second squared for velocity and acceleration.
 
@@ -80,14 +80,81 @@ Write `damper=1` and save:
 ```bash
 motorbridge-cli robstride-write-param \
   --channel can0 --model rs-06 --motor-id 2 --feedback-id 0xFD \
-  --param-id 0x702A --type u8 --value 1 --store 1 --verify 1
+  --param-id 0x702A --type u8 --value 1 --verify 1
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 2 --feedback-id 0xFD \
+  --mode save
 ```
 
-Set zero through the unified command. For RobStride, MotorBridge also writes `zero_sta=1` internally:
+## RobStride Zero Calibration
+
+Use the unified Python package CLI. The current CLI uses subcommands, so
+RobStride control commands must start with `motorbridge-cli run`.
+
+Before writing zero:
+
+- Use a verified adapter path, preferably PCAN or a tested CANable/candleLight
+  SocketCAN interface.
+- Scan first and confirm the target `motor-id` and `feedback-id`.
+- Move the joint by hand to the real mechanical zero pose.
+- Do not run this command while the mechanism can collide or fall.
+
+Scan and confirm the motor is online:
+
+```bash
+motorbridge-cli scan \
+  --vendor robstride --channel can0 \
+  --start-id 1 --end-id 127 \
+  --feedback-ids 0xFD,0xFF,0xFE,0x00,0xAA
+```
+
+Read state once:
 
 ```bash
 motorbridge-cli run \
-  --vendor robstride --channel can0 --model rs-06 \
-  --motor-id 2 --feedback-id 0xFD \
-  --mode zero --zero-exp 1 --store 1
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode enable --loop 1 --dt-ms 100
 ```
+
+Set the current mechanical pose as zero. `--zero-exp 1` is required for
+RobStride; without it, MotorBridge prints a warning and does not send the
+zeroing CAN frame. `--store 1` saves the result when the firmware accepts it.
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode set-zero --zero-exp 1 --store 1 \
+  --loop 1 --dt-ms 100
+```
+
+Verify by reading state again:
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode enable --loop 3 --dt-ms 100
+```
+
+Then test a small move and return to zero:
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 \
+  --loop 1 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode pos-vel --pos -1.5 --vlim 1.0 --loc-kp 5.0 \
+  --loop 1 --dt-ms 20
+```
+
+For RobStride, MotorBridge also writes `zero_sta=1` internally so the startup
+range is intended to be `-pi..pi`. Use the model that matches your motor for
+limits and logging; the examples above use `rs-00`.

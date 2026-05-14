@@ -47,7 +47,7 @@ title: "Python Binding 总览"
 
 ## 范围
 
-- 当前目标包版本：`0.1.9`。
+- 当前目标包版本：`0.2.9`。
 - 高层 API: `Controller`、`Motor`、`Mode`
 - CLI: `motorbridge-cli`
 - 网关启动命令（pip 安装后进入 PATH）：
@@ -215,6 +215,10 @@ Damiao:
 motorbridge-cli run \
   --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
   --mode mit --pos 0 --vel 0 --kp 20 --kd 1 --tau 0 --loop 50 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor damiao --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --set-motor-id 0x02 --set-feedback-id 0x12 --store 1 --verify-id 1
 ```
 
 RobStride:
@@ -225,13 +229,47 @@ motorbridge-cli run \
   --mode ping
 ```
 
-Python CLI 和 SDK 调用都请使用真实 RobStride 型号（`rs-00` 到 `rs-06`）。系列内控制方法一致；v0.2.8 参数读写使用第 4 章通用运行表。
+Python CLI 和 SDK 调用都请使用真实 RobStride 型号（`rs-00` 到 `rs-06`）。系列内控制方法一致；v0.2.9 参数读写使用第 4 章通用运行表。
+
+RobStride MIT 与 POS_VEL 快速验证：
+
+```bash
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode mit --ensure-strict 1 \
+  --pos 0.5 --vel 0 --kp 20.0 --kd 0.5 --tau 0 \
+  --loop 100 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 2 --feedback-id 0xFD \
+  --mode pos-vel \
+  --pos 1.5 --vlim 1.0 --loc-kp 5.0 \
+  --loop 1 --dt-ms 20
+```
 
 RobStride 读参数:
 
 ```bash
 motorbridge-cli robstride-read-param \
   --channel can0 --model rs-06 --motor-id 127 --param-id 0x7019 --type f32
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
+  --mode read-param --param-id 0x7019 --param-type f32
+```
+
+Damiao 参数读写:
+
+```bash
+motorbridge-cli damiao-read-param \
+  --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --param-id 21 --type f32
+
+motorbridge-cli damiao-write-param \
+  --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --param-id 8 --type u32 --value 0x01 --verify 1
 ```
 
 统一扫描（所有 vendor）:

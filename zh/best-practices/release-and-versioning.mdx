@@ -33,9 +33,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 组件 | 源文件 | 当前版本 |
 |------|--------|----------|
-| Git 发布标签 | `motorbridge` 仓库 | `v0.2.8` |
-| Python 包 | `bindings/python/pyproject.toml` | `0.2.8` |
-| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.2.8` |
+| Git 发布标签 | `motorbridge` 仓库 | `v0.2.9` |
+| Python 包 | `bindings/python/pyproject.toml` | `0.2.9` |
+| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.2.9` |
 
 ```
 主版本.次版本.补丁版本[-预发布标识]
@@ -55,9 +55,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 类别 | 示例 | 稳定性 |
 |------|------|--------|
-| 稳定版 | `0.2.8` | 生产就绪 |
-| 预发布 | `0.2.8a1` | 仅测试 |
-| 开发版 | `0.2.8.dev1` | 内部使用 |
+| 稳定版 | `0.2.9` | 生产就绪 |
+| 预发布 | `0.2.9a1` | 仅测试 |
+| 开发版 | `0.2.9.dev1` | 内部使用 |
 
 ---
 
@@ -70,7 +70,7 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 pip install motorbridge
 
 # 特定版本
-pip install motorbridge==0.2.8
+pip install motorbridge==0.2.9
 
 # 升级
 pip install --upgrade motorbridge
@@ -80,7 +80,7 @@ pip install --upgrade motorbridge
 
 ```bash
 # 从 TestPyPI 安装
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.8a1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9a1
 ```
 
 <Warning>
@@ -91,7 +91,7 @@ pip install -i https://test.pypi.org/simple/ motorbridge==0.2.8a1
 
 ```bash
 # 从 Git 安装
-pip install git+https://github.com/tianrking/motorbridge@v0.2.8
+pip install git+https://github.com/tianrking/motorbridge@v0.2.9
 
 # 安装特定分支
 pip install git+https://github.com/tianrking/motorbridge@main
@@ -130,11 +130,11 @@ print(f"motorbridge 版本: {importlib.metadata.version('motorbridge')}")
 
 ```bash
 # 当前: 任意旧 0.x 版本
-# 升级到最新稳定版: 0.2.8
+# 升级到最新稳定版: 0.2.9
 pip install --upgrade motorbridge
 
 # 或特定补丁
-pip install motorbridge==0.2.8
+pip install motorbridge==0.2.9
 ```
 
 ### 早期采用者
@@ -143,13 +143,13 @@ pip install motorbridge==0.2.8
 
 ```bash
 # 开发环境
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.8b1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9b1
 
 # 测试代码
 python3 -m pytest tests/
 
 # 生产环境保持稳定
-pip install motorbridge==0.2.8
+pip install motorbridge==0.2.9
 ```
 
 ### 固定版本
@@ -158,14 +158,14 @@ pip install motorbridge==0.2.8
 
 ```requirements.txt
 # requirements.txt
-motorbridge==0.2.8
+motorbridge==0.2.9
 ```
 
 或使用版本约束：
 
 ```requirements.txt
 # 允许补丁更新，阻止次版本/主版本变更
-motorbridge>=0.2.8,<0.3.0
+motorbridge>=0.2.9,<0.3.0
 ```
 
 ---
@@ -188,7 +188,7 @@ motorbridge>=0.2.8,<0.3.0
 
 ## 变更日志
 
-### v0.2.8
+### v0.2.9
 
 - 新增 RobStride host_id 精确 ABI：`motor_handle_robstride_ping_host_id` 和 `motor_handle_robstride_get_param_f32_host_id`
 - 新增 Python 包装方法：`robstride_ping_host_id(...)` 和 `robstride_get_param_f32_host_id(...)`
@@ -239,7 +239,7 @@ def old_function():
 
 ```bash
 # 更新 bindings/python/pyproject.toml 中的 [project].version
-version = "0.2.8"
+version = "0.2.9"
 ```
 
 ### 2. 更新变更日志
@@ -250,8 +250,8 @@ version = "0.2.8"
 ### 3. 打标签
 
 ```bash
-git tag v0.2.8
-git push origin v0.2.8
+git tag v0.2.9
+git push origin v0.2.9
 ```
 
 ### 4. 构建包
@@ -271,7 +271,7 @@ twine upload -r testpypi dist/*
 ### 6. 验证安装
 
 ```bash
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.8
+pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9
 python3 -m pytest tests/
 ```
 
@@ -295,11 +295,11 @@ twine upload dist/*
 
 ```bash
 # 错误：尝试重新上传同一版本
-twine upload dist/motorbridge-0.2.8.tar.gz
+twine upload dist/motorbridge-0.2.9.tar.gz
 # 错误: 文件已存在
 
 # 解决方案：增加版本号
-# 更新 __version__ = "0.1.9"
+# 更新 __version__ = "0.2.9"
 # 重新构建并上传
 ```
 
@@ -342,7 +342,7 @@ jobs:
 |---------|-------------|----------|------|
 | 0.1.5 | 3.10 | SocketCAN | 初始发布 |
 | 0.1.6 | 3.10 | SocketCAN | 添加 RobStride 参数 |
-| 0.2.8 | 3.10 | SocketCAN | 后台轮询默认启用 |
+| 0.2.9 | 3.10 | SocketCAN | 后台轮询默认启用 |
 
 ---
 

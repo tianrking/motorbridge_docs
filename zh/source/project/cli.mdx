@@ -102,13 +102,50 @@ cargo run -p motor_cli --release -- \
 ```bash
 cargo run -p motor_cli --release -- \
   --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
-  --mode mit --pos 0 --vel 0 --kp 0.5 --kd 0.2 --tau 0 --loop 20 --dt-ms 50
+  --mode mit --ensure-strict 1 --pos 0.5 --vel 0 --kp 20.0 --kd 0.5 --tau 0 --loop 100 --dt-ms 20
 ```
 
 ```bash
 cargo run -p motor_cli --release -- \
   --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
-  --mode pos-vel --pos 1.0 --vlim 1.5 --loop 1 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
+```
+
+### RobStride 零点校准（Python 包 CLI）
+
+当前 `motorbridge-cli` 使用子命令结构，置零必须写成 `motorbridge-cli run ...`。
+RobStride 置零还必须带 `--zero-exp 1`；不带时只打印警告，不发送置零帧。
+
+```bash
+# 先确认在线
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode enable --loop 1 --dt-ms 100
+```
+
+```bash
+# 将当前机械位置写为零点，并保存
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode set-zero --zero-exp 1 --store 1 \
+  --loop 1 --dt-ms 100
+```
+
+```bash
+# 小幅移动并回零验证
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 \
+  --loop 1 --dt-ms 20
+
+motorbridge-cli run \
+  --vendor robstride --channel can0 --model rs-00 \
+  --motor-id 1 --feedback-id 0xFD \
+  --mode pos-vel --pos -1.5 --vlim 1.0 --loc-kp 5.0 \
+  --loop 1 --dt-ms 20
 ```
 
 ## HighTorque（原生 `ht_can` v1.5.5）

@@ -35,7 +35,7 @@ python3 -m pip install motorbridge
 ### 安装特定版本
 
 ```bash
-python3 -m pip install motorbridge==0.2.8
+python3 -m pip install motorbridge==0.2.9
 ```
 
 ### 升级现有安装
@@ -66,7 +66,7 @@ motorbridge-cli --help
 
 预期输出：
 ```
-usage: motorbridge-cli [-h] {run,scan,id-dump,id-set,robstride-read-param,robstride-write-param} ...
+usage: motorbridge-cli [-h] {run,id-dump,id-set,scan,robstride-read-param,robstride-write-param,damiao-read-param,damiao-write-param} ...
 
 motorbridge Python SDK CLI
 ...
@@ -173,7 +173,7 @@ DYLD_LIBRARY_PATH="$PKG_DIR/lib:${DYLD_LIBRARY_PATH:-}" "$GW" --bind 127.0.0.1:9
 python3 -m pip install --pre -i https://test.pypi.org/simple/ motorbridge
 
 # 或安装指定预发布版本
-python3 -m pip install -i https://test.pypi.org/simple/ motorbridge==0.2.8a1
+python3 -m pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9a1
 ```
 
 <Note>

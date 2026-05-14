@@ -102,13 +102,13 @@ cargo run -p motor_cli --release -- \
 ```bash
 cargo run -p motor_cli --release -- \
   --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
-  --mode mit --pos 0 --vel 0 --kp 0.5 --kd 0.2 --tau 0 --loop 20 --dt-ms 50
+  --mode mit --ensure-strict 1 --pos 0.5 --vel 0 --kp 20.0 --kd 0.5 --tau 0 --loop 100 --dt-ms 20
 ```
 
 ```bash
 cargo run -p motor_cli --release -- \
   --vendor robstride --channel can0 --model rs-06 --motor-id 127 \
-  --mode pos-vel --pos 1.0 --vlim 1.5 --loop 1 --dt-ms 20
+  --mode pos-vel --pos 1.5 --vlim 1.0 --loc-kp 5.0 --loop 1 --dt-ms 20
 ```
 
 ## HighTorque (native `ht_can` v1.5.5)
