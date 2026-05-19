@@ -2,19 +2,19 @@
 
 <mintly-toc>
 
-MotorBridge v0.2.9 uses one unified RobStride runtime parameter table from protocol section 4.
+MotorBridge v0.3.3 uses one unified RobStride runtime parameter table from protocol section 4.
 
 </mintly-toc>
 
-MotorBridge keeps the upper-level RobStride API shape shared across RS models. The active runtime parameter table is the protocol section 4 "read/write single parameter" list in the `0x7005..0x702E` range. Older/manual `0x2000` and `0x3000` function-code fields are not split into per-model high-level tables in v0.2.9.
+MotorBridge keeps the upper-level RobStride API shape shared across RS models. The active runtime parameter table is the protocol section 4 "read/write single parameter" list in the `0x7005..0x702E` range. Older/manual `0x2000` and `0x3000` function-code fields are not split into per-model high-level tables in v0.3.3.
 
 ## Runtime Rules
 
 - Runtime parameter read/write uses communication type 17/18 plus the parameter index below.
 - Parameter index is little-endian in `byte[0..2]`; the typed value is little-endian in `byte[4..8]`.
-- Parameters that must survive power-cycle require type 22 save after writing.
+- Parameters that must survive power-cycle require type 22 save after writing. In v0.3.3, `robstride-write-param --store 1` performs write, optional verify, then save.
 - RobStride `set_zero_position()` keeps the same upper-level API but now writes `zero_sta(0x7029)=1` behind the scenes so zeroed motors use `-pi..pi`. Use `store_parameters` / `--store 1` to persist it.
-- Type 22 save uses payload `01 02 03 04 05 06 07 08`.
+- Type 22 save uses payload `01 02 03 04 05 06 07 08` and waits for a RobStride status ACK.
 
 ## Communication Types Used
 
@@ -61,7 +61,7 @@ MotorBridge keeps the upper-level RobStride API shape shared across RS models. T
 
 ### Persistence and Zeroing Notes
 
-- `W/R` or `W` only means the parameter can be written over CAN; it does not guarantee persistence by itself. Use `motorbridge-cli run --vendor robstride ... --mode save` when a parameter value must survive power cycling. `--store 1` is used by the zeroing flow.
+- `W/R` or `W` only means the parameter can be written over CAN; it does not guarantee persistence by itself. Use `motorbridge-cli robstride-write-param ... --store 1` when a parameter value must survive power cycling. `motorbridge-cli run --vendor robstride ... --mode save` remains available as a direct save operation.
 - For RobStride zeroing, MotorBridge keeps the same upper-level command as other vendors. Internally it sends type 6 and then writes `zero_sta(0x7029)=1`; with `--store 1`, type 22 saves the `-pi..pi` startup behavior.
 - Use radians for all position quantities and radians per second / radians per second squared for velocity and acceleration.
 
@@ -80,11 +80,7 @@ Write `damper=1` and save:
 ```bash
 motorbridge-cli robstride-write-param \
   --channel can0 --model rs-06 --motor-id 2 --feedback-id 0xFD \
-  --param-id 0x702A --type u8 --value 1 --verify 1
-
-motorbridge-cli run \
-  --vendor robstride --channel can0 --model rs-06 --motor-id 2 --feedback-id 0xFD \
-  --mode save
+  --param-id 0x702A --type u8 --value 1 --verify 1 --store 1
 ```
 
 ## RobStride Zero Calibration

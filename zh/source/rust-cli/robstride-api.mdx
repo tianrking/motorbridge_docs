@@ -77,6 +77,7 @@ motorbridge-cli scan --vendor robstride --channel can0 --model rs-06 --start-id 
 - `vel`
 - `read-param`
 - `write-param`
+- `save`
 
 大一统“四协议”映射状态：
 
@@ -147,7 +148,8 @@ motor_cli \
   - `--mode vel`
 - 原生方式（调试/协议级验证）：
   - `--mode read-param --param-id ...`
-  - `--mode write-param --param-id ... --param-value ...`
+  - `--mode write-param --param-id ... --param-value ... --store 1`
+  - `--mode save` 可直接执行保存参数动作
   - 典型链路：先写 `run_mode(0x7005)`，再写对应目标参数（如 `loc_ref/spd_ref`）
 
 ## 3）扫描与改 ID
@@ -236,7 +238,7 @@ motor_cli \
 ```bash
 motor_cli \
   --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
-  --mode write-param --param-id 0x700A --param-value 0.3
+  --mode write-param --param-id 0x700A --param-value 0.3 --store 1
 ```
 
 Python binding 示例：

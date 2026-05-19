@@ -37,9 +37,11 @@ motorbridge-cli [选项] 命令 [参数]
 | 选项 | 描述 |
 |------|------|
 | `--help` | 显示帮助信息并退出 |
+| `-v`, `--version` | 打印已安装 `motorbridge` Python 包版本并退出 |
 
 <Note>
-`motorbridge-cli` 当前没有 `--version` 参数。可用 `python3 -c "import importlib.metadata; print(importlib.metadata.version('motorbridge'))"` 查看已安装 Python 包版本。
+从 v0.3.3 开始，`motorbridge-cli` 关闭 argparse 长参数缩写。
+例如 `robstride-write-param --mode save` 会直接报未识别参数，不会再被误解成 `--model save`。
 </Note>
 
 ## 命令概览
@@ -96,7 +98,7 @@ motorbridge-cli run [选项]
 | `--ratio` | `0.3` | 力比例（force-pos 模式） |
 | `--zero-exp` | `0` | 启用 RobStride 实验性置零序列（传 `1` 才真正执行） |
 | `--offset-negate` | `0` | RobStride zero-by-offset 预留参数；当前固件路径已禁用 |
-| `--store` | `1` | 写入/置零后持久化保存 |
+| `--store` | `1` | `run --mode write-param` / 置零后持久化保存 |
 | `--param-id` | `0x0` | `run --mode read-param/write-param` 使用的 RobStride 参数 ID |
 | `--param-value` | 空 | `run --mode write-param` 使用的 RobStride 写入值 |
 | `--param-type` | 自动推断 | RobStride 参数类型：i8, u8, u16, u32, f32 |
@@ -113,7 +115,7 @@ motorbridge-cli run [选项]
 - `mit`：`--pos/--vel/--kp/--kd/--tau` 全部生效。
 - `pos-vel`：只使用 `--pos/--vlim`；RobStride 的 Python CLI 已与 WS gateway 对齐，走原生寄存器路径（`limit_spd` `0x7017`、`loc_kp` `0x701E`、`loc_ref` `0x7016`）。写一次目标位置用 `--loop 1`；`--vel/--kd/--tau` 按设计忽略。
 - `zero` / `set-zero`：当前仅 RobStride 支持；必须传 `--zero-exp 1` 才会下发置零序列。RobStride 置零流程中 MotorBridge 会内部写 `zero_sta=1`。
-- `save`：当前仅 RobStride 支持；发送保存参数命令。
+- `save`：当前仅 RobStride 支持；发送保存参数命令，并等待 RobStride 状态 ACK。
 - `zero-by-offset`：当前仅 RobStride 支持，但因固件一致性问题保持禁用；只打印 warning，不发送校准帧。
 - `read-param` / `write-param`：`run` 中当前仅 RobStride 支持；使用 `--param-id`、`--param-type`、`--param-value`。
 - `--set-motor-id` / `--set-feedback-id`：存在时 `run` 会进入与 `id-set` 相同的改 ID 流程。Damiao 支持二者；RobStride 只支持设备 ID。
@@ -525,6 +527,7 @@ motorbridge-cli robstride-write-param [选项]
 | `--type` | (必需) | 数据类型：i8, u8, u16, u32, f32 |
 | `--value` | (必需) | 要写入的值（根据 `--type` 解析） |
 | `--verify` | `1` | 回读并验证 |
+| `--store` | `0` | 写入/验证成功后发送 RobStride 保存参数命令（通信类型 22） |
 | `--timeout-ms` | `500` | 验证超时 |
 
 ### 示例
@@ -548,7 +551,8 @@ motorbridge-cli robstride-write-param \
     --param-id 0x7019 \
     --type f32 \
     --value 2.0 \
-    --verify 1
+    --verify 1 \
+    --store 1
 ```
 
 ---
@@ -613,6 +617,7 @@ motorbridge-cli damiao-write-param [选项]
 | `--type` | (必需) | 数据类型：u32 或 f32 |
 | `--value` | (必需) | 要写入的值 |
 | `--verify` | `1` | 写入后回读验证 |
+| `--store` | `0` | 写入/验证成功后调用 Damiao `store_parameters()` |
 | `--timeout-ms` | `500` | 验证超时 |
 
 ### 示例
@@ -626,7 +631,8 @@ motorbridge-cli damiao-write-param \
     --param-id 8 \
     --type u32 \
     --value 0x01 \
-    --verify 1
+    --verify 1 \
+    --store 1
 ```
 
 ---

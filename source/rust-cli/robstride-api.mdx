@@ -50,6 +50,7 @@ Supported now:
 - `vel`
 - `read-param`
 - `write-param`
+- `save`
 
 Unified "big-four" mapping status:
 
@@ -120,7 +121,8 @@ motor_cli \
   - `--mode vel`
 - Native path (debug/protocol-level verification):
   - `--mode read-param --param-id ...`
-  - `--mode write-param --param-id ... --param-value ...`
+  - `--mode write-param --param-id ... --param-value ... --store 1`
+  - `--mode save` for a direct save-parameters operation
   - Typical sequence: write `run_mode(0x7005)` first, then write target params (`loc_ref/spd_ref`, etc.)
 
 ## 3) Scan and ID Update
@@ -201,7 +203,7 @@ Write parameter:
 ```bash
 motor_cli \
   --vendor robstride --channel can0 --model rs-06 --motor-id 127 --feedback-id 0xFD \
-  --mode write-param --param-id 0x700A --param-value 0.3
+  --mode write-param --param-id 0x700A --param-value 0.3 --store 1
 ```
 
 Python binding sample:

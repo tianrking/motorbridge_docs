@@ -33,9 +33,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 组件 | 源文件 | 当前版本 |
 |------|--------|----------|
-| Git 发布标签 | `motorbridge` 仓库 | `v0.2.9` |
-| Python 包 | `bindings/python/pyproject.toml` | `0.2.9` |
-| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.2.9` |
+| Git 发布标签 | `motorbridge` 仓库 | `v0.3.3` |
+| Python 包 | `bindings/python/pyproject.toml` | `0.3.3` |
+| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.3.3` |
 
 ```
 主版本.次版本.补丁版本[-预发布标识]
@@ -55,9 +55,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 类别 | 示例 | 稳定性 |
 |------|------|--------|
-| 稳定版 | `0.2.9` | 生产就绪 |
-| 预发布 | `0.2.9a1` | 仅测试 |
-| 开发版 | `0.2.9.dev1` | 内部使用 |
+| 稳定版 | `0.3.3` | 生产就绪 |
+| 预发布 | `0.3.3a1` | 仅测试 |
+| 开发版 | `0.3.3.dev1` | 内部使用 |
 
 ---
 
@@ -70,7 +70,7 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 pip install motorbridge
 
 # 特定版本
-pip install motorbridge==0.2.9
+pip install motorbridge==0.3.3
 
 # 升级
 pip install --upgrade motorbridge
@@ -80,7 +80,7 @@ pip install --upgrade motorbridge
 
 ```bash
 # 从 TestPyPI 安装
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9a1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3a1
 ```
 
 <Warning>
@@ -91,7 +91,7 @@ pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9a1
 
 ```bash
 # 从 Git 安装
-pip install git+https://github.com/tianrking/motorbridge@v0.2.9
+pip install git+https://github.com/tianrking/motorbridge@v0.3.3
 
 # 安装特定分支
 pip install git+https://github.com/tianrking/motorbridge@main
@@ -107,8 +107,15 @@ pip install git+https://github.com/tianrking/motorbridge@main
 # 使用 pip
 pip show motorbridge
 
+# 使用 Python CLI
+motorbridge-cli -v
+
+# 使用 Rust CLI
+motor_cli -v
+
 # 使用 Python
 python3 -c "import importlib.metadata; print(importlib.metadata.version('motorbridge'))"
+python3 -c "import motorbridge; print(motorbridge.get_version())"
 ```
 
 ### 代码中检查
@@ -118,6 +125,7 @@ import motorbridge
 
 import importlib.metadata
 print(f"motorbridge 版本: {importlib.metadata.version('motorbridge')}")
+print(f"motorbridge API 版本: {motorbridge.get_version()}")
 ```
 
 ---
@@ -130,11 +138,11 @@ print(f"motorbridge 版本: {importlib.metadata.version('motorbridge')}")
 
 ```bash
 # 当前: 任意旧 0.x 版本
-# 升级到最新稳定版: 0.2.9
+# 升级到最新稳定版: 0.3.3
 pip install --upgrade motorbridge
 
 # 或特定补丁
-pip install motorbridge==0.2.9
+pip install motorbridge==0.3.3
 ```
 
 ### 早期采用者
@@ -143,13 +151,13 @@ pip install motorbridge==0.2.9
 
 ```bash
 # 开发环境
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9b1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3b1
 
 # 测试代码
 python3 -m pytest tests/
 
 # 生产环境保持稳定
-pip install motorbridge==0.2.9
+pip install motorbridge==0.3.3
 ```
 
 ### 固定版本
@@ -158,14 +166,14 @@ pip install motorbridge==0.2.9
 
 ```requirements.txt
 # requirements.txt
-motorbridge==0.2.9
+motorbridge==0.3.3
 ```
 
 或使用版本约束：
 
 ```requirements.txt
 # 允许补丁更新，阻止次版本/主版本变更
-motorbridge>=0.2.9,<0.3.0
+motorbridge>=0.3.3,<0.4.0
 ```
 
 ---
@@ -187,6 +195,24 @@ motorbridge>=0.2.9,<0.3.0
 ---
 
 ## 变更日志
+
+### v0.3.3
+
+- 新增统一版本查询：Python `motorbridge.__version__`、`motorbridge.get_version()`、`motorbridge-cli -v` 和 Rust `motor_cli -v`
+- Python CLI 关闭长选项缩写，`robstride-write-param --mode save` 这类错误参数会直接报错，不会误解析成 `--model save`
+- Python `robstride-write-param` 和 `damiao-write-param` 新增统一 `--store 1`
+- Rust CLI 对齐 RobStride/Damiao 写参保存语义
+- RobStride type 22 保存会发送官方 payload 并等待状态 ACK
+
+### v0.3.2
+
+- RobStride 故障帧只更新故障缓存，不再污染最新运动状态
+- Python binding/CLI 可查询最近一次厂商故障码，同时保留最后一帧真实状态
+
+### v0.3.1
+
+- 新增 ABI/Python 详细故障状态访问接口
+- 改进 RobStride 过温/故障诊断链路
 
 ### v0.2.9
 
@@ -239,7 +265,7 @@ def old_function():
 
 ```bash
 # 更新 bindings/python/pyproject.toml 中的 [project].version
-version = "0.2.9"
+version = "0.3.3"
 ```
 
 ### 2. 更新变更日志
@@ -250,8 +276,8 @@ version = "0.2.9"
 ### 3. 打标签
 
 ```bash
-git tag v0.2.9
-git push origin v0.2.9
+git tag v0.3.3
+git push origin v0.3.3
 ```
 
 ### 4. 构建包
@@ -271,7 +297,7 @@ twine upload -r testpypi dist/*
 ### 6. 验证安装
 
 ```bash
-pip install -i https://test.pypi.org/simple/ motorbridge==0.2.9
+pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3
 python3 -m pytest tests/
 ```
 
@@ -295,11 +321,11 @@ twine upload dist/*
 
 ```bash
 # 错误：尝试重新上传同一版本
-twine upload dist/motorbridge-0.2.9.tar.gz
+twine upload dist/motorbridge-0.3.3.tar.gz
 # 错误: 文件已存在
 
 # 解决方案：增加版本号
-# 更新 __version__ = "0.2.9"
+# 更新 __version__ = "0.3.3"
 # 重新构建并上传
 ```
 
@@ -343,6 +369,7 @@ jobs:
 | 0.1.5 | 3.10 | SocketCAN | 初始发布 |
 | 0.1.6 | 3.10 | SocketCAN | 添加 RobStride 参数 |
 | 0.2.9 | 3.10 | SocketCAN | 后台轮询默认启用 |
+| 0.3.3 | 3.10 | SocketCAN / PCAN | 版本查询、CLI 写参 `--store 1`、RobStride 保存 ACK 对齐 |
 
 ---
 

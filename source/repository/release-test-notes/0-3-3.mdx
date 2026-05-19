@@ -1,0 +1,101 @@
+---
+title: "MotorBridge 0.3.3 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.3.3.md`</Note>
+
+# MotorBridge 0.3.3 Release Test Note
+
+Date: 2026-05-19
+Scope: version reporting, Python/Rust CLI alignment, RobStride/Damiao parameter persistence, RobStride save ACK behavior, and CLI argument parsing safety.
+
+## Summary
+
+MotorBridge 0.3.3 aligns the Python package, Rust workspace, Python CLI, Rust CLI, and documentation around one version: `0.3.3`.
+
+Key changes:
+
+- Python binding exposes `motorbridge.__version__` and `motorbridge.get_version()`.
+- Python CLI exposes `motorbridge-cli -v` / `--version`.
+- Rust CLI exposes `motor_cli -v` / `--version`.
+- Python CLI disables long-option abbreviation, so invalid options such as `robstride-write-param --mode save` are rejected instead of being parsed as `--model save`.
+- `robstride-write-param` and `damiao-write-param` support unified `--store 1` semantics.
+- RobStride `save_parameters()` sends communication type 22 with payload `01 02 03 04 05 06 07 08` and waits for a status ACK.
+
+## Version Alignment
+
+| Component | Version |
+|---|---|
+| Git release tag | `v0.3.3` |
+| Rust workspace crates | `0.3.3` |
+| Python package | `0.3.3` |
+
+## Version Checks
+
+```bash
+motorbridge-cli -v
+motor_cli -v
+python3 -c "import motorbridge; print(motorbridge.get_version())"
+python3 -c "import importlib.metadata; print(importlib.metadata.version('motorbridge'))"
+```
+
+Expected:
+
+```text
+motorbridge 0.3.3
+motor_cli 0.3.3
+0.3.3
+0.3.3
+```
+
+## CLI Parsing Checks
+
+Invalid shorthand must fail:
+
+```bash
+motorbridge-cli robstride-write-param \
+  --channel can0 --mode save --model rs-00 --motor-id 1 \
+  --param-id 0x701E --type f32 --value 13 --verify 1
+```
+
+Expected: parser error for unrecognized `--mode`, not `unknown RobStride model: save`.
+
+## Unified Store Checks
+
+RobStride persistent parameter write:
+
+```bash
+motorbridge-cli robstride-write-param \
+  --channel can0 --model rs-00 --motor-id 1 --feedback-id 0xFD \
+  --param-id 0x701E --type f32 --value 13.0 --verify 1 --store 1
+```
+
+Damiao persistent parameter write:
+
+```bash
+motorbridge-cli damiao-write-param \
+  --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
+  --param-id 8 --type u32 --value 0x01 --verify 1 --store 1
+```
+
+## Release Quality Gate
+
+```bash
+cargo fmt
+cargo test -p motor_vendor_robstride
+cargo test -p motor_cli
+cargo test -p motor_abi
+python -m py_compile bindings/python/src/motorbridge/_version.py bindings/python/src/motorbridge/__init__.py bindings/python/src/motorbridge/cli.py
+python -m motorbridge.cli -v
+cargo run -q -p motor_cli -- -v
+```
+
+## Acceptance Criteria
+
+- Python binding package version is `0.3.3`.
+- Rust workspace package version is `0.3.3`.
+- GitHub release tag is `v0.3.3`.
+- Python CLI and Rust CLI both print version with `-v`.
+- Python CLI rejects abbreviated or wrong subcommand options.
+- RobStride/Damiao parameter write commands share `--verify 1 --store 1`.
+- RobStride save sends type 22 payload and waits for status ACK.

@@ -272,7 +272,7 @@ motor.request_feedback()
 ctrl.poll_feedback_once()  # 必须调用
 state = motor.get_state()
 
-# v0.2.9 通常不需要手动调用
+# v0.3.3 通常不需要手动调用
 ```
 
 ---
@@ -1051,7 +1051,7 @@ if __name__ == "__main__":
 | 版本 | 说明 |
 |------|------|
 | v0.1.6 及更早 | 需要手动调用 `poll_feedback_once()` |
-| v0.2.9 | 后台轮询默认启用；`poll_feedback_once()` 为可选 |
+| v0.3.3 | 后台轮询默认启用；`poll_feedback_once()` 为可选 |
 
 ---
 

@@ -48,7 +48,8 @@ Notes:
 ## Scope
 Packaging note:
 
-- Current package target version: `0.2.9`.
+- Current package target version: `0.3.3`.
+- Version checks are available through `motorbridge.__version__`, `motorbridge.get_version()`, and `motorbridge-cli -v`.
 - Published wheel includes `motor_abi` shared library and `ws_gateway` binary for that platform.
 - After `pip install motorbridge`, gateway binary path is typically:
   `.../site-packages/motorbridge/bin/ws_gateway` (or `ws_gateway.exe` on Windows).
@@ -229,7 +230,7 @@ motorbridge-cli damiao-read-param \
 
 motorbridge-cli damiao-write-param \
   --channel can0 --model 4340P --motor-id 0x01 --feedback-id 0x11 \
-  --param-id 8 --type u32 --value 0x01 --verify 1
+  --param-id 8 --type u32 --value 0x01 --verify 1 --store 1
 ```
 
 Unified scan (all vendors):

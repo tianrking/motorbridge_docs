@@ -392,7 +392,7 @@ with Controller("can0") as ctrl:
 
 ```bash
 $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode write-param --param-id 0x700A --param-value 0.3
+  --mode write-param --param-id 0x700A --param-value 0.3 --store 1
 ```
 
 ### Python CLI
@@ -400,11 +400,11 @@ $CLI --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --fee
 ```bash
 motorbridge-cli run \
   --vendor robstride --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --mode write-param --param-id 0x700A --param-type f32 --param-value 0.3 --timeout-ms 200
+  --mode write-param --param-id 0x700A --param-type f32 --param-value 0.3 --timeout-ms 200 --store 1
 
 motorbridge-cli robstride-write-param \
   --channel "$CH" --model "$MODEL" --motor-id "$MID" --feedback-id "$FID" \
-  --param-id 0x700A --type f32 --value 0.3 --verify 1 --timeout-ms 200
+  --param-id 0x700A --type f32 --value 0.3 --verify 1 --timeout-ms 200 --store 1
 ```
 
 ### Python SDK

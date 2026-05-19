@@ -50,8 +50,8 @@ This page tracks the production capability status across vendors in motorbridge.
 
 | Vendor | Native Entrypoints (examples) | Notes |
 |--------|--------------------------------|-------|
-| Damiao | `id-dump`, `id-set`, `damiao-read-param`, `damiao-write-param` (CLI) + `set_zero_position()` (API) | Register/parameter R/W, ID update, zeroing flow |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param`, `run --mode read-param/write-param/save` | 29-bit extended-frame parameter path; runtime parameters use the common section 4 table (`0x7005..0x702E`) |
+| Damiao | `id-dump`, `id-set`, `damiao-read-param`, `damiao-write-param --store 1` (CLI) + `set_zero_position()` (API) | Register/parameter R/W, ID update, zeroing flow |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param --store 1`, `run --mode read-param/write-param/save` | 29-bit extended-frame parameter path; runtime parameters use the common section 4 table (`0x7005..0x702E`); save uses type 22 with status ACK |
 | MyActuator | Vendor-native command path (adapter exposed) | Position/velocity-first flow, limited register surface |
 | HighTorque | Vendor-native command path (adapter exposed) | Internal scaling under unified API |
 | Hexfellow | CAN-FD native path (`socketcanfd`) | Primarily MIT/POS_VEL, requires CAN-FD |
@@ -75,6 +75,14 @@ motorbridge-cli robstride-read-param `
 ```
 
 Use `--model rs-06` only for a physical RS06 motor. For other RS00-RS05 motors, replace it with the actual model for limits/logging; runtime `read-param` / `write-param` uses the common section 4 table.
+
+Persist a RobStride parameter in v0.3.3:
+
+```bash
+motorbridge-cli robstride-write-param \
+  --channel can0 --model rs-06 --motor-id 127 \
+  --param-id 0x701E --type f32 --value 30.0 --verify 1 --store 1
+```
 
 ## Cross-Platform Command Templates
 

@@ -54,8 +54,8 @@ RobStride 完整运行时参数表见 [RobStride 参数表](/zh/reference/robstr
 
 | 厂商 | 原生能力入口（示例） | 说明 |
 |------|----------------------|------|
-| Damiao | `id-dump`, `id-set`, `damiao-read-param`, `damiao-write-param`（CLI）+ `set_zero_position()`（API） | 寄存器/参数读写、ID 修改、置零流程 |
-| RobStride | `ping`, `robstride-read-param`, `robstride-write-param`, `run --mode read-param/write-param/save` | 29-bit 扩展帧参数通道；运行参数使用第 4 章通用表（`0x7005..0x702E`） |
+| Damiao | `id-dump`, `id-set`, `damiao-read-param`, `damiao-write-param --store 1`（CLI）+ `set_zero_position()`（API） | 寄存器/参数读写、ID 修改、置零流程 |
+| RobStride | `ping`, `robstride-read-param`, `robstride-write-param --store 1`, `run --mode read-param/write-param/save` | 29-bit 扩展帧参数通道；运行参数使用第 4 章通用表（`0x7005..0x702E`）；保存使用 type 22 并等待状态 ACK |
 | MyActuator | 厂商原生命令路径（由适配层暴露） | 以位置/速度主流程为主，寄存器能力有限 |
 | HighTorque | 厂商原生命令路径（由适配层暴露） | 统一接口下内部做缩放映射 |
 | Hexfellow | CAN-FD 原生路径（`socketcanfd`） | 主要覆盖 MIT/POS_VEL，依赖 CAN-FD |

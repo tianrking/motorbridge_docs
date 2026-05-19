@@ -74,6 +74,7 @@
               "source/index",
               "source/repository/overview",
               "source/repository/changelog",
+              "source/repository/release-test-notes/0-3-3",
               "source/repository/release-test-notes/0-2-9",
               "source/repository/contributing",
               "source/repository/code-of-conduct",

@@ -13,6 +13,43 @@ Versioning.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-05-19
+
+### Added
+
+- Python package now exposes `motorbridge.__version__` and `motorbridge.get_version()`.
+- Python CLI now supports `motorbridge-cli -v` / `--version`.
+- Rust CLI now supports `motor_cli -v` / `--version`.
+- Python `robstride-write-param` and `damiao-write-param` now support unified `--store 1` persistence after a successful write/verify.
+- Rust CLI RobStride/Damiao parameter write flows are aligned with the same store semantics.
+
+### Fixed
+
+- Python CLI disables argparse long-option abbreviation so invalid options such as
+  `robstride-write-param --mode save` are rejected instead of being interpreted as `--model save`.
+- RobStride type 22 save now sends the official payload and waits for a status ACK instead of being fire-and-forget.
+
+### Changed
+
+- Python package version advanced to `0.3.3`.
+- Rust workspace crates advanced to `0.3.3`.
+
+## [0.3.2] - 2026-05-18
+
+### Fixed
+
+- RobStride fault report frames update the fault cache without overwriting the latest motion state,
+  preventing fault data from surfacing as bogus `-720 deg`, `-50 rad/s`, or `0 C` feedback.
+- Python bindings and CLI can query the latest vendor fault state while keeping the last valid
+  status feedback separate.
+
+## [0.3.1] - 2026-05-17
+
+### Added
+
+- Added ABI/Python accessors for detailed motor fault state and vendor-specific fault codes.
+- Added RobStride fault clear support through the existing stop/clear-fault path.
+
 ## [0.2.9] - 2026-05-14
 
 ### Added
