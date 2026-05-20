@@ -1,0 +1,90 @@
+---
+title: "MotorBridge 0.3.5 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.3.5.md`</Note>
+
+# MotorBridge 0.3.5 Release Test Note
+
+Date: 2026-05-20
+
+## Summary
+
+MotorBridge 0.3.5 is a patch release for ABI/thread-safety hardening, Python CLI
+maintainability without public entrypoint breakage, CoreController polling
+lifecycle cleanup, RobStride scan efficiency, strict CI alignment, and
+documentation/version alignment.
+
+## Version Alignment
+
+| Component | Version |
+|---|---|
+| Git release tag when published | `v0.3.5` |
+| Rust workspace crates | `0.3.5` |
+| Python package | `0.3.5` |
+| C++ package metadata | `0.3.5` |
+
+## Compatibility
+
+- Python binding public API remains compatible: `Controller`, `Motor`, `Mode`,
+  `MotorState`, `motorbridge.__version__`, and `motorbridge.get_version()` are
+  still exported.
+- Python CLI public entrypoints remain compatible:
+  `motorbridge-cli`, `python -m motorbridge.cli`, `python -m motorbridge`,
+  `motorbridge.cli:main`, and legacy flat run arguments.
+- C ABI symbol names and signatures remain stable. Internally, same-handle
+  operations are serialized.
+
+## Required Checks
+
+```bash
+cargo check --workspace
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace --all-targets
+python -m compileall -q bindings/python/src
+```
+
+Version smoke:
+
+```bash
+cargo run -q -p motor_cli -- --version
+PYTHONPATH=bindings/python/src python -m motorbridge.cli --version
+PYTHONPATH=bindings/python/src python -m motorbridge --version
+PYTHONPATH=bindings/python/src python - <<'PY'
+import motorbridge
+assert motorbridge.get_version() == "0.3.5"
+print(motorbridge.__version__)
+PY
+```
+
+Expected:
+
+```text
+motor_cli 0.3.5
+motorbridge 0.3.5
+motorbridge 0.3.5
+0.3.5
+```
+
+## Hardware Manual Checks
+
+RobStride parameter read/write/readback:
+
+```bash
+cargo run -p motor_cli -- --vendor robstride --channel can0 --model rs-00 --motor-id 1 --feedback-id 0xFD --mode read-param --param-id 0x7017
+cargo run -p motor_cli -- --vendor robstride --channel can0 --model rs-00 --motor-id 1 --feedback-id 0xFD --mode write-param --param-id 0x7017 --param-value 0.9 --store 1
+cargo run -p motor_cli -- --vendor robstride --channel can0 --model rs-00 --motor-id 1 --feedback-id 0xFD --mode read-param --param-id 0x7017
+```
+
+RobStride `pos-vel` ignored-argument warning:
+
+```bash
+PYTHONPATH=bindings/python/src python -m motorbridge.cli run --vendor robstride --channel can0 --model rs-00 --motor-id 1 --feedback-id 0xFD --mode pos-vel --pos 0.0 --vlim 0.2 --loc-kp 1.0 --vel 1.0 --kd 2.0 --tau 0.5 --loop 1 --dt-ms 20
+```
+
+Expected warning:
+
+```text
+[warn] robstride pos-vel maps to native Position mode; ignored args: --kd, --tau, --vel
+```

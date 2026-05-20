@@ -2,17 +2,17 @@
 
 <mintly-toc>
 
-MotorBridge v0.3.3 uses one unified RobStride runtime parameter table from protocol section 4.
+MotorBridge v0.3.5 uses one unified RobStride runtime parameter table from protocol section 4.
 
 </mintly-toc>
 
-MotorBridge keeps the upper-level RobStride API shape shared across RS models. The active runtime parameter table is the protocol section 4 "read/write single parameter" list in the `0x7005..0x702E` range. Older/manual `0x2000` and `0x3000` function-code fields are not split into per-model high-level tables in v0.3.3.
+MotorBridge keeps the upper-level RobStride API shape shared across RS models. The active runtime parameter table is the protocol section 4 "read/write single parameter" list in the `0x7005..0x702E` range. Older/manual `0x2000` and `0x3000` function-code fields are not split into per-model high-level tables in v0.3.5.
 
 ## Runtime Rules
 
 - Runtime parameter read/write uses communication type 17/18 plus the parameter index below.
 - Parameter index is little-endian in `byte[0..2]`; the typed value is little-endian in `byte[4..8]`.
-- Parameters that must survive power-cycle require type 22 save after writing. In v0.3.3, `robstride-write-param --store 1` performs write, optional verify, then save.
+- Parameters that must survive power-cycle require type 22 save after writing. In v0.3.5, `robstride-write-param --store 1` performs write, optional verify, then save.
 - RobStride `set_zero_position()` keeps the same upper-level API but now writes `zero_sta(0x7029)=1` behind the scenes so zeroed motors use `-pi..pi`. Use `store_parameters` / `--store 1` to persist it.
 - Type 22 save uses payload `01 02 03 04 05 06 07 08` and waits for a RobStride status ACK.
 

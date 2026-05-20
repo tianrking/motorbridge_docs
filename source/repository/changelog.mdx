@@ -13,6 +13,52 @@ Versioning.
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-05-20
+
+### Added
+
+- Added `CoreController` drop-time polling cleanup so background receive
+  workers stop even when callers forget to call `shutdown()` or `close_bus()`.
+- Added RobStride MIT encoding regression tests proving all five unified MIT
+  inputs (`pos`, `vel`, `kp`, `kd`, `tau`) are encoded into the native control
+  frame.
+
+### Fixed
+
+- Hardened C ABI controller and motor handles with per-handle locking while
+  preserving public ABI function names and signatures.
+- Fixed Python binding closed-handle guards so motor methods consistently raise
+  `CallError` instead of passing null pointers into the ABI.
+- Fixed Python RobStride scan efficiency by opening one controller per
+  `feedback_id` candidate instead of reopening the CAN socket for every probe.
+- Fixed Damiao register type error messages and newer Clippy CI compatibility.
+
+### Changed
+
+- Split the Python CLI implementation into the `motorbridge.cli` package while
+  preserving public entrypoints and legacy flat run arguments.
+- Clarified `open_can_bus()` as the cross-platform classic-CAN backend selector;
+  `open_socketcan()` remains available as a compatibility alias.
+- Python package, Rust workspace crates, and C++ package metadata advanced to
+  `0.3.5`.
+
+## [0.3.4] - 2026-05-20
+
+### Fixed
+
+- RobStride parameter save now accepts any valid response from the target motor,
+  covering devices that reply with device-id style frames after type-22 save.
+- Damiao in-process `ensure_mode()` avoids the first-register timeout path that
+  could hang while equivalent direct write/read commands worked.
+- WS Gateway `id_set` honors the selected transport, so `--transport dm-serial`
+  does not try to initialize PEAK/PCAN on macOS.
+
+### Changed
+
+- CI/release validation now includes stricter formatting, Clippy, and regression
+  tests for the RobStride save ACK and Damiao mode path.
+- Python package and Rust workspace crates advanced to `0.3.4`.
+
 ## [0.3.3] - 2026-05-19
 
 ### Added

@@ -8,42 +8,13 @@ title: "Web 上位机示例"
 
 CAN 联调与排障文档： [../../docs/zh/can_debugging.md](/zh/source/project/can-debugging)
 
-> 状态说明：本页涉及的 WS 上位机方案仍在持续开发与调优中（尤其是 Damiao 多会话并发场景）。
+> v0.3.5 状态：浏览器/WebSocket 场景推荐优先使用 `ws_gateway`。本地调试保持 `127.0.0.1` 绑定；若绑定到非回环地址，请设置 `MOTORBRIDGE_WS_TOKEN` 并让客户端在握手中携带 token。
 
-## 已知问题（Damiao + WS 场景）
+## 稳定性建议
 
-- 在部分现场总线负载下，Damiao 通过 `ws_gateway` 多会话并发控制时可能出现：
-  - 偶发抖动/回位
-  - `socketcan write failed: No buffer space available (os error 105)`
-- 若你当前项目优先稳定性，建议暂时改用 Python binding 直连控制（不经过 WS）：
-
-```bash
-cd /home/w0x7ce/Downloads/dm_candrive/rust_dm
-cargo build -p motor_abi --release
-export PYTHONPATH=bindings/python/src
-export LD_LIBRARY_PATH=$PWD/target/release:${LD_LIBRARY_PATH}
-python3 bindings/python/examples/quad_vendor_pos_binding_demo.py --channel can0 --pos 0 --loop 120 --dt-ms 20
-python3 bindings/python/examples/quad_vendor_pos_binding_demo.py --channel can0 --pos 3.14 --loop 120 --dt-ms 20
-```
-
-### 改动范围说明
-
-- 当前仓库内相关修复主要在示例层与网关层：
-  - `examples/*`（页面、脚本、README）
-  - `integrations/ws_gateway/*`（WS 网关负载与轮询策略）
-- `motor_core` 本体未做行为改动。
-
-若仍希望使用 WS 上位机交互，但绕开 `ws_gateway`，可试 Python binding WS bridge：
-
-```bash
-cd /home/w0x7ce/Downloads/dm_candrive/rust_dm
-cargo build -p motor_abi --release
-export PYTHONPATH=bindings/python/src
-export LD_LIBRARY_PATH=$PWD/target/release:${LD_LIBRARY_PATH}
-python3 bindings/python/examples/quad_vendor_binding_ws_demo.py --bind 127.0.0.1 --port 9010 --channel can0 --dt-ms 20
-# 浏览器打开：
-# file:///home/w0x7ce/Downloads/dm_candrive/rust_dm/bindings/python/examples/quad_vendor_binding_ws_demo.html
-```
+- 一个电机同时只保留一个主动控制 owner，避免多个页面或脚本同时持续下发目标。
+- 多会话控制时提高网关 `--dt-ms` 或页面发送周期，可以降低现场总线瞬时压力。
+- Python binding 直连仍适合脚本化联调；浏览器/远程控制入口则推荐走 `ws_gateway`。
 
 ## ws_quad_sync_hmi.html
 

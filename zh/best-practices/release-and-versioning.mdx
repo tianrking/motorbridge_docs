@@ -33,9 +33,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 组件 | 源文件 | 当前版本 |
 |------|--------|----------|
-| Git 发布标签 | `motorbridge` 仓库 | `v0.3.3` |
-| Python 包 | `bindings/python/pyproject.toml` | `0.3.3` |
-| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.3.3` |
+| 计划 Git 发布标签 | `motorbridge` 仓库 | `v0.3.5` |
+| Python 包 | `bindings/python/pyproject.toml` | `0.3.5` |
+| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.3.5` |
 
 ```
 主版本.次版本.补丁版本[-预发布标识]
@@ -55,9 +55,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 类别 | 示例 | 稳定性 |
 |------|------|--------|
-| 稳定版 | `0.3.3` | 生产就绪 |
-| 预发布 | `0.3.3a1` | 仅测试 |
-| 开发版 | `0.3.3.dev1` | 内部使用 |
+| 稳定版 | `0.3.5` | 生产就绪 |
+| 预发布 | `0.3.5a1` | 仅测试 |
+| 开发版 | `0.3.5.dev1` | 内部使用 |
 
 ---
 
@@ -70,7 +70,7 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 pip install motorbridge
 
 # 特定版本
-pip install motorbridge==0.3.3
+pip install motorbridge==0.3.5
 
 # 升级
 pip install --upgrade motorbridge
@@ -80,7 +80,7 @@ pip install --upgrade motorbridge
 
 ```bash
 # 从 TestPyPI 安装
-pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3a1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5a1
 ```
 
 <Warning>
@@ -91,7 +91,7 @@ pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3a1
 
 ```bash
 # 从 Git 安装
-pip install git+https://github.com/tianrking/motorbridge@v0.3.3
+pip install git+https://github.com/tianrking/motorbridge@v0.3.5
 
 # 安装特定分支
 pip install git+https://github.com/tianrking/motorbridge@main
@@ -138,11 +138,11 @@ print(f"motorbridge API 版本: {motorbridge.get_version()}")
 
 ```bash
 # 当前: 任意旧 0.x 版本
-# 升级到最新稳定版: 0.3.3
+# 升级到最新稳定版: 0.3.5
 pip install --upgrade motorbridge
 
 # 或特定补丁
-pip install motorbridge==0.3.3
+pip install motorbridge==0.3.5
 ```
 
 ### 早期采用者
@@ -151,13 +151,13 @@ pip install motorbridge==0.3.3
 
 ```bash
 # 开发环境
-pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3b1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5b1
 
 # 测试代码
 python3 -m pytest tests/
 
 # 生产环境保持稳定
-pip install motorbridge==0.3.3
+pip install motorbridge==0.3.5
 ```
 
 ### 固定版本
@@ -166,14 +166,14 @@ pip install motorbridge==0.3.3
 
 ```requirements.txt
 # requirements.txt
-motorbridge==0.3.3
+motorbridge==0.3.5
 ```
 
 或使用版本约束：
 
 ```requirements.txt
 # 允许补丁更新，阻止次版本/主版本变更
-motorbridge>=0.3.3,<0.4.0
+motorbridge>=0.3.5,<0.4.0
 ```
 
 ---
@@ -195,6 +195,21 @@ motorbridge>=0.3.3,<0.4.0
 ---
 
 ## 变更日志
+
+### v0.3.5
+
+- ABI controller 和 motor handle 增加 per-handle 锁，公共符号和函数签名保持兼容
+- Python binding 增加关闭后调用守卫，`close()` 后继续调用会抛 `CallError`，不会把空指针传入 ABI
+- `CoreController` 增加 drop-time 轮询清理，用户忘记 `shutdown()` 或 `close_bus()` 时后台接收线程也会停止
+- Python CLI 拆成 `motorbridge.cli` 包结构，同时保留 `motorbridge-cli`、`python -m motorbridge` 和旧式 flat run 参数
+- 优化 RobStride 扫描效率，补充 RobStride `pos-vel` 有效参数说明，并用回归测试锁定 MIT 参数编码
+
+### v0.3.4
+
+- RobStride 保存参数时接受有效设备回复作为保存命令响应，不再只接受 status ack
+- 修复 Damiao in-process `ensure_mode()` 超时行为
+- 修复 WS Gateway `id_set` 传输选择，`--transport dm-serial` 在 macOS 下不会再尝试加载 PEAK/PCAN
+- 增加更严格的 fmt、clippy 和测试发布验证
 
 ### v0.3.3
 
@@ -265,7 +280,7 @@ def old_function():
 
 ```bash
 # 更新 bindings/python/pyproject.toml 中的 [project].version
-version = "0.3.3"
+version = "0.3.5"
 ```
 
 ### 2. 更新变更日志
@@ -276,8 +291,8 @@ version = "0.3.3"
 ### 3. 打标签
 
 ```bash
-git tag v0.3.3
-git push origin v0.3.3
+git tag v0.3.5
+git push origin v0.3.5
 ```
 
 ### 4. 构建包
@@ -297,7 +312,7 @@ twine upload -r testpypi dist/*
 ### 6. 验证安装
 
 ```bash
-pip install -i https://test.pypi.org/simple/ motorbridge==0.3.3
+pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5
 python3 -m pytest tests/
 ```
 
@@ -321,11 +336,11 @@ twine upload dist/*
 
 ```bash
 # 错误：尝试重新上传同一版本
-twine upload dist/motorbridge-0.3.3.tar.gz
+twine upload dist/motorbridge-0.3.5.tar.gz
 # 错误: 文件已存在
 
 # 解决方案：增加版本号
-# 更新 __version__ = "0.3.3"
+# 将共享版本源更新到下一个补丁版本
 # 重新构建并上传
 ```
 
@@ -369,7 +384,7 @@ jobs:
 | 0.1.5 | 3.10 | SocketCAN | 初始发布 |
 | 0.1.6 | 3.10 | SocketCAN | 添加 RobStride 参数 |
 | 0.2.9 | 3.10 | SocketCAN | 后台轮询默认启用 |
-| 0.3.3 | 3.10 | SocketCAN / PCAN | 版本查询、CLI 写参 `--store 1`、RobStride 保存 ACK 对齐 |
+| 0.3.5 | 3.10 | SocketCAN / PCAN / CAN-FD / DM serial | ABI/Python 安全性、Controller 自动清理、Python CLI 拆分兼容、RobStride 扫描与 MIT 测试 |
 
 ---
 

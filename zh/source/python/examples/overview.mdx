@@ -329,5 +329,5 @@ Damiao 示例已经覆盖高层 SDK 的完整常用面：
 
 ## 变更范围说明
 
-- 最近多电机示例更新主要集中在 `examples/*` 和 WS bridge 脚本。
-- 本批次未修改 `motor_core` 行为；WS 相关调优在 `integrations/ws_gateway`。
+- 当前 v0.3.5 示例已对齐 ABI 加锁、Python 关闭后调用守卫和 `CoreController` 自动清理行为。
+- 浏览器控制推荐使用随包提供的 `ws_gateway`；脚本化联调可直接使用 Python binding 示例。
