@@ -1,0 +1,82 @@
+---
+title: "MotorBridge 0.4.0 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.4.0.md`</Note>
+
+# MotorBridge 0.4.0 Release Test Note
+
+Date: 2026-06-02
+
+## Summary
+
+MotorBridge 0.4.0 fixes Damiao `dm-serial` whole-arm scanning and telemetry
+through the WebSocket gateway, especially on Windows. It also adds
+`damiao_state_many` so browser HMIs can refresh all discovered Damiao joints in
+one logical request.
+
+## Version Alignment
+
+| Component | Version |
+|---|---|
+| Git release tag when published | `v0.4.0` |
+| Rust workspace crates | `0.4.0` |
+| Python package | `0.4.0` |
+| C++ package metadata | `0.4.0` |
+
+## Key Changes
+
+- Windows Damiao `dm-serial` scans stop gateway state/parameter streams and
+  release active sessions before probing the serial bridge.
+- Damiao gateway state snapshots include `motor_id`, `feedback_id`, and
+  `model`.
+- Damiao state reads request fresh feedback with a bounded timeout before
+  returning `pos`, `vel`, and `torq`.
+- WebSocket gateway adds `damiao_state_many` for refreshing multiple Damiao
+  joints.
+- `param_stream enabled=false` no longer opens or reconnects hardware sessions.
+
+## Required Checks
+
+```bash
+cargo fmt --all -- --check
+cargo check -p ws_gateway -p motor_vendor_damiao
+cargo test -p ws_gateway -p motor_vendor_damiao
+PYTHONPATH=bindings/python/src python3 -m compileall bindings/python/src/motorbridge
+```
+
+Version smoke:
+
+```bash
+cargo run -q -p motor_cli -- --version
+cargo run -q -p ws_gateway -- --version
+PYTHONPATH=bindings/python/src python3 -m motorbridge.cli --version
+PYTHONPATH=bindings/python/src python3 -m motorbridge --version
+```
+
+Expected:
+
+```text
+motor_cli 0.4.0
+ws_gateway 0.4.0
+motorbridge 0.4.0
+motorbridge 0.4.0
+```
+
+## Damiao Manual Check
+
+After starting `motorbridge-gateway` with `--vendor damiao --transport
+dm-serial`, scan the whole arm and then request multi-joint state:
+
+```json
+{"op":"scan","vendor":"damiao","transport":"dm-serial","start_id":1,"end_id":7,"feedback_base":16,"timeout_ms":120}
+```
+
+```json
+{"op":"damiao_state_many","items":[{"motor_id":1,"feedback_id":17,"model":"4340P"},{"motor_id":2,"feedback_id":18,"model":"4340P"}],"timeout_ms":120}
+```
+
+Expected: physically present joints scan online, missing joints do not fail the
+whole response, and MotorBridge Studio updates `pos`, `vel`, and `torq` per
+joint.
+

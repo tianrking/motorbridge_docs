@@ -1,0 +1,23 @@
+---
+title: "MotorBridge 0.3.9 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.3.9.md`</Note>
+
+# MotorBridge 0.3.9 Release Test Note
+
+Date: 2026-05-26
+
+MotorBridge 0.3.9 fixes RobStride unified feedback-request semantics.
+RobStride does not have a private-protocol single-shot status request, and ping
+replies do not synthesize `MotorState`. The unified `request_feedback()` path
+for RobStride is therefore a non-blocking no-op.
+
+Key checks:
+
+- `request_feedback()` on RobStride does not send ping and does not block.
+- `robstride_ping()` remains the explicit connectivity check.
+- Fresh RobStride position/velocity values use typed parameter reads such as
+  `0x7019 mechPos` and `0x701B mechVel`.
+- Python, Rust workspace, and C++ package metadata are aligned to `0.3.9`.
+

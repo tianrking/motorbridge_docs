@@ -1,0 +1,22 @@
+---
+title: "MotorBridge 0.3.8 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.3.8.md`</Note>
+
+# MotorBridge 0.3.8 Release Test Note
+
+Date: 2026-05-26
+
+MotorBridge 0.3.8 adds RobStride PP/CSP-specific position-control paths:
+`pos-vel-pp`, `pos-vel-csp`, `robstride_send_pos_vel_pp()`, and
+`robstride_send_pos_vel_csp()`.
+
+Key checks:
+
+- PP and CSP commands follow the vendor manual sequences.
+- High-rate prepared loops avoid paying an enable/ack wait each control cycle.
+- `MOTORBRIDGE_ROBSTRIDE_WRITE_ACK_TIMEOUT_MS` can restore conservative
+  synchronous waiting for RobStride parameter writes.
+- Python, Rust workspace, and C++ package metadata are aligned to `0.3.8`.
+

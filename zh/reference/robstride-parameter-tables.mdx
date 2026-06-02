@@ -2,17 +2,17 @@
 
 <mintly-toc>
 
-MotorBridge v0.3.5 使用一张 RobStride 通用运行参数表，对齐协议第 4 章。
+MotorBridge v0.4.0 使用一张 RobStride 通用运行参数表，对齐协议第 4 章。
 
 </mintly-toc>
 
-MotorBridge 保持 RS 系列上层接口统一。当前 active 运行参数表是协议第 4 章“可读写单个参数列表”中的 `0x7005..0x702E`。v0.3.5 不把 `0x2000` / `0x3000` 手册功能码作为高层 active 运行参数。
+MotorBridge 保持 RS 系列上层接口统一。当前 active 运行参数表是协议第 4 章“可读写单个参数列表”中的 `0x7005..0x702E`。v0.4.0 不把 `0x2000` / `0x3000` 手册功能码作为高层 active 运行参数。
 
 ## 运行规则
 
 - 参数读写使用通信类型 17/18，加下面的参数 index。
 - 参数 index 小端放在 `byte[0..2]`；参数值小端放在 `byte[4..8]`。
-- 需要掉电保存的参数，写入后必须再发送 type 22 保存。v0.3.5 起，`robstride-write-param --store 1` 会执行写入、可选验证，然后保存。
+- 需要掉电保存的参数，写入后必须再发送 type 22 保存。v0.4.0 起，`robstride-write-param --store 1` 会执行写入、可选验证，然后保存。
 - RobStride `set_zero_position()` 上层接口不变，但内部会写 `zero_sta(0x7029)=1`，所以置零后使用 `-pi..pi` 区间。要掉电后仍保持，需要 `store_parameters` / `--store 1`。
 - type 22 保存 payload 为 `01 02 03 04 05 06 07 08`，并等待 RobStride 状态 ACK。
 

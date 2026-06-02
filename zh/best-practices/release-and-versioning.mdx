@@ -33,9 +33,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 组件 | 源文件 | 当前版本 |
 |------|--------|----------|
-| 计划 Git 发布标签 | `motorbridge` 仓库 | `v0.3.5` |
-| Python 包 | `bindings/python/pyproject.toml` | `0.3.5` |
-| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.3.5` |
+| 计划 Git 发布标签 | `motorbridge` 仓库 | `v0.4.0` |
+| Python 包 | `bindings/python/pyproject.toml` | `0.4.0` |
+| Rust workspace crates | `Cargo.toml` 的 `[workspace.package]` | `0.4.0` |
 
 ```
 主版本.次版本.补丁版本[-预发布标识]
@@ -55,9 +55,9 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 
 | 类别 | 示例 | 稳定性 |
 |------|------|--------|
-| 稳定版 | `0.3.5` | 生产就绪 |
-| 预发布 | `0.3.5a1` | 仅测试 |
-| 开发版 | `0.3.5.dev1` | 内部使用 |
+| 稳定版 | `0.4.0` | 生产就绪 |
+| 预发布 | `0.4.0a1` | 仅测试 |
+| 开发版 | `0.4.0.dev1` | 内部使用 |
 
 ---
 
@@ -70,7 +70,7 @@ SDK 遵循 [语义化版本](https://semver.org/)：
 pip install motorbridge
 
 # 特定版本
-pip install motorbridge==0.3.5
+pip install motorbridge==0.4.0
 
 # 升级
 pip install --upgrade motorbridge
@@ -80,7 +80,7 @@ pip install --upgrade motorbridge
 
 ```bash
 # 从 TestPyPI 安装
-pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5a1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.4.0a1
 ```
 
 <Warning>
@@ -91,7 +91,7 @@ pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5a1
 
 ```bash
 # 从 Git 安装
-pip install git+https://github.com/tianrking/motorbridge@v0.3.5
+pip install git+https://github.com/tianrking/motorbridge@v0.4.0
 
 # 安装特定分支
 pip install git+https://github.com/tianrking/motorbridge@main
@@ -138,11 +138,11 @@ print(f"motorbridge API 版本: {motorbridge.get_version()}")
 
 ```bash
 # 当前: 任意旧 0.x 版本
-# 升级到最新稳定版: 0.3.5
+# 升级到最新稳定版: 0.4.0
 pip install --upgrade motorbridge
 
 # 或特定补丁
-pip install motorbridge==0.3.5
+pip install motorbridge==0.4.0
 ```
 
 ### 早期采用者
@@ -151,13 +151,13 @@ pip install motorbridge==0.3.5
 
 ```bash
 # 开发环境
-pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5b1
+pip install -i https://test.pypi.org/simple/ motorbridge==0.4.0b1
 
 # 测试代码
 python3 -m pytest tests/
 
 # 生产环境保持稳定
-pip install motorbridge==0.3.5
+pip install motorbridge==0.4.0
 ```
 
 ### 固定版本
@@ -166,14 +166,14 @@ pip install motorbridge==0.3.5
 
 ```requirements.txt
 # requirements.txt
-motorbridge==0.3.5
+motorbridge==0.4.0
 ```
 
 或使用版本约束：
 
 ```requirements.txt
 # 允许补丁更新，阻止次版本/主版本变更
-motorbridge>=0.3.5,<0.4.0
+motorbridge>=0.4.0,<0.5.0
 ```
 
 ---
@@ -195,6 +195,34 @@ motorbridge>=0.3.5,<0.4.0
 ---
 
 ## 变更日志
+
+### v0.4.0
+
+- 修复 Windows 下 Damiao `dm-serial` 通过 `ws_gateway` 扫描整臂时的串口会话争用
+- 新增 `damiao_state_many`，用于浏览器上位机批量刷新 Damiao 多关节状态
+- Damiao gateway 状态快照新增 `motor_id`、`feedback_id`、`model`
+- Damiao 状态返回前会请求新鲜反馈，减少 pos/vel/torq 旧缓存
+- Python、Rust workspace、C++ 元数据升级到 `0.4.0`
+
+### v0.3.9
+
+- 修正 RobStride 统一 `request_feedback()` 语义，改为非阻塞 no-op
+- 明确 RobStride 连通性检查使用 `robstride_ping()`，新鲜位置/速度使用类型化参数读取
+- Python、Rust workspace、C++ 元数据升级到 `0.3.9`
+
+### v0.3.8
+
+- 新增 RobStride `pos-vel-pp` 和 `pos-vel-csp` 控制路径
+- 新增 PP/CSP 的 C ABI、Python binding、Python CLI、Rust CLI 支持
+- 移除高频路径中 RobStride 参数写默认等待 ack 的阻塞
+- Python、Rust workspace、C++ 元数据升级到 `0.3.8`
+
+### v0.3.7
+
+- 修复 Windows PCAN RobStride 扫描，每次只探测一个 host/feedback ID
+- 修复 gateway RobStride 扫描，按请求精确 host ID 探测并在扫描前释放活跃会话
+- 新增 gateway `capabilities` 和 `MOTORBRIDGE_WS_DEBUG=1` 诊断日志
+- Python、Rust workspace、C++ 元数据升级到 `0.3.7`
 
 ### v0.3.5
 
@@ -280,7 +308,7 @@ def old_function():
 
 ```bash
 # 更新 bindings/python/pyproject.toml 中的 [project].version
-version = "0.3.5"
+version = "0.4.0"
 ```
 
 ### 2. 更新变更日志
@@ -291,8 +319,8 @@ version = "0.3.5"
 ### 3. 打标签
 
 ```bash
-git tag v0.3.5
-git push origin v0.3.5
+git tag v0.4.0
+git push origin v0.4.0
 ```
 
 ### 4. 构建包
@@ -312,7 +340,7 @@ twine upload -r testpypi dist/*
 ### 6. 验证安装
 
 ```bash
-pip install -i https://test.pypi.org/simple/ motorbridge==0.3.5
+pip install -i https://test.pypi.org/simple/ motorbridge==0.4.0
 python3 -m pytest tests/
 ```
 
@@ -336,7 +364,7 @@ twine upload dist/*
 
 ```bash
 # 错误：尝试重新上传同一版本
-twine upload dist/motorbridge-0.3.5.tar.gz
+twine upload dist/motorbridge-0.4.0.tar.gz
 # 错误: 文件已存在
 
 # 解决方案：增加版本号
@@ -385,6 +413,7 @@ jobs:
 | 0.1.6 | 3.10 | SocketCAN | 添加 RobStride 参数 |
 | 0.2.9 | 3.10 | SocketCAN | 后台轮询默认启用 |
 | 0.3.5 | 3.10 | SocketCAN / PCAN / CAN-FD / DM serial | ABI/Python 安全性、Controller 自动清理、Python CLI 拆分兼容、RobStride 扫描与 MIT 测试 |
+| 0.4.0 | 3.10 | SocketCAN / PCAN / CAN-FD / DM serial | Damiao `dm-serial` 整臂扫描与 WebSocket 多关节状态同步修复 |
 
 ---
 

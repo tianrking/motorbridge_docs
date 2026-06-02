@@ -13,6 +13,101 @@ Versioning.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-02
+
+### Added
+
+- Added WebSocket gateway `damiao_state_many` for Damiao multi-joint state
+  reads, so browser HMIs can refresh every discovered joint in one logical
+  request over `dm-serial`.
+- Added Damiao state identity fields (`motor_id`, `feedback_id`, `model`) to
+  gateway state snapshots, allowing clients to merge whole-arm telemetry by
+  joint instead of treating all feedback as the active target.
+- Added capability discovery for the Damiao multi-state operation.
+
+### Fixed
+
+- Fixed Windows Damiao `dm-serial` whole-arm scans in the WebSocket gateway by
+  releasing active Damiao sessions and stopping state/parameter streams before
+  scan probes reuse the serial port.
+- Fixed stale Damiao state reads by requesting fresh feedback with a bounded
+  timeout before returning gateway state snapshots.
+- Fixed `param_stream enabled=false` so disabling the stream no longer opens or
+  reopens hardware sessions.
+- Fixed RobStride scan/session release handling to keep the same scan-safe
+  behavior introduced for Windows PCAN.
+
+### Changed
+
+- Python package version advanced to `0.4.0`.
+- Rust workspace package version advanced to `0.4.0` for release/tag alignment.
+- C++ package metadata advanced to `0.4.0`.
+
+## [0.3.9] - 2026-05-26
+
+### Fixed
+
+- Changed RobStride handling of the unified `request_feedback()` ABI call to a
+  non-blocking no-op instead of issuing a blocking `ping`.
+- Avoided misleading RobStride state semantics: `ping` replies do not synthesize
+  `MotorState`, so `request_feedback() -> get_state()` no longer appears to
+  refresh state when it cannot.
+- Documented the correct RobStride state-query choices: use `robstride_ping()`
+  for connectivity checks, active report for streaming state, or typed
+  parameter reads for fresh position/velocity values.
+
+### Changed
+
+- Python package version advanced to `0.3.9`.
+- Rust workspace package version advanced to `0.3.9` for release/tag alignment.
+- C++ package metadata advanced to `0.3.9`.
+
+## [0.3.8] - 2026-05-26
+
+### Added
+
+- Added RobStride-specific `pos-vel-pp` and `pos-vel-csp` control paths.
+- Added C ABI and Python binding entrypoints for
+  `robstride_send_pos_vel_pp()` and `robstride_send_pos_vel_csp()`.
+- Added Python CLI and Rust CLI support for RobStride `pos-vel-pp` and
+  `pos-vel-csp`.
+
+### Fixed
+
+- Removed the default 260 ms blocking wait from RobStride communication type 18
+  parameter writes; set `MOTORBRIDGE_ROBSTRIDE_WRITE_ACK_TIMEOUT_MS` to restore
+  conservative synchronous waiting.
+
+### Changed
+
+- Python package version advanced to `0.3.8`.
+- Rust workspace package version advanced to `0.3.8` for release/tag alignment.
+- C++ package metadata advanced to `0.3.8`.
+
+## [0.3.7] - 2026-05-21
+
+### Fixed
+
+- Fixed Python CLI RobStride scans on Windows PCAN by probing one
+  host/feedback ID at a time.
+- Fixed WebSocket gateway RobStride scans to probe requested host/feedback IDs
+  exactly and sequentially, avoid unrelated default feedback IDs, and clamp
+  default probe timing for Windows PCAN reliability.
+- Fixed Windows WebSocket gateway RobStride repeated scans by releasing any
+  active RobStride session before scan probes.
+
+### Added
+
+- Added optional `MOTORBRIDGE_WS_DEBUG=1` connection logs.
+- Added WebSocket gateway `capabilities` so MotorBridge Studio can discover
+  batch scan support.
+
+### Changed
+
+- Python package version advanced to `0.3.7`.
+- Rust workspace package version advanced to `0.3.7` for release/tag alignment.
+- C++ package metadata advanced to `0.3.7`.
+
 ## [0.3.5] - 2026-05-20
 
 ### Added

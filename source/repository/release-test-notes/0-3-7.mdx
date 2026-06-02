@@ -1,0 +1,23 @@
+---
+title: "MotorBridge 0.3.7 Release Test Note"
+---
+
+<Note>Source: `release_test_notes/0.3.7.md`</Note>
+
+# MotorBridge 0.3.7 Release Test Note
+
+Date: 2026-05-21
+
+MotorBridge 0.3.7 fixes Windows RobStride scan reliability and adds gateway
+capability discovery for browser clients.
+
+Key checks:
+
+- Python CLI RobStride scans probe one host/feedback ID at a time on Windows
+  PCAN.
+- WebSocket gateway RobStride scans use requested `channel`, `model`, and
+  host IDs exactly.
+- Repeated gateway scans release any active RobStride session before probing.
+- `{"op":"capabilities"}` reports the supported vendor/mode/operation matrix.
+- Python, Rust workspace, and C++ package metadata are aligned to `0.3.7`.
+
